@@ -14,13 +14,478 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      adoption_artifacts: {
+        Row: {
+          content_md: string
+          id: string
+          kind: string
+          project_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content_md: string
+          id?: string
+          kind: string
+          project_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content_md?: string
+          id?: string
+          kind?: string
+          project_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "adoption_artifacts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_intakes: {
+        Row: {
+          budget_range: string | null
+          business_goals: string | null
+          change_mgmt_maturity: number | null
+          company_name: string | null
+          compliance_requirements: string | null
+          created_at: string
+          current_ai_maturity: number | null
+          data_sensitivity: string | null
+          departments: string[] | null
+          desired_outcomes: string | null
+          employee_count: string | null
+          employee_readiness: number | null
+          existing_ai_tools: string[] | null
+          industry: string | null
+          leadership_alignment: number | null
+          operational_challenges: string | null
+          project_id: string
+          raw: Json | null
+          timeline: string | null
+        }
+        Insert: {
+          budget_range?: string | null
+          business_goals?: string | null
+          change_mgmt_maturity?: number | null
+          company_name?: string | null
+          compliance_requirements?: string | null
+          created_at?: string
+          current_ai_maturity?: number | null
+          data_sensitivity?: string | null
+          departments?: string[] | null
+          desired_outcomes?: string | null
+          employee_count?: string | null
+          employee_readiness?: number | null
+          existing_ai_tools?: string[] | null
+          industry?: string | null
+          leadership_alignment?: number | null
+          operational_challenges?: string | null
+          project_id: string
+          raw?: Json | null
+          timeline?: string | null
+        }
+        Update: {
+          budget_range?: string | null
+          business_goals?: string | null
+          change_mgmt_maturity?: number | null
+          company_name?: string | null
+          compliance_requirements?: string | null
+          created_at?: string
+          current_ai_maturity?: number | null
+          data_sensitivity?: string | null
+          departments?: string[] | null
+          desired_outcomes?: string | null
+          employee_count?: string | null
+          employee_readiness?: number | null
+          existing_ai_tools?: string[] | null
+          industry?: string | null
+          leadership_alignment?: number | null
+          operational_challenges?: string | null
+          project_id?: string
+          raw?: Json | null
+          timeline?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_intakes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      generated_outputs: {
+        Row: {
+          content: Json
+          id: string
+          project_id: string
+          section: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          content: Json
+          id?: string
+          project_id: string
+          section: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          content?: Json
+          id?: string
+          project_id?: string
+          section?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "generated_outputs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      governance_artifacts: {
+        Row: {
+          content_md: string
+          id: string
+          kind: string
+          project_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content_md: string
+          id?: string
+          kind: string
+          project_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content_md?: string
+          id?: string
+          kind?: string
+          project_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "governance_artifacts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          owner_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          adoption_score: number | null
+          created_at: string
+          governance_score: number | null
+          health_score: number | null
+          id: string
+          name: string
+          org_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          adoption_score?: number | null
+          created_at?: string
+          governance_score?: number | null
+          health_score?: number | null
+          id?: string
+          name: string
+          org_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          adoption_score?: number | null
+          created_at?: string
+          governance_score?: number | null
+          health_score?: number | null
+          id?: string
+          name?: string
+          org_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      risks: {
+        Row: {
+          created_at: string
+          id: string
+          mitigation: string | null
+          owner: string | null
+          project_id: string
+          severity: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mitigation?: string | null
+          owner?: string | null
+          project_id: string
+          severity?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mitigation?: string | null
+          owner?: string | null
+          project_id?: string
+          severity?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roadmap_items: {
+        Row: {
+          created_at: string
+          dependencies: string | null
+          horizon: string
+          id: string
+          owner: string | null
+          position: number | null
+          priority: string | null
+          project_id: string
+          risks: string | null
+          success_metric: string | null
+          task: string
+          timeline: string | null
+        }
+        Insert: {
+          created_at?: string
+          dependencies?: string | null
+          horizon: string
+          id?: string
+          owner?: string | null
+          position?: number | null
+          priority?: string | null
+          project_id: string
+          risks?: string | null
+          success_metric?: string | null
+          task: string
+          timeline?: string | null
+        }
+        Update: {
+          created_at?: string
+          dependencies?: string | null
+          horizon?: string
+          id?: string
+          owner?: string | null
+          position?: number | null
+          priority?: string | null
+          project_id?: string
+          risks?: string | null
+          success_metric?: string | null
+          task?: string
+          timeline?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roadmap_items_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transformation_scores: {
+        Row: {
+          category: string
+          explanation: string | null
+          id: string
+          next_action: string | null
+          project_id: string
+          rating: string | null
+          recommendation: string | null
+          risk_level: string | null
+          score: number
+        }
+        Insert: {
+          category: string
+          explanation?: string | null
+          id?: string
+          next_action?: string | null
+          project_id: string
+          rating?: string | null
+          recommendation?: string | null
+          risk_level?: string | null
+          score: number
+        }
+        Update: {
+          category?: string
+          explanation?: string | null
+          id?: string
+          next_action?: string | null
+          project_id?: string
+          rating?: string | null
+          recommendation?: string | null
+          risk_level?: string | null
+          score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transformation_scores_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      use_cases: {
+        Row: {
+          ai_opportunity: string | null
+          business_problem: string | null
+          complexity: string | null
+          created_at: string
+          department: string | null
+          expected_impact: string | null
+          id: string
+          name: string
+          project_id: string
+          quadrant: string | null
+          recommended_owner: string | null
+          required_data: string | null
+          required_tools: string | null
+          risk_level: string | null
+          success_metric: string | null
+          timeline: string | null
+        }
+        Insert: {
+          ai_opportunity?: string | null
+          business_problem?: string | null
+          complexity?: string | null
+          created_at?: string
+          department?: string | null
+          expected_impact?: string | null
+          id?: string
+          name: string
+          project_id: string
+          quadrant?: string | null
+          recommended_owner?: string | null
+          required_data?: string | null
+          required_tools?: string | null
+          risk_level?: string | null
+          success_metric?: string | null
+          timeline?: string | null
+        }
+        Update: {
+          ai_opportunity?: string | null
+          business_problem?: string | null
+          complexity?: string | null
+          created_at?: string
+          department?: string | null
+          expected_impact?: string | null
+          id?: string
+          name?: string
+          project_id?: string
+          quadrant?: string | null
+          recommended_owner?: string | null
+          required_data?: string | null
+          required_tools?: string | null
+          risk_level?: string | null
+          success_metric?: string | null
+          timeline?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "use_cases_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      owns_org: { Args: { _org_id: string }; Returns: boolean }
+      owns_project: { Args: { _project_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
