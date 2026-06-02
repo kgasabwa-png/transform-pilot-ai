@@ -284,7 +284,7 @@ Every section MUST answer the eight execution questions:
 7. What artifact gets created?
 8. What is the next action?
 
-Be specific, opinionated, and actionable. No fluff. No generic "consider implementing AI." Reference the company's actual context. Generate AT LEAST 8 use cases distributed across all four quadrants, AT LEAST 10 roadmap items spanning all four horizons, ALL 10 maturity categories scored 0-100, AT LEAST 5 governance artifacts and 5 adoption artifacts with rich markdown bodies (300-600 words each).`;
+Be specific, opinionated, and actionable. No fluff. No generic "consider implementing AI." Reference the company's actual context. Generate AT LEAST 8 use cases distributed across all four quadrants, AT LEAST 10 roadmap items spanning all four horizons, ALL 10 maturity categories scored 0-100, AT LEAST 5 governance artifacts and 5 adoption artifacts with concise markdown bodies (150-250 words each — tight, scannable, executive-ready).`;
 
 export const generateTransformation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
