@@ -67,7 +67,7 @@ export const createProject = createServerFn({ method: "POST" })
       timeline: data.timeline,
       budget_range: data.budget_range,
       desired_outcomes: data.desired_outcomes,
-      raw: data as unknown as Record<string, unknown>,
+      raw: data as never,
     });
     if (intakeErr) throw new Error(intakeErr.message);
     return { projectId: project.id };
