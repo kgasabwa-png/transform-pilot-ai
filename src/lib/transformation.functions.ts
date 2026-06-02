@@ -457,8 +457,16 @@ Return the package via the emit_package tool. Be specific to this company's real
       })
       .eq("id", pid);
 
-    return { ok: true };
+      return { ok: true };
+    } catch (err) {
+      await supabase
+        .from("projects")
+        .update({ status: "failed", updated_at: new Date().toISOString() })
+        .eq("id", data.projectId);
+      throw err;
+    }
   });
+
 
 export const getProjectBundle = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
