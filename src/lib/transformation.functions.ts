@@ -290,33 +290,10 @@ export const generateTransformation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ projectId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    try {
-      return await runGeneration(data.projectId, context.supabase);
-    } catch (err) {
-      await context.supabase
-        .from("projects")
-        .update({ status: "failed", updated_at: new Date().toISOString() })
-        .eq("id", data.projectId);
-      throw err;
-    }
-  });
-
-async function runGeneration(
-  projectId: string,
-  supabase: { from: (t: string) => unknown } & Record<string, unknown>,
-) {
-  const sbAny = supabase as unknown as {
-    from: (t: string) => {
-      select: (c: string) => { eq: (c: string, v: string) => { single: () => Promise<{ data: Record<string, unknown> | null; error: { message: string } | null }> } };
-      update: (v: Record<string, unknown>) => { eq: (c: string, v: string) => Promise<unknown> };
-      delete: () => { eq: (c: string, v: string) => Promise<unknown> };
-      insert: (rows: unknown) => Promise<unknown>;
-    };
-  };
-  await sbAny.from("projects").update({ status: "generating", updated_at: new Date().toISOString() }).eq("id", projectId);
-
     const { supabase } = context;
-    const { data: intake, error: intakeErr } = await supabase
+    try {
+      const { data: intake, error: intakeErr } = await supabase
+
       .from("company_intakes")
       .select("*")
       .eq("project_id", data.projectId)
