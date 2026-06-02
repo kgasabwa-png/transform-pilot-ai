@@ -390,9 +390,13 @@ Return the package via the emit_package tool. Be specific to this company's real
 
     // Persist all sections
     const pid = data.projectId;
-    const wipe = async (table: string) => {
-      await supabase.from(table).delete().eq("project_id", pid);
+    const sb = supabase as unknown as {
+      from: (table: string) => {
+        delete: () => { eq: (col: string, val: string) => Promise<unknown> };
+        insert: (rows: unknown) => Promise<unknown>;
+      };
     };
+    const wipe = (table: string) => sb.from(table).delete().eq("project_id", pid);
     await Promise.all([
       wipe("transformation_scores"),
       wipe("use_cases"),
@@ -400,31 +404,32 @@ Return the package via the emit_package tool. Be specific to this company's real
       wipe("roadmap_items"),
       wipe("governance_artifacts"),
       wipe("adoption_artifacts"),
-      supabase.from("generated_outputs").delete().eq("project_id", pid),
+      wipe("generated_outputs"),
     ]);
 
     await Promise.all([
-      supabase.from("generated_outputs").insert([
+      sb.from("generated_outputs").insert([
         { project_id: pid, section: "executive_summary", content: pkg.executive_summary },
         { project_id: pid, section: "metrics", content: pkg.metrics },
       ]),
-      supabase.from("transformation_scores").insert(
+      sb.from("transformation_scores").insert(
         pkg.maturity_scores.map((s) => ({ project_id: pid, ...s })),
       ),
-      supabase.from("use_cases").insert(
+      sb.from("use_cases").insert(
         pkg.use_cases.map((u) => ({ project_id: pid, ...u })),
       ),
-      supabase.from("risks").insert(pkg.risks.map((r) => ({ project_id: pid, ...r }))),
-      supabase
-        .from("roadmap_items")
-        .insert(pkg.roadmap.map((r, i) => ({ project_id: pid, position: i, ...r }))),
-      supabase
-        .from("governance_artifacts")
-        .insert(pkg.governance.map((g) => ({ project_id: pid, ...g }))),
-      supabase
-        .from("adoption_artifacts")
-        .insert(pkg.adoption.map((a) => ({ project_id: pid, ...a }))),
+      sb.from("risks").insert(pkg.risks.map((r) => ({ project_id: pid, ...r }))),
+      sb.from("roadmap_items").insert(
+        pkg.roadmap.map((r, i) => ({ project_id: pid, position: i, ...r })),
+      ),
+      sb.from("governance_artifacts").insert(
+        pkg.governance.map((g) => ({ project_id: pid, ...g })),
+      ),
+      sb.from("adoption_artifacts").insert(
+        pkg.adoption.map((a) => ({ project_id: pid, ...a })),
+      ),
     ]);
+
 
     await supabase
       .from("projects")
