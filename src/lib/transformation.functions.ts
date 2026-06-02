@@ -358,9 +358,16 @@ Return the package via the emit_package tool. Be specific to this company's real
             },
           },
         ],
-        tool_choice: { type: "function", function: { name: "emit_package" } },
-      }),
-    });
+          tool_choice: { type: "function", function: { name: "emit_package" } },
+        }),
+      });
+    } catch (e) {
+      clearTimeout(timer);
+      if ((e as Error).name === "AbortError") throw new Error("AI generation timed out after 4 minutes. Try Regenerate.");
+      throw e;
+    }
+    clearTimeout(timer);
+
 
     if (!res.ok) {
       const text = await res.text();
