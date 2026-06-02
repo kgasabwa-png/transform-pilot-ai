@@ -87,11 +87,30 @@ function ProjectPage() {
           <div>
             <div className="font-semibold">Generating execution package…</div>
             <div className="text-sm text-muted-foreground">
-              The AI is producing your governance, adoption, use cases, roadmap, and metrics. Usually 20-40s.
+              The AI is producing your governance, adoption, use cases, roadmap, and metrics. Usually 30-90s.
             </div>
           </div>
         </div>
       )}
+      {data.project.status === "failed" && (
+        <div className="mb-8 p-6 border border-destructive/40 bg-destructive/5 rounded-2xl flex items-center justify-between gap-3">
+          <div>
+            <div className="font-semibold text-destructive">Generation failed</div>
+            <div className="text-sm text-muted-foreground">
+              The AI didn't return a valid package. Click Regenerate to try again.
+            </div>
+          </div>
+          <button
+            onClick={onRegen}
+            disabled={regenerating}
+            className="bg-foreground text-background font-semibold px-4 py-2 rounded-xl inline-flex items-center gap-2 disabled:opacity-50"
+          >
+            {regenerating ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
+            Retry
+          </button>
+        </div>
+      )}
+
 
       <div className="flex gap-1 overflow-x-auto mb-8 border-b border-border">
         {TABS.map((t) => (
