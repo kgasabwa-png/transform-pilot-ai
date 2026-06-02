@@ -284,14 +284,16 @@ Every section MUST answer the eight execution questions:
 7. What artifact gets created?
 8. What is the next action?
 
-Be specific, opinionated, and actionable. No fluff. No generic "consider implementing AI." Reference the company's actual context. Generate AT LEAST 8 use cases distributed across all four quadrants, AT LEAST 10 roadmap items spanning all four horizons, ALL 10 maturity categories scored 0-100, AT LEAST 5 governance artifacts and 5 adoption artifacts with rich markdown bodies (300-600 words each).`;
+Be specific, opinionated, and actionable. No fluff. No generic "consider implementing AI." Reference the company's actual context. Generate AT LEAST 8 use cases distributed across all four quadrants, AT LEAST 10 roadmap items spanning all four horizons, ALL 10 maturity categories scored 0-100, AT LEAST 5 governance artifacts and 5 adoption artifacts with concise markdown bodies (150-250 words each — tight, scannable, executive-ready).`;
 
 export const generateTransformation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ projectId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
-    const { data: intake, error: intakeErr } = await supabase
+    try {
+      const { data: intake, error: intakeErr } = await supabase
+
       .from("company_intakes")
       .select("*")
       .eq("project_id", data.projectId)
@@ -328,14 +330,20 @@ ${intake.desired_outcomes ?? "n/a"}
 
 Return the package via the emit_package tool. Be specific to this company's reality.`;
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+    const ac = new AbortController();
+    const timer = setTimeout(() => ac.abort(), 240_000); // 4 min hard cap
+    let res: Response;
+    try {
+      res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        signal: ac.signal,
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: userPrompt },
@@ -350,9 +358,16 @@ Return the package via the emit_package tool. Be specific to this company's real
             },
           },
         ],
-        tool_choice: { type: "function", function: { name: "emit_package" } },
-      }),
-    });
+          tool_choice: { type: "function", function: { name: "emit_package" } },
+        }),
+      });
+    } catch (e) {
+      clearTimeout(timer);
+      if ((e as Error).name === "AbortError") throw new Error("AI generation timed out after 4 minutes. Try Regenerate.");
+      throw e;
+    }
+    clearTimeout(timer);
+
 
     if (!res.ok) {
       const text = await res.text();
@@ -442,8 +457,16 @@ Return the package via the emit_package tool. Be specific to this company's real
       })
       .eq("id", pid);
 
-    return { ok: true };
+      return { ok: true };
+    } catch (err) {
+      await supabase
+        .from("projects")
+        .update({ status: "failed", updated_at: new Date().toISOString() })
+        .eq("id", data.projectId);
+      throw err;
+    }
   });
+
 
 export const getProjectBundle = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
