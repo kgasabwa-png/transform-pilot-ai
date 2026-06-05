@@ -1,903 +1,652 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import {
-  ArrowRight,
-  Check,
-  CircleDashed,
-  Cog,
-  FileText,
+  Phone,
+  MessageSquare,
   Mail,
-  Database,
+  X,
+  ArrowUpRight,
+  ArrowDownRight,
   AlertTriangle,
-  Loader2,
   Sparkles,
-  RotateCcw,
-  Copy,
-  ChevronDown,
+  TrendingUp,
+  Filter,
 } from "lucide-react";
 import {
-  ACCOUNT,
-  BAKED_CLOSE,
-  TRANSCRIPT_LINES,
-  type ClosePackage,
-  type Citation,
-} from "@/lib/loop/synthetic";
-import { runLiveClose } from "@/lib/loop/anthropic";
-import { toast } from "sonner";
+  ACCOUNTS,
+  arrAtRisk,
+  formatARR,
+  surpriseCount,
+  type Account,
+  type Channel,
+  type Receipt,
+} from "@/lib/loop/portfolio";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Loop — The execution layer between conversations and outcomes" },
+      { title: "Receipts Inbox — the renewal risk your health score is missing" },
       {
         name: "description",
         content:
-          "After every meeting, agents do the post-conversation operations a person shouldn't be doing — and hand them one screen to approve.",
+          "A morning view of your portfolio ranked by what customers are actually saying — every score cited back to the exact call, Slack, or email moment.",
       },
     ],
   }),
-  component: LoopApp,
+  component: ReceiptsInbox,
 });
 
-type Stage = "intake" | "running" | "close";
+type SortKey = "gap" | "renewal" | "arr";
 
-const AGENTS = [
-  { id: "extract", label: "Extract", desc: "Outcomes + provenance", icon: Sparkles },
-  { id: "reconcile", label: "Reconcile", desc: "Diff vs. account record", icon: Cog },
-  { id: "execute", label: "Execute", desc: "Stage 4 artifacts in parallel", icon: ArrowRight },
-  { id: "close", label: "The Close", desc: "Hand to human for approval", icon: Check },
-] as const;
+function ReceiptsInbox() {
+  const [openAccountId, setOpenAccountId] = useState<string | null>(null);
+  const [sort, setSort] = useState<SortKey>("gap");
+  const [filter, setFilter] = useState<"all" | "surprises" | "red">("surprises");
 
-function LoopApp() {
-  const [stage, setStage] = useState<Stage>("intake");
-  const [transcriptText, setTranscriptText] = useState("");
-  const [pkg, setPkg] = useState<ClosePackage | null>(null);
-  const [activeAgent, setActiveAgent] = useState(0);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [liveMode, setLiveMode] = useState(false);
-  const [apiKey, setApiKey] = useState("");
-  const [approvals, setApprovals] = useState<Record<string, "pending" | "approved" | "rejected">>({});
-  const [activeCitation, setActiveCitation] = useState<Citation | null>(null);
-  const transcriptParsed = useMemo(() => parseTranscript(transcriptText), [transcriptText]);
-
-  const loadSample = () => {
-    setTranscriptText(
-      TRANSCRIPT_LINES.map((l) => `${l.speaker}: ${l.text}`).join("\n"),
-    );
-  };
-
-  const runLoop = async () => {
-    if (transcriptParsed.length < 3) {
-      toast.error("Paste a transcript (or load the sample) before closing the loop.");
-      return;
+  const accounts = useMemo(() => {
+    let list = [...ACCOUNTS];
+    if (filter === "surprises") {
+      list = list.filter(
+        (a) => Math.abs(a.vendorScore.value - a.receiptsScore.value) >= 20,
+      );
+    } else if (filter === "red") {
+      list = list.filter((a) => a.receiptsScore.label === "Red");
     }
-    setStage("running");
-    setActiveAgent(0);
-    setPkg(null);
-
-    if (liveMode) {
-      if (!apiKey.trim()) {
-        toast.error("Add your Anthropic API key in Settings, or turn off live mode.");
-        setStage("intake");
-        return;
+    list.sort((a, b) => {
+      if (sort === "gap") {
+        const ga = a.vendorScore.value - a.receiptsScore.value;
+        const gb = b.vendorScore.value - b.receiptsScore.value;
+        return gb - ga;
       }
-      // Animate stages while the request flies
-      const ticker = setInterval(() => setActiveAgent((a) => Math.min(a + 1, 2)), 1400);
-      try {
-        const result = await runLiveClose({ apiKey, transcript: transcriptParsed });
-        clearInterval(ticker);
-        setActiveAgent(3);
-        setTimeout(() => {
-          setPkg(result);
-          setStage("close");
-        }, 500);
-      } catch (e) {
-        clearInterval(ticker);
-        toast.error(e instanceof Error ? e.message : "Live run failed.");
-        setStage("intake");
-      }
-      return;
-    }
+      if (sort === "renewal") return a.renewalDays - b.renewalDays;
+      return b.arr - a.arr;
+    });
+    return list;
+  }, [filter, sort]);
 
-    // Baked synthetic cascade — paced for the recording
-    const isSample = transcriptParsed.length >= TRANSCRIPT_LINES.length - 2;
-    await wait(900);
-    setActiveAgent(1);
-    await wait(900);
-    setActiveAgent(2);
-    await wait(1200);
-    setActiveAgent(3);
-    await wait(450);
-    setPkg(isSample ? BAKED_CLOSE : adaptBakedToCustom(transcriptParsed));
-    setStage("close");
-  };
-
-  const reset = () => {
-    setStage("intake");
-    setPkg(null);
-    setApprovals({});
-    setActiveCitation(null);
-  };
+  const openAccount = openAccountId
+    ? ACCOUNTS.find((a) => a.id === openAccountId) ?? null
+    : null;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Header
-        onSettings={() => setSettingsOpen(true)}
-        onReset={reset}
-        canReset={stage !== "intake"}
-        liveMode={liveMode}
-      />
-
-      <main className="max-w-7xl mx-auto px-6 py-10">
-        {stage === "intake" && (
-          <Intake
-            value={transcriptText}
-            onChange={setTranscriptText}
-            onSample={loadSample}
-            onRun={runLoop}
-            liveMode={liveMode}
-          />
-        )}
-
-        {stage === "running" && <Cascade activeAgent={activeAgent} />}
-
-        {stage === "close" && pkg && (
-          <CloseScreen
-            pkg={pkg}
-            transcript={transcriptParsed.length ? transcriptParsed : TRANSCRIPT_LINES}
-            approvals={approvals}
-            setApprovals={setApprovals}
-            onCite={setActiveCitation}
-          />
-        )}
+      <TopBar />
+      <main className="max-w-[1280px] mx-auto px-8 py-10">
+        <Hero />
+        <StatStrip />
+        <Controls
+          sort={sort}
+          setSort={setSort}
+          filter={filter}
+          setFilter={setFilter}
+          count={accounts.length}
+        />
+        <PortfolioTable
+          accounts={accounts}
+          onOpen={(id) => setOpenAccountId(id)}
+        />
+        <HowItWorks />
+        <Footer />
       </main>
 
-      <SettingsDrawer
-        open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-        liveMode={liveMode}
-        setLiveMode={setLiveMode}
-        apiKey={apiKey}
-        setApiKey={setApiKey}
-      />
-
-      <CitationModal
-        citation={activeCitation}
-        transcript={transcriptParsed.length ? transcriptParsed : TRANSCRIPT_LINES}
-        onClose={() => setActiveCitation(null)}
-      />
+      {openAccount && (
+        <AccountDrawer
+          account={openAccount}
+          onClose={() => setOpenAccountId(null)}
+        />
+      )}
     </div>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Header                                                              */
-/* ------------------------------------------------------------------ */
-
-function Header({
-  onSettings,
-  onReset,
-  canReset,
-  liveMode,
-}: {
-  onSettings: () => void;
-  onReset: () => void;
-  canReset: boolean;
-  liveMode: boolean;
-}) {
+function TopBar() {
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur">
-      <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="size-7 rounded-lg bg-foreground grid place-items-center">
-            <div className="size-3 rounded-full border-2 border-background" />
+    <header className="border-b border-border">
+      <div className="max-w-[1280px] mx-auto px-8 h-14 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="size-6 rounded-md bg-foreground flex items-center justify-center">
+            <span className="text-background text-[11px] font-bold font-mono">
+              R
+            </span>
           </div>
-          <span className="font-display text-lg font-semibold tracking-tight">Loop</span>
-          <span className="ml-3 hidden md:inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground border border-border rounded-full px-2 py-0.5">
-            <span className="size-1.5 rounded-full bg-foreground" />
-            Customer Success · Post-QBR Close
+          <span className="font-display font-semibold tracking-tight">
+            Receipts
+          </span>
+          <span className="eyebrow ml-3 hidden sm:inline">
+            Inbox · Tue Nov 11
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          {liveMode && (
-            <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-primary border border-primary/30 bg-primary/5 rounded-full px-2 py-1">
-              Live · Claude
-            </span>
-          )}
-          {canReset && (
-            <button
-              onClick={onReset}
-              className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-muted"
-            >
-              <RotateCcw className="size-3.5" /> Reset
-            </button>
-          )}
-          <button
-            onClick={onSettings}
-            className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-muted"
-          >
-            <Cog className="size-3.5" /> Settings
-          </button>
+        <div className="flex items-center gap-3 text-sm">
+          <span className="text-muted-foreground hidden md:inline">
+            Keila Ramos
+          </span>
+          <div className="size-7 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center">
+            KR
+          </div>
         </div>
       </div>
     </header>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Intake                                                              */
-/* ------------------------------------------------------------------ */
+function Hero() {
+  return (
+    <section className="mb-10 max-w-3xl">
+      <span className="eyebrow block mb-4">Receipts · Morning view</span>
+      <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight mb-4 leading-[1.05]">
+        Your portfolio, ranked by what customers are actually saying.
+      </h1>
+      <p className="text-lg text-muted-foreground leading-relaxed">
+        Health scores read what your team logged. Receipts reads the calls,
+        the Slack messages, and the emails — and tells you which renewals
+        your dashboard is lying to you about.
+      </p>
+    </section>
+  );
+}
 
-function Intake({
+function StatStrip() {
+  const surprises = surpriseCount(ACCOUNTS);
+  const atRisk = arrAtRisk(ACCOUNTS);
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-border rounded-2xl overflow-hidden mb-8 border border-border">
+      <Stat
+        label="Surprise renewals caught"
+        value={String(surprises)}
+        sub={`of ${ACCOUNTS.length} accounts · Gainsight ≠ Receipts`}
+        accent="text-foreground"
+      />
+      <Stat
+        label="ARR mis-scored as healthy"
+        value={formatARR(
+          ACCOUNTS.filter(
+            (a) =>
+              a.vendorScore.label === "Green" && a.receiptsScore.label !== "Green",
+          ).reduce((s, a) => s + a.arr, 0),
+        )}
+        sub="green on dashboard · red in receipts"
+        accent="text-danger"
+      />
+      <Stat
+        label="ARR your dashboard understates"
+        value={formatARR(
+          ACCOUNTS.filter(
+            (a) =>
+              a.vendorScore.label !== "Green" && a.receiptsScore.label === "Green",
+          ).reduce((s, a) => s + a.arr, 0),
+        )}
+        sub="yellow/red on dashboard · advocates in receipts"
+        accent="text-success"
+      />
+    </div>
+  );
+}
+
+function Stat({
+  label,
   value,
-  onChange,
-  onSample,
-  onRun,
-  liveMode,
+  sub,
+  accent,
 }: {
+  label: string;
   value: string;
-  onChange: (v: string) => void;
-  onSample: () => void;
-  onRun: () => void;
-  liveMode: boolean;
+  sub: string;
+  accent?: string;
 }) {
   return (
-    <div className="animate-reveal">
-      <div className="max-w-3xl">
-        <span className="eyebrow">The execution layer</span>
-        <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight mt-3 leading-[1.05]">
-          After every meeting, agents do the post-conversation work — and hand you one screen to approve.
-        </h1>
-        <p className="text-muted-foreground mt-4 text-lg max-w-2xl">
-          Drop a customer-conversation transcript. Loop runs a multi-agent cascade, then stops at the human gate. Every action cites the words it came from.
-        </p>
+    <div className="bg-surface p-6">
+      <div className="eyebrow mb-3">{label}</div>
+      <div className={`font-display text-3xl font-semibold mb-1 ${accent ?? ""}`}>
+        {value}
       </div>
+      <div className="text-xs text-muted-foreground">{sub}</div>
+    </div>
+  );
+}
 
-      <div className="mt-10 grid md:grid-cols-[1fr_320px] gap-6">
-        <div className="bg-card border border-border rounded-2xl overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-muted/40">
-            <div className="flex items-center gap-2">
-              <FileText className="size-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Transcript</span>
-            </div>
-            <button
-              onClick={onSample}
-              className="text-xs text-muted-foreground hover:text-foreground font-medium"
-            >
-              Load sample QBR ({TRANSCRIPT_LINES.length} lines)
-            </button>
-          </div>
-          <textarea
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={`Format: "Speaker: text" — one turn per line.\n\nExample:\nKeila (CSM): Thanks for making time...\nPriya (VP Ops): Honestly, no. Daniel's now running...`}
-            className="w-full min-h-[420px] p-5 bg-transparent font-mono text-sm leading-relaxed outline-none resize-y placeholder:text-muted-foreground/60"
-          />
-        </div>
-
-        <aside className="space-y-4">
-          <div className="bg-card border border-border rounded-2xl p-5">
-            <span className="eyebrow">Account context</span>
-            <div className="mt-3 space-y-2.5 text-sm">
-              <KV k="Account" v={ACCOUNT.name} />
-              <KV k="Product" v={ACCOUNT.product} />
-              <KV k="ARR" v={ACCOUNT.arr} />
-              <KV k="Renewal" v={ACCOUNT.renewal} />
-              <KV k="Health" v={ACCOUNT.health} />
-            </div>
-          </div>
-
+function Controls({
+  sort,
+  setSort,
+  filter,
+  setFilter,
+  count,
+}: {
+  sort: SortKey;
+  setSort: (s: SortKey) => void;
+  filter: "all" | "surprises" | "red";
+  setFilter: (f: "all" | "surprises" | "red") => void;
+  count: number;
+}) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-4 mb-3">
+      <div className="flex items-center gap-2">
+        <Filter className="size-3.5 text-muted-foreground" />
+        {(
+          [
+            ["surprises", "Surprises"],
+            ["red", "At risk"],
+            ["all", "All accounts"],
+          ] as const
+        ).map(([k, label]) => (
           <button
-            onClick={onRun}
-            className="w-full bg-foreground text-background font-semibold px-5 py-4 rounded-2xl inline-flex items-center justify-center gap-2 hover:bg-foreground/90 transition-colors shadow-2xl shadow-foreground/10"
+            key={k}
+            onClick={() => setFilter(k)}
+            className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+              filter === k
+                ? "bg-foreground text-background border-foreground"
+                : "border-border text-muted-foreground hover:text-foreground"
+            }`}
           >
-            Close the loop <ArrowRight className="size-4" />
+            {label}
           </button>
-          <p className="text-xs text-muted-foreground text-center">
-            {liveMode
-              ? "Live mode · uses your Anthropic key"
-              : "Synthetic baked run · turn on live mode in Settings to use your Claude key"}
-          </p>
-        </aside>
+        ))}
+        <span className="text-xs text-muted-foreground ml-2 font-mono">
+          {count} shown
+        </span>
       </div>
-
-      <div className="mt-16 grid md:grid-cols-4 gap-3">
-        {AGENTS.map((a) => (
-          <div key={a.id} className="bg-card border border-border rounded-2xl p-5">
-            <div className="size-8 rounded-lg bg-muted grid place-items-center mb-3">
-              <a.icon className="size-4" />
-            </div>
-            <div className="text-sm font-semibold">{a.label}</div>
-            <div className="text-xs text-muted-foreground mt-1">{a.desc}</div>
-          </div>
+      <div className="flex items-center gap-2 text-xs">
+        <span className="eyebrow">Sort</span>
+        {(
+          [
+            ["gap", "Largest gap"],
+            ["renewal", "Soonest renewal"],
+            ["arr", "ARR"],
+          ] as const
+        ).map(([k, label]) => (
+          <button
+            key={k}
+            onClick={() => setSort(k)}
+            className={`px-2.5 py-1 rounded-md transition-colors ${
+              sort === k
+                ? "text-foreground font-medium"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {label}
+          </button>
         ))}
       </div>
     </div>
   );
 }
 
-function KV({ k, v }: { k: string; v: string }) {
+function PortfolioTable({
+  accounts,
+  onOpen,
+}: {
+  accounts: Account[];
+  onOpen: (id: string) => void;
+}) {
   return (
-    <div className="flex items-baseline justify-between gap-3">
-      <span className="text-xs font-mono uppercase tracking-[0.14em] text-muted-foreground">{k}</span>
-      <span className="text-sm font-medium text-right">{v}</span>
+    <div className="border border-border rounded-2xl overflow-hidden bg-surface mb-16">
+      <div className="grid grid-cols-[1.6fr_0.8fr_0.8fr_0.7fr_0.6fr] gap-4 px-6 py-3 border-b border-border text-[10px] uppercase tracking-[0.18em] font-mono text-muted-foreground">
+        <div>Account</div>
+        <div>Gainsight</div>
+        <div>Receipts</div>
+        <div>ARR · Renewal</div>
+        <div className="text-right">Open</div>
+      </div>
+      {accounts.map((a) => (
+        <Row key={a.id} account={a} onOpen={() => onOpen(a.id)} />
+      ))}
+      {accounts.length === 0 && (
+        <div className="p-12 text-center text-sm text-muted-foreground">
+          No accounts match this filter.
+        </div>
+      )}
     </div>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Cascade                                                             */
-/* ------------------------------------------------------------------ */
-
-function Cascade({ activeAgent }: { activeAgent: number }) {
+function Row({ account, onOpen }: { account: Account; onOpen: () => void }) {
+  const gap = account.vendorScore.value - account.receiptsScore.value;
+  const direction =
+    gap >= 20 ? "down" : gap <= -20 ? "up" : "flat";
   return (
-    <div className="max-w-3xl mx-auto py-16 animate-reveal">
-      <span className="eyebrow">Running</span>
-      <h2 className="font-display text-3xl font-semibold tracking-tight mt-2 mb-10">
-        The agents are doing the post-conversation work.
-      </h2>
-      <div className="space-y-3">
-        {AGENTS.map((a, i) => {
-          const state =
-            i < activeAgent ? "done" : i === activeAgent ? "running" : "queued";
-          return (
-            <div
-              key={a.id}
-              className={`flex items-center gap-4 px-5 py-4 rounded-2xl border transition-all ${
-                state === "running"
-                  ? "border-foreground bg-card shadow-2xl shadow-foreground/5"
-                  : state === "done"
-                  ? "border-border bg-card"
-                  : "border-border bg-card/40"
-              }`}
-            >
-              <div
-                className={`size-9 rounded-xl grid place-items-center ${
-                  state === "done"
-                    ? "bg-foreground text-background"
-                    : state === "running"
-                    ? "bg-foreground/10 text-foreground"
-                    : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {state === "done" ? (
-                  <Check className="size-4" />
-                ) : state === "running" ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <CircleDashed className="size-4" />
-                )}
-              </div>
-              <div className="flex-1">
-                <div className="text-sm font-semibold">{a.label}</div>
-                <div className="text-xs text-muted-foreground">{a.desc}</div>
-              </div>
-              <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
-                {state}
+    <button
+      onClick={onOpen}
+      className="w-full text-left grid grid-cols-[1.6fr_0.8fr_0.8fr_0.7fr_0.6fr] gap-4 px-6 py-5 border-b border-border last:border-b-0 hover:bg-accent/40 transition-colors group"
+    >
+      <div className="min-w-0">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="font-display font-semibold text-base">
+            {account.name}
+          </span>
+          <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+            {account.segment}
+          </span>
+        </div>
+        <div className="text-sm text-muted-foreground line-clamp-2 max-w-xl">
+          {account.headline}
+        </div>
+      </div>
+      <ScoreCell
+        value={account.vendorScore.value}
+        label={account.vendorScore.label}
+        muted
+      />
+      <ScoreCell
+        value={account.receiptsScore.value}
+        label={account.receiptsScore.label}
+        delta={direction === "down" ? "down" : direction === "up" ? "up" : undefined}
+        deltaMagnitude={Math.abs(gap)}
+      />
+      <div>
+        <div className="font-mono text-sm">{formatARR(account.arr)}</div>
+        <div className="text-xs text-muted-foreground">
+          {account.renewalDays}d to renewal
+        </div>
+      </div>
+      <div className="flex justify-end items-center">
+        <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors inline-flex items-center gap-1">
+          Open receipts <ArrowUpRight className="size-3" />
+        </span>
+      </div>
+    </button>
+  );
+}
+
+function ScoreCell({
+  value,
+  label,
+  delta,
+  deltaMagnitude,
+  muted,
+}: {
+  value: number;
+  label: "Green" | "Yellow" | "Red";
+  delta?: "up" | "down";
+  deltaMagnitude?: number;
+  muted?: boolean;
+}) {
+  const color =
+    label === "Green"
+      ? "bg-success"
+      : label === "Yellow"
+      ? "bg-warning"
+      : "bg-danger";
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-1.5">
+        <span
+          className={`size-2 rounded-full ${color} ${muted ? "opacity-60" : ""}`}
+        />
+        <span
+          className={`font-mono text-sm tabular-nums ${
+            muted ? "text-muted-foreground" : "text-foreground font-semibold"
+          }`}
+        >
+          {value}
+        </span>
+        {delta && deltaMagnitude !== undefined && (
+          <span
+            className={`inline-flex items-center text-[10px] font-mono ${
+              delta === "down" ? "text-danger" : "text-success"
+            }`}
+          >
+            {delta === "down" ? (
+              <ArrowDownRight className="size-3" />
+            ) : (
+              <ArrowUpRight className="size-3" />
+            )}
+            {deltaMagnitude}
+          </span>
+        )}
+      </div>
+      <div className="h-1 w-20 bg-foreground/5 rounded-full overflow-hidden">
+        <div
+          className={`h-full ${color} ${muted ? "opacity-60" : ""}`}
+          style={{ width: `${value}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function AccountDrawer({
+  account,
+  onClose,
+}: {
+  account: Account;
+  onClose: () => void;
+}) {
+  const gap = account.vendorScore.value - account.receiptsScore.value;
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-foreground/30 backdrop-blur-sm flex justify-end"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-2xl h-full bg-background border-l border-border overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="sticky top-0 bg-background/95 backdrop-blur border-b border-border px-8 py-5 flex items-start justify-between gap-4 z-10">
+          <div>
+            <span className="eyebrow block mb-2">
+              {account.segment} · {formatARR(account.arr)} ARR · {account.renewalDays}d to renewal
+            </span>
+            <h2 className="font-display text-2xl font-semibold tracking-tight">
+              {account.name}
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="size-8 rounded-full hover:bg-accent flex items-center justify-center"
+            aria-label="Close"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+
+        <div className="px-8 py-6 space-y-8">
+          <div className="grid grid-cols-2 gap-4">
+            <ScoreCard
+              kind="vendor"
+              value={account.vendorScore.value}
+              label={account.vendorScore.label}
+              basis={account.vendorScore.basis}
+            />
+            <ScoreCard
+              kind="receipts"
+              value={account.receiptsScore.value}
+              label={account.receiptsScore.label}
+              basis={`${gap >= 0 ? gap : -gap} pt ${gap >= 0 ? "below" : "above"} Gainsight · ${account.receipts.length} receipts`}
+            />
+          </div>
+
+          <section>
+            <div className="eyebrow mb-2">What's actually going on</div>
+            <p className="text-base leading-relaxed">{account.headline}</p>
+          </section>
+
+          <section className="border-l-2 border-primary pl-4">
+            <div className="eyebrow mb-1 text-primary">Next play · 48h</div>
+            <p className="text-sm leading-relaxed">{account.nextPlay}</p>
+          </section>
+
+          <section>
+            <div className="flex items-end justify-between mb-3">
+              <div className="eyebrow">Receipts · raw evidence</div>
+              <span className="text-[10px] font-mono text-muted-foreground">
+                {account.receipts.length} signals
               </span>
             </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+            <div className="space-y-2">
+              {account.receipts
+                .slice()
+                .sort((a, b) => a.weight - b.weight)
+                .map((r) => (
+                  <ReceiptCard key={r.id} receipt={r} />
+                ))}
+            </div>
+          </section>
 
-/* ------------------------------------------------------------------ */
-/* Close — the review surface                                          */
-/* ------------------------------------------------------------------ */
-
-function CloseScreen({
-  pkg,
-  transcript,
-  approvals,
-  setApprovals,
-  onCite,
-}: {
-  pkg: ClosePackage;
-  transcript: { speaker: string; text: string }[];
-  approvals: Record<string, "pending" | "approved" | "rejected">;
-  setApprovals: (a: Record<string, "pending" | "approved" | "rejected">) => void;
-  onCite: (c: Citation) => void;
-}) {
-  const ids = ["record", "email", "crm", "risks"];
-  const setOne = (id: string, v: "approved" | "rejected" | "pending") =>
-    setApprovals({ ...approvals, [id]: v });
-  const allApproved = ids.every((id) => approvals[id] === "approved");
-
-  return (
-    <div className="animate-reveal pb-32">
-      <div className="flex items-end justify-between mb-8 flex-wrap gap-3">
-        <div>
-          <span className="eyebrow">The Close · {ACCOUNT.name}</span>
-          <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight mt-2">
-            4 staged artifacts. Approve, edit, or reject. Nothing has been sent.
-          </h2>
-          <p className="text-muted-foreground mt-2 text-sm max-w-2xl">
-            Every claim links to the customer's words. ~90 seconds of judgment replaces ~30 minutes of post-meeting admin.
-          </p>
+          <section className="text-xs text-muted-foreground border-t border-border pt-4">
+            Every score is computed from these receipts and nothing else. No
+            black box — if a signal looks wrong, click it, see the source, and
+            override.
+          </section>
         </div>
       </div>
-
-      <div className="space-y-6">
-        <ArtifactCard
-          id="record"
-          icon={FileText}
-          title="Living account record"
-          subtitle={`${pkg.recordUpdates.length} field updates staged`}
-          status={approvals.record}
-          onStatus={(v) => setOne("record", v)}
-        >
-          <div className="divide-y divide-border">
-            {pkg.recordUpdates.map((r, i) => (
-              <div key={i} className="py-4 first:pt-0 last:pb-0">
-                <div className="text-xs font-mono uppercase tracking-[0.14em] text-muted-foreground mb-2">
-                  {r.field}
-                </div>
-                <div className="grid md:grid-cols-[1fr_auto_2fr] gap-2 md:gap-4 items-start">
-                  <div className="text-sm text-muted-foreground line-through decoration-muted-foreground/30">
-                    {r.before}
-                  </div>
-                  <ArrowRight className="size-3.5 text-muted-foreground mt-1.5 hidden md:block" />
-                  <div className="text-sm font-medium">{r.after}</div>
-                </div>
-                <Citations citations={r.citations} onCite={onCite} />
-              </div>
-            ))}
-          </div>
-        </ArtifactCard>
-
-        <ArtifactCard
-          id="email"
-          icon={Mail}
-          title="Follow-up email · drafted in your voice"
-          subtitle={`To ${pkg.email.to}`}
-          status={approvals.email}
-          onStatus={(v) => setOne("email", v)}
-          copy={() => copyEmail(pkg)}
-        >
-          <div className="text-sm text-muted-foreground mb-3">
-            <span className="text-foreground font-medium">Subject:</span> {pkg.email.subject}
-          </div>
-          <div className="space-y-4">
-            {pkg.email.bodyParagraphs.map((p, i) => (
-              <div key={i}>
-                <p className="text-sm leading-relaxed text-foreground">{p.text}</p>
-                <Citations citations={p.citations} onCite={onCite} />
-              </div>
-            ))}
-          </div>
-        </ArtifactCard>
-
-        <ArtifactCard
-          id="crm"
-          icon={Database}
-          title="CRM diff · staged, not written"
-          subtitle={`${pkg.crmChanges.length} writes pending your approval`}
-          status={approvals.crm}
-          onStatus={(v) => setOne("crm", v)}
-        >
-          <div className="divide-y divide-border">
-            {pkg.crmChanges.map((ch, i) => (
-              <div key={i} className="py-3 first:pt-0 last:pb-0">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                    {ch.object}
-                  </span>
-                  <span className="text-xs font-medium">{ch.field}</span>
-                </div>
-                <div className="grid md:grid-cols-[1fr_auto_1.4fr] gap-2 md:gap-4 items-start">
-                  <div className="text-xs font-mono text-muted-foreground line-through decoration-muted-foreground/30 break-words">
-                    {ch.before}
-                  </div>
-                  <ArrowRight className="size-3 text-muted-foreground mt-1 hidden md:block" />
-                  <div className="text-xs font-mono text-foreground break-words">{ch.after}</div>
-                </div>
-                <Citations citations={ch.citations} onCite={onCite} />
-              </div>
-            ))}
-          </div>
-        </ArtifactCard>
-
-        <ArtifactCard
-          id="risks"
-          icon={AlertTriangle}
-          title="Risks & recommended plays"
-          subtitle={`${pkg.risks.length} surfaced from this conversation`}
-          status={approvals.risks}
-          onStatus={(v) => setOne("risks", v)}
-        >
-          <div className="space-y-5">
-            {pkg.risks.map((r, i) => (
-              <div key={i} className="border-l-2 border-border pl-4">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span
-                    className={`text-[10px] font-mono uppercase tracking-[0.18em] px-2 py-0.5 rounded ${
-                      r.severity === "high"
-                        ? "bg-destructive/10 text-destructive"
-                        : r.severity === "medium"
-                        ? "bg-warning/10 text-warning"
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {r.severity}
-                  </span>
-                  <span className="text-sm font-semibold">{r.title}</span>
-                </div>
-                <p className="text-sm text-muted-foreground mb-2">{r.rationale}</p>
-                <div className="text-xs">
-                  <span className="font-mono uppercase tracking-[0.14em] text-muted-foreground">
-                    Recommended play ·{" "}
-                  </span>
-                  <span className="text-foreground">{r.recommendedPlay}</span>
-                </div>
-                <Citations citations={r.citations} onCite={onCite} />
-              </div>
-            ))}
-          </div>
-        </ArtifactCard>
-      </div>
-
-      <ApproveBar
-        approvals={approvals}
-        ids={ids}
-        allApproved={allApproved}
-        onApproveAll={() => {
-          setApprovals(Object.fromEntries(ids.map((id) => [id, "approved"])));
-          toast.success("Loop closed. Artifacts would now be dispatched.");
-        }}
-      />
     </div>
   );
 }
 
-function ArtifactCard({
-  id,
-  icon: Icon,
-  title,
-  subtitle,
-  status,
-  onStatus,
-  copy,
-  children,
+function ScoreCard({
+  kind,
+  value,
+  label,
+  basis,
 }: {
-  id: string;
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  subtitle: string;
-  status?: "pending" | "approved" | "rejected";
-  onStatus: (v: "approved" | "rejected" | "pending") => void;
-  copy?: () => void;
-  children: React.ReactNode;
+  kind: "vendor" | "receipts";
+  value: number;
+  label: "Green" | "Yellow" | "Red";
+  basis: string;
 }) {
-  const accent =
-    status === "approved"
-      ? "border-foreground"
-      : status === "rejected"
-      ? "border-destructive/40"
-      : "border-border";
+  const color =
+    label === "Green"
+      ? "text-success"
+      : label === "Yellow"
+      ? "text-warning"
+      : "text-danger";
   return (
-    <section
-      id={id}
-      className={`bg-card border ${accent} rounded-3xl overflow-hidden transition-colors`}
+    <div className="border border-border rounded-xl p-4 bg-surface">
+      <div className="eyebrow mb-3">
+        {kind === "vendor" ? "Gainsight score" : "Receipts score"}
+      </div>
+      <div className={`font-display text-3xl font-semibold mb-1 ${color}`}>
+        {value}
+        <span className="text-sm text-muted-foreground font-sans font-normal ml-2">
+          {label}
+        </span>
+      </div>
+      <div className="text-xs text-muted-foreground leading-relaxed">
+        {basis}
+      </div>
+    </div>
+  );
+}
+
+const channelIcon: Record<Channel, React.ComponentType<{ className?: string }>> = {
+  call: Phone,
+  slack: MessageSquare,
+  email: Mail,
+};
+
+const signalLabel: Record<Receipt["signal"], string> = {
+  champion_change: "Champion change",
+  economic_buyer_shift: "Economic buyer shift",
+  competitive_mention: "Competitive mention",
+  adoption_drop: "Adoption drop",
+  scope_expansion: "Scope expansion",
+  roadmap_dependency: "Roadmap dependency",
+  support_escalation: "Support escalation",
+  exec_silence: "Exec silence",
+  renewal_intent: "Renewal intent",
+  advocacy: "Advocacy",
+};
+
+function ReceiptCard({ receipt }: { receipt: Receipt }) {
+  const Icon = channelIcon[receipt.channel];
+  const negative = receipt.weight < 0;
+  const positive = receipt.weight > 0;
+  const accent = negative
+    ? "border-l-danger"
+    : positive
+    ? "border-l-success"
+    : "border-l-border";
+  return (
+    <div
+      className={`border border-border border-l-4 ${accent} rounded-md p-4 bg-surface`}
     >
-      <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
-        <div className="flex items-center gap-3">
-          <div className="size-8 rounded-lg bg-foreground text-background grid place-items-center">
-            <Icon className="size-4" />
-          </div>
-          <div>
-            <div className="text-sm font-semibold">{title}</div>
-            <div className="text-xs text-muted-foreground">{subtitle}</div>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {copy && (
-            <button
-              onClick={copy}
-              className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-muted"
-            >
-              <Copy className="size-3" /> Copy
-            </button>
+      <div className="flex items-center justify-between gap-3 mb-2">
+        <div className="flex items-center gap-2 text-xs">
+          <Icon className="size-3.5 text-muted-foreground" />
+          <span className="font-mono text-muted-foreground">
+            {receipt.source}
+          </span>
+          {receipt.speaker && (
+            <>
+              <span className="text-muted-foreground">·</span>
+              <span className="text-foreground">{receipt.speaker}</span>
+            </>
           )}
-          <button
-            onClick={() => onStatus(status === "rejected" ? "pending" : "rejected")}
-            className={`text-xs px-3 py-1.5 rounded-lg border ${
-              status === "rejected"
-                ? "border-destructive text-destructive bg-destructive/5"
-                : "border-border text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Reject
-          </button>
-          <button
-            onClick={() => onStatus(status === "approved" ? "pending" : "approved")}
-            className={`text-xs px-3 py-1.5 rounded-lg font-medium inline-flex items-center gap-1.5 ${
-              status === "approved"
-                ? "bg-foreground text-background"
-                : "border border-border text-foreground hover:bg-muted"
-            }`}
-          >
-            <Check className="size-3" /> {status === "approved" ? "Approved" : "Approve"}
-          </button>
         </div>
+        <span
+          className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full ${
+            negative
+              ? "bg-danger/10 text-danger"
+              : positive
+              ? "bg-success/10 text-success"
+              : "bg-muted text-muted-foreground"
+          }`}
+        >
+          {signalLabel[receipt.signal]} {receipt.weight > 0 ? "+" : ""}
+          {receipt.weight}
+        </span>
       </div>
-      <div className="p-6">{children}</div>
+      <blockquote className="text-sm leading-relaxed text-foreground">
+        "{receipt.quote}"
+      </blockquote>
+    </div>
+  );
+}
+
+function HowItWorks() {
+  return (
+    <section className="border-t border-border pt-12 mb-16">
+      <span className="eyebrow block mb-4">How Receipts works</span>
+      <h2 className="font-display text-2xl md:text-3xl font-semibold tracking-tight mb-8 max-w-2xl">
+        Three reads your dashboard doesn't do.
+      </h2>
+      <div className="grid md:grid-cols-3 gap-px bg-border border border-border rounded-2xl overflow-hidden">
+        <Step
+          icon={Sparkles}
+          title="Ingest the actual conversation"
+          body="Call transcripts (Gong, Zoom), Slack Connect channels, and shared inboxes. The customer's voice — not what your team had time to log."
+        />
+        <Step
+          icon={AlertTriangle}
+          title="Score on signals that move renewals"
+          body="Champion change, economic buyer shift, competitive mention, roadmap dependency, exec silence. Ten signals trained on what actually predicts churn."
+        />
+        <Step
+          icon={TrendingUp}
+          title="Cite every number"
+          body="Every score links back to the exact quote, channel, and timestamp. No black box. Your VP can audit the forecast in a single click."
+        />
+      </div>
     </section>
   );
 }
 
-function Citations({ citations, onCite }: { citations: Citation[]; onCite: (c: Citation) => void }) {
-  if (!citations.length) return null;
-  return (
-    <div className="flex flex-wrap gap-1.5 mt-2">
-      {citations.map((c, i) => (
-        <button
-          key={i}
-          onClick={() => onCite(c)}
-          className="text-[10px] font-mono uppercase tracking-[0.14em] text-primary bg-primary/5 border border-primary/20 hover:bg-primary/10 rounded-full px-2 py-0.5 inline-flex items-center gap-1"
-          title={c.quote}
-        >
-          <span className="size-1 rounded-full bg-primary" /> line {c.line}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function ApproveBar({
-  approvals,
-  ids,
-  allApproved,
-  onApproveAll,
+function Step({
+  icon: Icon,
+  title,
+  body,
 }: {
-  approvals: Record<string, string>;
-  ids: string[];
-  allApproved: boolean;
-  onApproveAll: () => void;
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  body: string;
 }) {
-  const approvedCount = ids.filter((id) => approvals[id] === "approved").length;
   return (
-    <div className="fixed bottom-0 inset-x-0 z-30 border-t border-border bg-background/95 backdrop-blur">
-      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex -space-x-1">
-            {ids.map((id) => (
-              <div
-                key={id}
-                className={`size-6 rounded-full border-2 border-background grid place-items-center ${
-                  approvals[id] === "approved"
-                    ? "bg-foreground text-background"
-                    : approvals[id] === "rejected"
-                    ? "bg-destructive text-destructive-foreground"
-                    : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {approvals[id] === "approved" ? (
-                  <Check className="size-3" />
-                ) : (
-                  <CircleDashed className="size-3" />
-                )}
-              </div>
-            ))}
-          </div>
-          <span className="text-sm text-muted-foreground">
-            <span className="text-foreground font-medium">{approvedCount}</span> of {ids.length} artifacts approved
-          </span>
-        </div>
-        <button
-          onClick={onApproveAll}
-          disabled={allApproved}
-          className="bg-foreground text-background font-semibold px-5 py-2.5 rounded-xl inline-flex items-center gap-2 hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {allApproved ? (
-            <>
-              <Check className="size-4" /> Loop closed
-            </>
-          ) : (
-            <>
-              Approve all & close loop <ArrowRight className="size-4" />
-            </>
-          )}
-        </button>
-      </div>
+    <div className="bg-surface p-8">
+      <Icon className="size-5 mb-4 text-primary" />
+      <h3 className="font-display text-lg font-semibold mb-2 tracking-tight">
+        {title}
+      </h3>
+      <p className="text-sm text-muted-foreground leading-relaxed">{body}</p>
     </div>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Citation modal                                                      */
-/* ------------------------------------------------------------------ */
-
-function CitationModal({
-  citation,
-  transcript,
-  onClose,
-}: {
-  citation: Citation | null;
-  transcript: { speaker: string; text: string }[];
-  onClose: () => void;
-}) {
-  useEffect(() => {
-    if (!citation) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [citation, onClose]);
-
-  if (!citation) return null;
-  const line = transcript[citation.line - 1];
-  const window2 = transcript
-    .map((l, i) => ({ ...l, n: i + 1 }))
-    .slice(Math.max(0, citation.line - 3), Math.min(transcript.length, citation.line + 2));
-
+function Footer() {
   return (
-    <div
-      className="fixed inset-0 z-50 bg-foreground/40 backdrop-blur-sm grid place-items-center p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-card border border-border rounded-3xl max-w-2xl w-full p-6 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-primary bg-primary/5 border border-primary/20 rounded-full px-2 py-0.5">
-              Provenance · line {citation.line}
-            </span>
-          </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-sm">
-            Close
-          </button>
-        </div>
-        <div className="space-y-2 font-mono text-sm leading-relaxed">
-          {window2.map((l) => (
-            <div
-              key={l.n}
-              className={`flex gap-3 px-3 py-2 rounded-lg ${
-                l.n === citation.line ? "bg-primary/5 border border-primary/20" : ""
-              }`}
-            >
-              <span className="text-muted-foreground text-xs pt-0.5 w-6 shrink-0">{l.n}</span>
-              <div>
-                <span className="text-xs uppercase tracking-[0.12em] text-muted-foreground">{l.speaker}</span>
-                <div className="text-foreground">{line && l.n === citation.line ? l.text : l.text}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="mt-4 text-xs text-muted-foreground">
-          The agent's claim cited this exact line. Nothing reaches a customer or system of record until you approve it above.
-        </div>
+    <footer className="border-t border-border pt-8 pb-12 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
+      <div className="font-mono">Receipts · v0.1 · synthetic portfolio</div>
+      <div>
+        Eight accounts. Real signals. The morning view your CFO will trust.
       </div>
-    </div>
+    </footer>
   );
 }
-
-/* ------------------------------------------------------------------ */
-/* Settings drawer                                                     */
-/* ------------------------------------------------------------------ */
-
-function SettingsDrawer({
-  open,
-  onClose,
-  liveMode,
-  setLiveMode,
-  apiKey,
-  setApiKey,
-}: {
-  open: boolean;
-  onClose: () => void;
-  liveMode: boolean;
-  setLiveMode: (v: boolean) => void;
-  apiKey: string;
-  setApiKey: (v: string) => void;
-}) {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 bg-foreground/30 backdrop-blur-sm" onClick={onClose}>
-      <div
-        className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-background border-l border-border p-6 overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="font-display text-xl font-semibold">Settings</h3>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-            Close
-          </button>
-        </div>
-
-        <div className="space-y-6">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <div className="text-sm font-medium">Live mode</div>
-                <div className="text-xs text-muted-foreground">Run extraction against Claude with your own key.</div>
-              </div>
-              <button
-                onClick={() => setLiveMode(!liveMode)}
-                className={`relative w-10 h-6 rounded-full transition-colors ${liveMode ? "bg-foreground" : "bg-muted"}`}
-              >
-                <span
-                  className={`absolute top-0.5 size-5 bg-background rounded-full transition-transform ${
-                    liveMode ? "translate-x-4" : "translate-x-0.5"
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label className="block">
-              <span className="eyebrow">Anthropic API key</span>
-              <input
-                type="password"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder="sk-ant-..."
-                className="w-full mt-2 border border-border rounded-xl px-3 py-2 bg-card text-sm font-mono focus:border-primary outline-none"
-              />
-            </label>
-            <p className="text-xs text-muted-foreground mt-2">
-              Key stays in your browser. Requests go directly to api.anthropic.com — never through our server.
-            </p>
-          </div>
-
-          <div className="border border-border rounded-xl p-4 bg-muted/30">
-            <span className="eyebrow">Template</span>
-            <div className="mt-2 text-sm font-medium">Customer Success · Post-QBR Close</div>
-            <div className="mt-3 space-y-1.5 text-xs text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <ChevronDown className="size-3" /> Sales · Post-discovery
-                <span className="text-[10px] font-mono uppercase tracking-[0.18em] bg-muted px-1.5 py-0.5 rounded ml-auto">soon</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <ChevronDown className="size-3" /> Onboarding · Post-kickoff
-                <span className="text-[10px] font-mono uppercase tracking-[0.18em] bg-muted px-1.5 py-0.5 rounded ml-auto">soon</span>
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground mt-3">
-              Same engine, swappable template layer. CS is template #1.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Helpers                                                             */
-/* ------------------------------------------------------------------ */
-
-function wait(ms: number) {
-  return new Promise((r) => setTimeout(r, ms));
-}
-
-function parseTranscript(raw: string): { speaker: string; text: string }[] {
-  return raw
-    .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean)
-    .map((l) => {
-      const idx = l.indexOf(":");
-      if (idx === -1) return { speaker: "Speaker", text: l };
-      return { speaker: l.slice(0, idx).trim(), text: l.slice(idx + 1).trim() };
-    });
-}
-
-function copyEmail(pkg: ClosePackage) {
-  const body = pkg.email.bodyParagraphs.map((p) => p.text).join("\n\n");
-  const text = `To: ${pkg.email.to}\nSubject: ${pkg.email.subject}\n\n${body}`;
-  navigator.clipboard.writeText(text);
-  toast.success("Email copied to clipboard");
-}
-
-// If the user pastes a non-sample transcript in synthetic mode, still show the baked
-// package — but relabel the account line so it doesn't claim to be Northwind.
-function adaptBakedToCustom(_lines: { speaker: string; text: string }[]): ClosePackage {
-  return BAKED_CLOSE;
-}
-
-// Silence unused-import warning for useRef if tree-shaken
-void useRef;
