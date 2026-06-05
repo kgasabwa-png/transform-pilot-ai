@@ -258,15 +258,14 @@ function Wedge() {
     <section id="partners" className="border-b border-border">
       <div className="max-w-[1180px] mx-auto px-6 md:px-10 py-16 md:py-24 grid lg:grid-cols-[1fr_0.8fr] gap-12 items-start">
         <div className="max-w-xl">
-          <span className="eyebrow block mb-3">Q1 design partners</span>
+          <span className="eyebrow block mb-3">Design partner preview</span>
           <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight leading-[1.05]">
-            We're shipping with six CS teams this quarter.
+            See what Receipts would have caught before you connect anything.
           </h2>
           <p className="mt-5 text-base text-muted-foreground leading-relaxed">
-            You get the night-shift research desk, weekly working sessions with
-            the founders, lifetime founding pricing, and a direct line into the
-            roadmap. We get receipts on what actually works in front of a real
-            book.
+            Send 5–15 anonymized closed renewals. We'll run a concierge backtest
+            and show which churns, expansions, and forecast misses the agents
+            would have flagged — with the customer moments that prove it.
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <Link
@@ -276,7 +275,7 @@ function Wedge() {
               Request access <ArrowUpRight className="size-4" />
             </Link>
             <span className="text-[11px] font-mono text-muted-foreground">
-              3 of 6 slots open · Q1 2026
+              No integration required · sample output first
             </span>
           </div>
         </div>
@@ -284,12 +283,12 @@ function Wedge() {
         <figure className="border border-border rounded-2xl bg-surface p-6 md:p-8">
           <Quote className="size-5 text-muted-foreground mb-4" />
           <blockquote className="text-base md:text-lg font-display tracking-tight leading-snug">
-            "Every CSM I've ever managed spends Monday morning re-reading their
-            book. Receipts is the first thing that actually does that work — and
-            shows me where it got the answer. That's the whole job."
+            "Give Receipts the renewals we already lost, then show me the exact
+            customer moments we ignored. If the receipts are real, the budget
+            conversation gets much easier."
           </blockquote>
           <figcaption className="mt-5 text-xs text-muted-foreground">
-            Director of Customer Success · SaaS, $40M ARR · design partner #2
+            Example buyer reaction · illustrative preview
           </figcaption>
         </figure>
       </div>
