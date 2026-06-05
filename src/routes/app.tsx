@@ -32,12 +32,15 @@ import {
 import { PERSONAS, PERSONA_ORDER, type PersonaId } from "@/lib/loop/personas";
 import { Logo } from "@/components/brand/Logo";
 
-type AppSearch = { role?: PersonaId };
+type AppSearch = { role: PersonaId };
 
 export const Route = createFileRoute("/app")({
-  validateSearch: (search: Record<string, unknown>): AppSearch => ({
-    role: (search.role as PersonaId) ?? "csm",
-  }),
+  validateSearch: (search: Record<string, unknown>): AppSearch => {
+    const r = search.role;
+    const role: PersonaId =
+      r === "manager" || r === "leader" || r === "csm" ? r : "csm";
+    return { role };
+  },
   head: () => ({
     meta: [{ title: "Receipts — workspace" }],
   }),
@@ -47,7 +50,7 @@ export const Route = createFileRoute("/app")({
 type SortKey = "gap" | "renewal" | "arr";
 
 function WorkspaceApp() {
-  const { role = "csm" } = useSearch({ from: "/app" });
+  const { role } = useSearch({ from: "/app" });
   const persona = PERSONAS[role];
   const navigate = useNavigate({ from: "/app" });
 
