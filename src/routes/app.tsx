@@ -3,7 +3,7 @@
 
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Logo } from "@/components/brand/Logo";
-import { Canvas } from "@/components/cos/Canvas";
+import { Workspace } from "@/components/cos/Workspace";
 import { useClientStamp } from "@/lib/loop/useClientStamp";
 
 export const Route = createFileRoute("/app")({
@@ -54,7 +54,7 @@ function WorkspaceApp() {
       </header>
 
       <main className="flex-1 overflow-y-auto">
-        <Canvas />
+        <Workspace />
       </main>
     </div>
   );
