@@ -116,7 +116,7 @@ function Hero() {
 
           <p className="mt-6 text-[11px] font-mono text-muted-foreground inline-flex items-center gap-2">
             <Clock className="size-3" />
-            SOC 2 Type I · tenant isolation · your data never trains a shared model
+            Read-only by default · human approval before writes · your data never trains shared models
           </p>
         </div>
 
