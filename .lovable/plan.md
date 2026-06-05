@@ -1,151 +1,100 @@
+# The rebuild
 
-# Rebuild the desk — from "dashboard with personas" to "agents that closed work for you while you slept"
+The current app shows three views of the same data. That's the bug. We rebuild around one wedge — **save the renewal** — with three surfaces that do *different jobs* in service of one number (NRR). Every agent ships motions on one click. Every screen makes the dollars saved visible in real time.
 
-You're right on every point. The current `/app` is a beautiful dashboard wearing a persona dropdown — same data, same layout, fake November dates, dead "Open drafted email" buttons, clicking an account does nothing. That's exactly what Gainsight/ChurnZero already are. We need to leave that lane.
+## Name
 
-This is a full rebuild of `/app`. Landing page stays untouched.
+Drop "Receipts — the closing crew" and "Night-shift." Outcome-verb shortlist I'll bring back as the final pick:
 
----
+- **Renew** — too generic alone, but **Renew.ai** or **Renew/CS** works.
+- **Anchor** — "anchor every renewal." Strong, premium.
+- **Hold** — "hold the line on NRR." Punchy, founder-y.
+- **Compound** — the NRR math itself. My favorite for a Series-A pitch.
+- **Tether** — agents tether the team to what the customer actually said.
 
-## The core reframe
+I'll lead with **Compound** in the build (compound = NRR's whole job), tagline *"the agent team that compounds your renewal book."* If you hate it, one find-replace swaps it.
 
-**Stop showing the user *what the agents saw*. Show them *what the agents already did*, and ask them to approve, edit, or override.**
+## The wedge: Save the Renewal
 
-Every screen answers one question for that role:
-- **CSM:** "What's about to ship in your name in the next hour? Approve or change it."
-- **Manager:** "Where is one of your CSMs about to lose ARR? Coach the moment, not the metric."
-- **VP:** "Which dollars in this quarter's forecast just moved, and what action did the agents take on them?"
+One concrete motion the product runs end-to-end, demoed on the landing → /app flow:
 
-Same engine. Three genuinely different first screens, three different action surfaces, three different success metrics.
+```text
+Signal detected ──► Save play drafted ──► CSM approves (1 click)
+   │                      │                       │
+   │                  cited quotes            simulated ship:
+   │                                          • email to 3 stakeholders
+   │                                          • exec save-call invite
+   │                                          • CRM stage + risk update
+   │                                          • Slack brief to manager
+   │
+   └─► live ticker: "+$180k ARR pulled back from churn"
+```
 
----
+This is the "oh my god" moment. Nothing on the market does this end-to-end on one click today.
 
-## Rename
+## Three surfaces, three jobs (not three dashboards)
 
-`Receipts — Night-shift Agents` → **`Receipts — the closing crew`**
+| Surface | Persona | Job to be done | Primary object |
+|---|---|---|---|
+| **The Save Room** | CSM | Approve/edit/ship save plays | DraftedMotion (multi-step, not single email) |
+| **The Pit** | Manager | Unblock CSMs, redistribute book, intervene on stuck saves | Bottleneck (stuck motion, overloaded CSM, missed signal) |
+| **The Tape** | VP / CCO | Defend the forecast number with cited quotes | ForecastDelta (every dollar moved, with the moment that moved it) |
 
-Tagline: *"Four agents that closed your book overnight. You approve the ship."*
+The Save Room is the demo hero. The Pit and The Tape are visibly *consuming the outputs* of the Save Room (not parallel views of the same data) — that's how we prove the personas are differentiated.
 
-Drop "night-shift" everywhere (it's wrong — it runs continuously). Drop "Live" badge.
+### CSM — The Save Room
+Not an "approval queue of emails." A queue of **Motions**: a single card = a whole save play with 4-6 atomic steps (email Maya, email economic buyer, book exec call, update CRM, post Slack brief, schedule follow-up). One [Ship the save] button runs all of them in a simulated 2-second sequence ("Sending to Maya… Sent. Booking exec call… Booked. CRM updated. Manager notified."). Inline edit on any step. Override sends feedback to the agent.
 
----
+The "open" action that's currently broken opens a **Motion Detail** drawer with: cited quotes (already wired to ReceiptModal), each step previewable, account context, and the dollar at stake. Clicking the account name opens AccountDrawer (already exists, needs to be wired from this surface too).
 
-## New name for the screen
+Header metric: **"$ pulled back from churn this week"** — increments live as motions ship.
 
-Not "desk". Not "dashboard". **`The Approval Queue`** for CSM, **`The Coaching Room`** for manager, **`The Forecast Floor`** for VP. Different names because they're different products sharing an engine.
+### Manager — The Pit
+Not "coaching moments." A **bottleneck board**: which saves are stuck and why, which CSMs are over capacity, which signals fired but no motion was generated (agent gap), which CSM commits the conversation grade contradicts. Every row has a one-click action: *reassign account*, *escalate to me*, *send the agent a stronger prompt*. Manager's job is unblocking, not coaching, so the surface unblocks.
 
----
+Header metric: **"saves at risk of stalling"** + **"$ unblocked today"**.
 
-## What changes by persona — concrete
+### VP — The Tape
+A single living NRR number with a scrubbable timeline of every dollar moved this quarter, agent-attributed and quote-cited. Click any delta → the call moment that caused it. A "what the CFO will ask" panel pre-answers the three audit questions (*how do you know? who said it? when?*). Concierge backtest CTA: *"Send us 10 closed renewals — we'll show which saves Compound would have run."*
 
-### CSM → "The Approval Queue"
-A vertical stack of **draft actions** the agents prepared overnight, each one a card:
-- *"Send this re-engagement email to Devin Park at Halcyon Health"* → full email body shown inline, edit-in-place, **[Approve & Send]** / [Edit] / [Skip] / [Reject + tell us why]
-- *"Update Halcyon renewal stage: Commit → Risk"* → CRM diff shown, [Approve] / [Override]
-- *"Book a 15-min exec sync with Renee Okafor (new CFO at Northwind)"* → calendar slots pre-negotiated against her open times, [Confirm]
-- *"Flag Blueprint as expansion — auto-draft proposal?"* → [Yes, draft it] / [Not yet]
+Header metric: **the Q-end NRR number with ± uncertainty**, ticking as the Save Room ships.
 
-Bottom of every card: **"Why" panel** — the 2-3 cited quotes that justify the action. Click any quote → ReceiptModal (already built).
+## Things being fixed along the way
 
-Today metric at top: **"$340K in renewals advanced. 6 actions awaiting your approval. Avg time-to-approve: 47 sec."**
+- All hard-coded `Nov 11` / `Tuesday` strings ripped out. Already have `src/lib/loop/time.ts` — just use it everywhere.
+- Hydration error on the topbar timestamp (server vs. client tz). Fix: render the timestamp client-side only (suppressHydrationWarning + mount gate).
+- "Open drafted email" and clicking account names — both made real (drawer + modal already exist, just unwired here).
+- Body type baseline raised. Anything below `text-xs` for non-mono accents removed.
+- Drop the live "4 agents working" chrome — replace with the live $ ticker, which is the actual product proof.
 
-### Manager → "The Coaching Room"
-Not "team rollup". A feed of **coachable moments** the agents flagged from this week's calls across the team:
-- *"Maya missed a buying signal on the Tessera call (00:14:22) — here's the moment, here's what to say next time"* → 30-sec transcript clip + suggested coaching note, [Send to Maya] / [Discuss in 1:1]
-- *"Dre is over-discounting — 3 deals this week dropped >15% in final stage without exec approval"* → pattern + raw evidence
-- *"Team has a blind spot on procurement signals — 4 missed in 30d. Run a 20-min workshop? [Generate]"*
+## What I touch
 
-Top metric: **"3 coaching moments this week likely to add $84K ARR next quarter."**
+**Rewritten** — these become the new product:
+- `src/routes/app.tsx` (thin shell, rename tabs to Save Room / Pit / Tape, fix hydration)
+- `src/components/loop/ApprovalQueue.tsx` → renamed/rewritten as `SaveRoom.tsx`
+- `src/components/loop/CoachingRoom.tsx` → rewritten as `Pit.tsx`
+- `src/components/loop/ForecastFloor.tsx` → rewritten as `Tape.tsx`
+- `src/lib/loop/actions.ts` → upgraded to **Motions** (multi-step, not single actions)
+- `src/lib/loop/personas.ts` → trimmed, persona = surface, not framing copy
 
-### VP → "The Forecast Floor"
-A single living number: **Q3 forecast: $4.82M ± $310K**, with a **changelog of every dollar that moved this week** and which agent moved it.
-- *"Renewal-Risk downgraded Quill Media -$180K. Cite: procurement BCC'd competitor RFP."* → [Audit] / [Override forecast]
-- *"Expansion-Scout promoted Blueprint +$240K. Cite: procurement standardization signal."*
-- Toggleable: "Show me only the deltas your CSMs haven't seen yet." → highlight gap.
+**New**:
+- `src/lib/loop/motions.ts` — Motion = ordered steps + cited evidence + $ at stake
+- `src/lib/loop/bottlenecks.ts` — Pit data model
+- `src/components/loop/MotionCard.tsx` — the new hero card
+- `src/components/loop/ShipSequence.tsx` — the 1-click multi-step simulated ship
+- `src/components/loop/LiveTicker.tsx` — $ pulled back from churn, shared across surfaces
+- `src/components/loop/MotionDetailDrawer.tsx` — what "open" actually opens
 
-Bottom: **"Run concierge backtest on your last 15 closed renewals → see what we'd have caught."** (Carries Claude's idea forward.)
+**Reused as-is**: `AccountDrawer.tsx`, `ReceiptModal.tsx`, `OverrideModal.tsx`, `time.ts`, `portfolio.ts`, `brief.ts`.
 
----
+**Landing (`src/routes/index.tsx`)**: update copy to lead with "Save the Renewal" and rename Receipts → Compound. Same structure, different headline + tagline + agent block.
 
-## The actions actually work
+## What I'm NOT doing this turn
 
-Today every CTA is dead. After this rebuild:
-- **Send email** → opens a real send confirmation modal, the email body is editable, "Send" simulates send with a success toast + the action moves to "Shipped today" panel. (Real Gmail integration is a later sprint; for MVP, the *simulation feels real* — animation, toast, persistent shipped-today log.)
-- **Override forecast / CRM diff** → opens an override modal asking "why" (one click reasons: *bad signal*, *missing context*, *wrong account*) — that "why" becomes training data displayed back as *"You've corrected Renewal-Risk 3x this week — it's learning your bar."*
-- **Click an account name** → opens an account drawer with the timeline of agent actions on that account, every receipt clickable.
+- No real LLM calls (that's its own build — the demo is fully scripted).
+- No backend writes (everything is in-memory; "ship" is a 2-second simulated sequence).
+- No pricing page, no /backtest route (those come after you've shown this to 3 design partners).
 
-Every button does something visible. No dead ends.
+## Open question I'm deciding for you unless you object
 
----
-
-## Make it real, not theatrical
-
-- **Real current date** (Friday, June 5, 2026 — use `new Date()`, never hardcode "Nov 11").
-- **Realistic relative timestamps**: "2h ago", "overnight", "this morning at 6:14a" — generated from `new Date()` so they're never stale.
-- **Bigger type**. Minimum body 14px, metadata 12px (currently 10-11px). Eyebrow labels stay small but only as accents.
-- **Sample-book honesty**: Keep the banner. Add a tiny "Sample data" tag on every fabricated number (the $340K, the 247 conversations, the testimonial). Removes the credibility bomb Claude flagged.
-
----
-
-## What we keep
-- The four agents (`AGENTS`) and their charters — they're good.
-- The ReceiptModal — it's the right primitive.
-- The portfolio data (`ACCOUNTS`, `briefAccount`) — feeds the new screens.
-- The landing page — untouched.
-
-## What gets removed/rebuilt
-- The current 3-column desk layout in `/app` — replaced.
-- The "Today's brief" left rail in current form — folded into the Approval Queue.
-- The persona dropdown stays but it now genuinely switches *layout + actions + metrics*, not just copy.
-- "Night-shift Live" pill — gone.
-
----
-
-## Tech plan (for the technical reader)
-
-**New files:**
-- `src/lib/loop/actions.ts` — typed model of `DraftAction` (email | crm-update | meeting | flag | forecast-move), with status (`pending` | `approved` | `shipped` | `overridden`), evidence array, persona visibility, ARR impact.
-- `src/lib/loop/coaching.ts` — `CoachingMoment` model for manager view.
-- `src/lib/loop/forecast.ts` — `ForecastDelta` log + rolled-up number for VP view.
-- `src/components/loop/ApprovalQueue.tsx` — CSM screen.
-- `src/components/loop/CoachingRoom.tsx` — manager screen.
-- `src/components/loop/ForecastFloor.tsx` — VP screen.
-- `src/components/loop/ActionCard.tsx` — the universal "draft action with approve/edit/reject" card.
-- `src/components/loop/SendConfirmModal.tsx` — animated simulated send.
-- `src/components/loop/AccountDrawer.tsx` — opens on account-name click; timeline of agent actions per account.
-- `src/components/loop/ShippedToday.tsx` — running log of what got approved/sent today.
-
-**Rewritten:**
-- `src/routes/app.tsx` — becomes a thin shell: top bar + persona switcher + renders one of the three persona screens. All logic moves into those components.
-- `src/lib/loop/personas.ts` — extended with per-persona action filters and screen component reference.
-- `src/lib/loop/brief.ts` — repurposed into source data for `actions.ts`, no longer rendered directly.
-
-**Untouched:**
-- `src/routes/index.tsx` (landing).
-- `src/routes/try.tsx` (sample-book entry).
-- `src/components/loop/ReceiptModal.tsx`.
-- All `ACCOUNTS` / portfolio data.
-
-**Date handling:** all "today/overnight" strings derived from `new Date()` at render time with a `relativeTime()` util — no hardcoded months ever.
-
-**Typography pass:** raise body to `text-sm` (14px), data labels to `text-xs` (12px), keep `text-[10px]` only for `font-mono` eyebrow accents. Done in one sweep across the new components.
-
----
-
-## Scope guard
-
-This is a meaningful rebuild — roughly 8–10 new files, one big rewrite of `app.tsx`, and a typography sweep. The landing page is untouched. No backend changes, no Claude integration yet (still simulated, but the simulation now *feels real* because the buttons actually do things and shipped actions persist in component state).
-
-If you approve, I'll execute the whole thing in build mode in one pass and walk you through the three screens when it's ready.
-
----
-
-## One open question before I build
-
-**The persona switcher** — today it's a dropdown in the top bar. Three options:
-
-1. **Keep the dropdown** (lowest friction, but undersells the difference).
-2. **Three tabs across the top** ("Approval Queue" / "Coaching Room" / "Forecast Floor") — makes the three products feel distinct, lets the demo viewer click through all three in 10 seconds.
-3. **Three separate routes** (`/app/queue`, `/app/coaching`, `/app/forecast`) — most "real product" feel, separate URLs to share.
-
-My recommendation: **#2 (tabs)** for the MVP demo. It maximizes the "wow, this isn't just three views of the same dashboard" moment without the routing complexity of #3. Tell me if you want a different one.
+Tab labels in the topbar. I'll ship them as **Save Room · Pit · Tape** with the persona name as the small eyebrow above each. Tell me to flip it if you want persona-first.

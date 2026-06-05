@@ -1,15 +1,14 @@
-// Receipts — the closing crew.
-// Thin shell: top bar, persona tabs, sample-book banner. The three
-// persona screens own all their state and modals. This file knows
-// nothing about actions, deltas, or coaching moments.
+// Compound — the closing crew.
+// Thin shell: top bar, persona tabs, sample-book banner. Each persona
+// owns a different product (Save Room / Pit / Tape).
 
 import { createFileRoute, Link, useSearch, useNavigate } from "@tanstack/react-router";
 import { Users, LayoutGrid, TrendingUp } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
-import { ApprovalQueue } from "@/components/loop/ApprovalQueue";
-import { CoachingRoom } from "@/components/loop/CoachingRoom";
-import { ForecastFloor } from "@/components/loop/ForecastFloor";
-import { shortStamp } from "@/lib/loop/time";
+import { SaveRoom } from "@/components/loop/SaveRoom";
+import { Pit } from "@/components/loop/Pit";
+import { Tape } from "@/components/loop/Tape";
+import { useClientStamp } from "@/lib/loop/useClientStamp";
 import type { PersonaId } from "@/lib/loop/personas";
 
 type AppSearch = { role: PersonaId; demo?: boolean };
@@ -25,7 +24,7 @@ export const Route = createFileRoute("/app")({
     };
   },
   head: () => ({
-    meta: [{ title: "Receipts — the closing crew" }],
+    meta: [{ title: "Compound — the agent team that compounds your NRR" }],
   }),
   component: WorkspaceApp,
 });
@@ -36,9 +35,9 @@ const TABS: {
   product: string;
   Icon: React.ComponentType<{ className?: string }>;
 }[] = [
-  { id: "csm", label: "CSM", product: "Approval Queue", Icon: Users },
-  { id: "manager", label: "Manager", product: "Coaching Room", Icon: LayoutGrid },
-  { id: "leader", label: "VP / CCO", product: "Forecast Floor", Icon: TrendingUp },
+  { id: "csm", label: "CSM", product: "Save Room", Icon: Users },
+  { id: "manager", label: "Manager", product: "The Pit", Icon: LayoutGrid },
+  { id: "leader", label: "VP / CCO", product: "The Tape", Icon: TrendingUp },
 ];
 
 function WorkspaceApp() {
@@ -54,28 +53,24 @@ function WorkspaceApp() {
           navigate({ search: (prev: AppSearch) => ({ ...prev, role: p }) })
         }
       />
-
       <main className="flex-1 overflow-y-auto">
-        {role === "csm" && <ApprovalQueue />}
-        {role === "manager" && <CoachingRoom />}
-        {role === "leader" && <ForecastFloor />}
+        {role === "csm" && <SaveRoom />}
+        {role === "manager" && <Pit />}
+        {role === "leader" && <Tape />}
       </main>
     </div>
   );
 }
 
-// ───────────────────────── SAMPLE BANNER ─────────────────────────
-
 function SampleBanner() {
   return (
-    <div className="border-b border-border/60 bg-muted/40 backdrop-blur-sm px-4 py-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[12px]">
-      <span className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
+    <div className="border-b border-border/60 bg-muted/40 px-4 py-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[12px]">
+      <span className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.16em] text-muted-foreground">
         <span className="size-1.5 rounded-full bg-success animate-pulse" />
         Sample book
       </span>
       <span className="text-foreground/75">
-        You're previewing as{" "}
-        <span className="font-medium text-foreground">Sarah Chen</span>, CSM · 12 live accounts · nothing leaves your browser.
+        Previewing as <span className="font-medium text-foreground">Sarah Chen</span>, CSM · 12 live accounts · nothing leaves your browser.
       </span>
       <Link
         to="/waitlist"
@@ -87,8 +82,6 @@ function SampleBanner() {
   );
 }
 
-// ───────────────────────── TOP BAR ─────────────────────────
-
 function TopBar({
   persona,
   onPersona,
@@ -96,23 +89,20 @@ function TopBar({
   persona: PersonaId;
   onPersona: (p: PersonaId) => void;
 }) {
-  const active = TABS.find((t) => t.id === persona);
+  const stamp = useClientStamp();
   return (
     <header className="border-b border-border shrink-0">
-      {/* Row 1: brand + meta + avatar */}
       <div className="h-12 flex items-center justify-between px-4">
         <div className="flex items-center gap-5">
           <Link to="/" className="flex items-center gap-2">
             <Logo size={18} />
-            <span className="font-display font-semibold tracking-tight text-sm">
-              Receipts
-            </span>
+            <span className="font-display font-semibold tracking-tight text-sm">Compound</span>
             <span className="hidden md:inline text-[11px] text-muted-foreground font-mono">
               · the closing crew
             </span>
           </Link>
-          <span className="hidden md:inline text-[11px] font-mono text-muted-foreground">
-            {shortStamp()}
+          <span className="hidden md:inline text-[11px] font-mono text-muted-foreground tabular-nums" suppressHydrationWarning>
+            {stamp}
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -122,7 +112,6 @@ function TopBar({
         </div>
       </div>
 
-      {/* Row 2: persona tabs — these are different products */}
       <nav className="flex items-end gap-1 px-4 -mb-px overflow-x-auto" role="tablist">
         {TABS.map((t) => {
           const isActive = t.id === persona;
@@ -139,10 +128,10 @@ function TopBar({
               }`}
             >
               <t.Icon className="size-3.5" />
-              <span className="text-[11px] font-mono uppercase tracking-[0.14em]">
+              <span className="text-[10px] font-mono uppercase tracking-[0.18em]">
                 {t.label}
               </span>
-              <span className="text-sm font-display font-medium">
+              <span className="text-sm font-display font-semibold tracking-tight">
                 {t.product}
               </span>
             </button>
@@ -150,7 +139,7 @@ function TopBar({
         })}
         <div className="ml-auto hidden md:flex items-center gap-2 pb-2 text-[11px] font-mono text-muted-foreground">
           <span className="size-1.5 rounded-full bg-success animate-pulse" />
-          4 agents · working
+          4 agents · on duty
         </div>
       </nav>
     </header>

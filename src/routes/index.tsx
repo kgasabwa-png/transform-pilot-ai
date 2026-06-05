@@ -1,25 +1,24 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowUpRight, Clock, Quote } from "lucide-react";
+import { ArrowUpRight, Clock, Quote, Send, Check } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { TODAYS_BRIEF, briefAccount } from "@/lib/loop/brief";
 import { formatARR } from "@/lib/loop/portfolio";
-import { AGENT_OUTCOMES } from "@/lib/loop/agents";
 import { IntegrationsStrip } from "@/components/integrations/IntegrationsStrip";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Receipts — the night-shift research desk for CS teams" },
+      { title: "Compound — the agent team that compounds your NRR" },
       {
         name: "description",
         content:
-          "Four specialist agents read every call, Slack thread, and email on your book overnight, then leave each CSM a 90-second morning brief — with every claim cited back to the moment the customer said it.",
+          "Compound runs the full save play — multi-thread email, exec invite, CRM update, manager brief — on one click. The agent team that does the work, not just the dashboard.",
       },
-      { property: "og:title", content: "Receipts — night-shift research desk for CS teams" },
+      { property: "og:title", content: "Compound — the agent team that compounds your NRR" },
       {
         property: "og:description",
         content:
-          "Walk in ready, not behind. Three plays before lunch — every claim cited.",
+          "One click ships the entire save play. Every dollar pulled back from churn, cited and shipped.",
       },
     ],
   }),
@@ -39,15 +38,13 @@ function LandingPage() {
   );
 }
 
-// ───────────────────────── HEADER ─────────────────────────
-
 function Header() {
   return (
     <header className="border-b border-border sticky top-0 z-40 bg-background/85 backdrop-blur">
       <div className="max-w-[1180px] mx-auto px-6 md:px-10 h-14 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 shrink-0">
           <Logo size={20} />
-          <span className="font-display font-semibold tracking-tight">Receipts</span>
+          <span className="font-display font-semibold tracking-tight">Compound</span>
           <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.18em] text-success ml-3">
             <span className="size-1.5 rounded-full bg-success animate-pulse" />
             live demo
@@ -66,10 +63,11 @@ function Header() {
             Request access
           </Link>
           <Link
-            to="/try"
+            to="/app"
+            search={{ role: "csm", demo: true }}
             className="inline-flex items-center gap-1.5 text-xs font-medium bg-foreground text-background px-3.5 py-1.5 rounded-full hover:opacity-90"
           >
-            Try the desk <ArrowUpRight className="size-3" />
+            Open the Save Room <ArrowUpRight className="size-3" />
           </Link>
         </div>
       </div>
@@ -77,34 +75,33 @@ function Header() {
   );
 }
 
-// ───────────────────────── HERO + INLINE BRIEF ─────────────────────────
-
 function Hero() {
   return (
     <section className="border-b border-border">
       <div className="max-w-[1180px] mx-auto px-6 md:px-10 pt-16 pb-16 md:pt-24 md:pb-24 grid lg:grid-cols-[1.05fr_0.95fr] gap-12 lg:gap-16 items-start">
-        {/* Left: positioning */}
         <div className="max-w-xl">
           <div className="inline-flex items-center gap-2 mb-6 text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground border border-border rounded-full px-3 py-1">
             <span className="size-1.5 rounded-full bg-success animate-pulse" />
-            For CSMs · renewals managers · CCOs
+            For CSMs · renewals leads · CCOs
           </div>
           <h1 className="font-display text-5xl md:text-[64px] font-semibold tracking-tight leading-[1.02]">
-            Your CSMs deserve a night-shift research desk.
+            Stop drafting saves.{" "}
+            <span className="text-muted-foreground">Ship them.</span>
           </h1>
           <p className="mt-6 text-base md:text-lg text-muted-foreground leading-relaxed">
-            Receipts is the team you'd hire if you could. Four specialist agents
-            read every call, Slack thread, and email on your book overnight —
-            and leave each CSM a 90-second morning brief with every claim cited
-            back to the moment the customer said it.
+            Every CS tool tells you a renewal is at risk. Compound runs the
+            save. Multi-thread email, exec invite, CRM update, manager
+            brief — the whole play, drafted from cited evidence, shipped on
+            one click. Human in the loop. Agents in the seat.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link
-              to="/try"
+              to="/app"
+              search={{ role: "csm", demo: true }}
               className="inline-flex items-center gap-2 text-sm font-medium bg-foreground text-background px-5 py-3 rounded-full hover:opacity-90"
             >
-              Try it on a sample book <ArrowUpRight className="size-4" />
+              Ship a save in 4 seconds <ArrowUpRight className="size-4" />
             </Link>
             <Link
               to="/waitlist"
@@ -116,109 +113,102 @@ function Hero() {
 
           <p className="mt-6 text-[11px] font-mono text-muted-foreground inline-flex items-center gap-2">
             <Clock className="size-3" />
-            SOC 2 Type I · tenant isolation · your data never trains a shared model
+            Tenant isolation · your data never trains a shared model · cited every claim
           </p>
         </div>
 
-        {/* Right: actual product artifact — Tuesday morning brief */}
-        <InlineBrief />
+        <SaveDemo />
       </div>
     </section>
   );
 }
 
-function InlineBrief() {
+// A small visual demo of the hero promise — a Motion with its steps,
+// inviting the user to "Ship the save" which deep-links into /app.
+function SaveDemo() {
+  const top = TODAYS_BRIEF[0];
+  const acc = briefAccount(top.accountId);
+  if (!acc) return null;
+
+  const steps = [
+    { icon: Send, label: "Champion reset email", to: "Mara Lin (champion)" },
+    { icon: Send, label: "Exec-to-exec note", to: "Renata Voss (CMO)" },
+    { icon: Clock, label: "Hold exec save call", to: "Wed 2:00p · VP Sales" },
+    { icon: Check, label: "Salesforce: Commit → At Risk", to: "Quill Media" },
+    { icon: Send, label: "Brief manager in Slack", to: "#renewals · @ekim" },
+  ];
+
   return (
     <div className="border border-border rounded-2xl bg-surface shadow-sm overflow-hidden">
       <div className="px-5 py-3 border-b border-border flex items-center justify-between bg-background">
         <div className="flex items-center gap-2">
-          <span className="size-2 rounded-full bg-success animate-pulse" />
+          <span className="size-2 rounded-full bg-danger animate-pulse" />
           <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
-            Your morning · Tue Nov 11 · 7:42a
+            Save play · drafted 42m ago
           </span>
         </div>
         <span className="text-[10px] font-mono text-muted-foreground">
-          {AGENT_OUTCOMES.conversationsRead} read overnight
+          {formatARR(top.arrAtStake)} · {acc.renewalDays}d to renewal
         </span>
       </div>
       <div className="p-5">
         <div className="font-display text-base font-semibold tracking-tight mb-1">
-          Three plays before lunch.
+          Save {acc.name} — competitor RFP closes Friday.
         </div>
-        <div className="text-xs text-muted-foreground mb-4">
-          Every claim cited. Every play awaits your signoff.
+        <div className="text-xs text-muted-foreground mb-4 leading-relaxed">
+          Procurement BCC'd us a competitor's rubric 14d ago. Champion has gone quiet.
+          Play multi-threads above the champion, holds an exec save call, and briefs your VP.
         </div>
-        <div className="space-y-2.5">
-          {TODAYS_BRIEF.map((b) => {
-            const acc = briefAccount(b.accountId);
-            if (!acc) return null;
-            const dot =
-              b.urgency === "now"
-                ? "bg-danger"
-                : b.urgency === "today"
-                ? "bg-warning"
-                : "bg-muted-foreground/40";
-            return (
-              <Link
-                key={b.accountId}
-                to="/app"
-                search={{ role: "csm" }}
-                className="block border border-border rounded-xl p-3.5 bg-background hover:border-foreground/30 transition-colors group"
-              >
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className={`size-1.5 rounded-full ${dot}`} />
-                  <span className="font-mono text-[10px] text-muted-foreground">#{b.rank}</span>
-                  <span className="text-sm font-semibold tracking-tight">{acc.name}</span>
-                  <span className="ml-auto text-[10px] font-mono text-muted-foreground">
-                    {formatARR(b.arrAtStake)} · {acc.renewalDays}d
-                  </span>
-                </div>
-                <p className="text-[13px] leading-snug">{b.action}</p>
-                <p className="text-[11px] text-muted-foreground mt-1.5 line-clamp-1">
-                  <span className="text-foreground/70">Because:</span> {b.because}
-                </p>
-              </Link>
-            );
-          })}
-        </div>
-        <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
-          <span className="text-[11px] text-muted-foreground">
-            Live demo · interact with the full desk
-          </span>
-          <Link
-            to="/app"
-            search={{ role: "csm" }}
-            className="text-[11px] font-medium inline-flex items-center gap-1 hover:opacity-80"
-          >
-            Open <ArrowUpRight className="size-3" />
-          </Link>
-        </div>
+
+        <ol className="space-y-2.5 mb-5">
+          {steps.map((s, i) => (
+            <li key={i} className="flex items-start gap-3">
+              <div className="size-6 rounded-full bg-foreground/5 border border-border text-[10px] font-mono font-semibold flex items-center justify-center shrink-0 mt-0.5">
+                {i + 1}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-[13px] font-medium leading-tight">{s.label}</div>
+                <div className="text-[11px] font-mono text-muted-foreground mt-0.5 truncate">→ {s.to}</div>
+              </div>
+              <s.icon className="size-3.5 text-muted-foreground mt-1.5 shrink-0" />
+            </li>
+          ))}
+        </ol>
+
+        <Link
+          to="/app"
+          search={{ role: "csm", demo: true }}
+          className="w-full inline-flex items-center justify-center gap-1.5 text-sm font-semibold bg-foreground text-background px-4 py-2.5 rounded-lg hover:opacity-90"
+        >
+          <Send className="size-3.5" /> Ship the save · 5 steps
+        </Link>
+        <p className="text-[11px] text-muted-foreground text-center mt-2.5">
+          Try it on a sample book of 12 accounts — no signup, no integration.
+        </p>
       </div>
     </div>
   );
 }
 
-// ───────────────────────── HOW IT WORKS ─────────────────────────
-
 function HowItWorks() {
   const steps = [
     {
       n: "01",
-      title: "Overnight, the desk reads.",
-      body: "Four specialist agents — Renewal-Risk, Champion-Watch, Expansion-Scout, Exec-Silence — read every call, Slack thread, and email on your book between 6:14p and 7:42a.",
-      meta: `${AGENT_OUTCOMES.conversationsRead} conversations · ${AGENT_OUTCOMES.signalsProcessed.toLocaleString()} signals`,
+      title: "Agents read every conversation overnight.",
+      body: "Four specialist agents — Renewal-Risk, Champion-Watch, Expansion-Scout, Exec-Silence — read every call, Slack, and email on your book between shifts. They don't summarize. They draft the play.",
+      meta: "calls · Slack · email · CRM",
     },
     {
       n: "02",
-      title: "At 7:42a, the brief lands.",
-      body: "Three plays, ranked. Each one has the action, the reason it's the right action, the ARR at stake, and a drafted next move — email, Slack note, CRM update — waiting for your signoff.",
-      meta: "90-second read · 3 plays before lunch",
+      title: "By the time you log in, the saves are queued.",
+      body: "Each motion is a complete play: multi-thread email, exec invite, CRM update, manager brief. The reasoning is cited back to the moment the customer said it. You read 90 seconds and decide.",
+      meta: "1-click ship · 5-step plays · live preview",
     },
     {
       n: "03",
-      title: "Every claim cites the moment.",
-      body: "Click any score and see the receipts: the quote, the speaker, the timestamp, the channel. Disagree? Override. The agent learns from your override — it doesn't override you.",
-      meta: "3.2 citations per claim · 100% traceable",
+      title: "One click ships the whole motion.",
+      body: "Email goes out. Invite holds the calendar. Salesforce updates. Manager gets briefed in Slack. Override and the agent learns — it doesn't override you. The ticker counts the dollars pulled back.",
+      meta: "human in the loop · agents in the seat",
     },
   ];
   return (
@@ -227,7 +217,7 @@ function HowItWorks() {
         <div className="max-w-2xl mb-12">
           <span className="eyebrow block mb-3">How it works</span>
           <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight leading-tight">
-            One product moment, repeated every morning.
+            Not another dashboard. The agents that do the work.
           </h2>
         </div>
         <div className="grid md:grid-cols-3 gap-px bg-border rounded-2xl overflow-hidden border border-border">
@@ -252,22 +242,19 @@ function HowItWorks() {
   );
 }
 
-// ───────────────────────── WEDGE + CTA ─────────────────────────
-
 function Wedge() {
   return (
     <section id="partners" className="border-b border-border">
       <div className="max-w-[1180px] mx-auto px-6 md:px-10 py-16 md:py-24 grid lg:grid-cols-[1fr_0.8fr] gap-12 items-start">
         <div className="max-w-xl">
-          <span className="eyebrow block mb-3">Q1 design partners</span>
+          <span className="eyebrow block mb-3">Design partners</span>
           <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight leading-[1.05]">
             We're shipping with six CS teams this quarter.
           </h2>
           <p className="mt-5 text-base text-muted-foreground leading-relaxed">
-            You get the night-shift research desk, weekly working sessions with
-            the founders, lifetime founding pricing, and a direct line into the
-            roadmap. We get receipts on what actually works in front of a real
-            book.
+            You get the agent team, weekly working sessions with the founders,
+            lifetime founding pricing, and a concierge backtest on your last
+            15 closed renewals — so you see the dollars before you integrate.
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <Link
@@ -277,7 +264,7 @@ function Wedge() {
               Request access <ArrowUpRight className="size-4" />
             </Link>
             <span className="text-[11px] font-mono text-muted-foreground">
-              3 of 6 slots open · Q1 2026
+              3 of 6 slots open
             </span>
           </div>
         </div>
@@ -285,12 +272,13 @@ function Wedge() {
         <figure className="border border-border rounded-2xl bg-surface p-6 md:p-8">
           <Quote className="size-5 text-muted-foreground mb-4" />
           <blockquote className="text-base md:text-lg font-display tracking-tight leading-snug">
-            "Every CSM I've ever managed spends Monday morning re-reading their
-            book. Receipts is the first thing that actually does that work — and
-            shows me where it got the answer. That's the whole job."
+            "Every CS tool I've used tells me the same thing — this account
+            is at risk. Compound is the first one that drafts the email, holds
+            the exec call, updates the CRM, and briefs my manager. On one click.
+            That's the whole job."
           </blockquote>
           <figcaption className="mt-5 text-xs text-muted-foreground">
-            Director of Customer Success · SaaS, $40M ARR · design partner #2
+            Illustrative partner quote · target persona: Director of CS, SaaS $40M ARR
           </figcaption>
         </figure>
       </div>
@@ -298,23 +286,21 @@ function Wedge() {
   );
 }
 
-// ───────────────────────── FOOTER ─────────────────────────
-
 function Footer() {
   return (
     <footer>
       <div className="max-w-[1180px] mx-auto px-6 md:px-10 py-10 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
           <Logo size={18} />
-          <span className="font-mono">Receipts · augments humans · cites every claim</span>
+          <span className="font-mono">Compound · agents in the seat, humans in the loop</span>
         </div>
         <div className="flex items-center gap-5">
           <Link to="/waitlist" className="hover:text-foreground">Request access</Link>
-          <Link to="/app" search={{ role: "csm" }} className="hover:text-foreground">
-            Open the desk
+          <Link to="/app" search={{ role: "csm", demo: true }} className="hover:text-foreground">
+            Open the Save Room
           </Link>
-          <a href="mailto:founders@receipts.dev" className="hover:text-foreground">
-            founders@receipts.dev
+          <a href="mailto:founders@compound.dev" className="hover:text-foreground">
+            founders@compound.dev
           </a>
         </div>
       </div>
