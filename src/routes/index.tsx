@@ -9,17 +9,17 @@ import { IntegrationsStrip } from "@/components/integrations/IntegrationsStrip";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Receipts — the night-shift research desk for CS teams" },
+      { title: "Receipts — agentic renewal desk for CS teams" },
       {
         name: "description",
         content:
-          "Four specialist agents read every call, Slack thread, and email on your book overnight, then leave each CSM a 90-second morning brief — with every claim cited back to the moment the customer said it.",
+          "Receipts turns customer conversations into cited renewal actions: drafts, forecast moves, and manager approvals your CS team can trust.",
       },
-      { property: "og:title", content: "Receipts — night-shift research desk for CS teams" },
+      { property: "og:title", content: "Receipts — agentic renewal desk for CS teams" },
       {
         property: "og:description",
         content:
-          "Walk in ready, not behind. Three plays before lunch — every claim cited.",
+          "Customer-backed actions for renewals, expansion, and forecast — every claim cited.",
       },
     ],
   }),
@@ -90,13 +90,12 @@ function Hero() {
             For CSMs · renewals managers · CCOs
           </div>
           <h1 className="font-display text-5xl md:text-[64px] font-semibold tracking-tight leading-[1.02]">
-            Your CSMs deserve a night-shift research desk.
+            Your CS team deserves agents that move the renewal work.
           </h1>
           <p className="mt-6 text-base md:text-lg text-muted-foreground leading-relaxed">
-            Receipts is the team you'd hire if you could. Four specialist agents
-            read every call, Slack thread, and email on your book overnight —
-            and leave each CSM a 90-second morning brief with every claim cited
-            back to the moment the customer said it.
+            Receipts reads the customer record, stages the next action, and shows
+            the exact receipt behind every forecast move, rescue play, and
+            expansion signal. Your team approves the work before anything ships.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -134,11 +133,11 @@ function InlineBrief() {
         <div className="flex items-center gap-2">
           <span className="size-2 rounded-full bg-success animate-pulse" />
           <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
-            Your morning · Tue Nov 11 · 7:42a
+            Sample book · today · 7:42a
           </span>
         </div>
         <span className="text-[10px] font-mono text-muted-foreground">
-          {AGENT_OUTCOMES.conversationsRead} read overnight
+          {AGENT_OUTCOMES.conversationsRead} sample conversations
         </span>
       </div>
       <div className="p-5">
