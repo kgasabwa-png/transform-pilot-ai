@@ -49,7 +49,7 @@ export function buildCoachingMoments(): CoachingMoment[] {
       callDurationMin: 47,
       severity: "high",
       arrUpside: 240000,
-      headline: "Tessera moved up $240K, but Maya's next step is still discount-led.",
+      headline: "Tessera can expand by $240K, but Maya is about to lead with a discount.",
       transcriptSnippet: {
         customer:
           "You're table stakes for us now. I'd like to talk multi-year with an expanded footprint at the next review.",
@@ -72,7 +72,7 @@ export function buildCoachingMoments(): CoachingMoment[] {
       callDurationMin: 32,
       severity: "high",
       arrUpside: 312000,
-      headline: "Halcyon moved to risk because Dre's renewal plan still names the departed champion.",
+      headline: "Halcyon is at risk because Dre's plan still depends on the champion who left.",
       transcriptSnippet: {
         customer:
           "Oh, fyi Marie's leaving Friday. Devin's taking over — you've met him.",
@@ -95,7 +95,7 @@ export function buildCoachingMoments(): CoachingMoment[] {
       callDurationMin: 28,
       severity: "medium",
       arrUpside: 96000,
-      headline: "Quill discount drift is now a manager approval issue, not a CSM judgment call.",
+      headline: "Quill needs manager approval before another discount reaches procurement.",
       transcriptSnippet: {
         customer: "We get value but the per-seat pricing is the conversation every renewal.",
         csmSaid: "I can probably get you 20% off if we lock in today.",
@@ -116,7 +116,7 @@ export function buildCoachingMoments(): CoachingMoment[] {
       callDurationMin: 41,
       severity: "medium",
       arrUpside: 184000,
-      headline: "Northwind forecast depends on Renee, but Lou's account plan still centers Daniel.",
+      headline: "Northwind depends on new CFO Renee, but Lou's plan is still written for Daniel.",
       transcriptSnippet: {
         customer:
           "Our new CFO Renee is the one asking the hard questions about routing spend.",
@@ -133,7 +133,7 @@ export function buildTeamPatterns(): TeamPattern[] {
   return [
     {
       id: "tp-1",
-      headline: "Procurement-entry signals are not turning into renewal workflows.",
+      headline: "Procurement is entering deals before the team changes the workflow.",
       detail:
         "When procurement enters a renewal conversation, the system now stages exec alignment, legal review, and forecast inspection instead of leaving the CSM to notice it manually.",
       csmCount: 5,
@@ -142,7 +142,7 @@ export function buildTeamPatterns(): TeamPattern[] {
     },
     {
       id: "tp-2",
-      headline: "Discounting drift is ready for auto-escalation.",
+      headline: "Large discounts should route to manager approval automatically.",
       detail:
         "Three CSMs offered 15%+ discounts in final-stage calls. Receipts can route future discounts to manager approval before the customer hears a number.",
       csmCount: 3,
