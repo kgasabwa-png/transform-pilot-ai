@@ -8,15 +8,17 @@ const MONTH = [
 ];
 
 export function nowParts(d = new Date()) {
-  const hours = d.getHours();
-  const minutes = d.getMinutes();
+  // Use UTC so SSR and browser hydration render the same stamp even when
+  // the preview server and viewer are in different timezones.
+  const hours = d.getUTCHours();
+  const minutes = d.getUTCMinutes();
   const h12 = ((hours + 11) % 12) + 1;
   const ampm = hours < 12 ? "a" : "p";
   return {
-    weekday: WEEKDAY[d.getDay()],
-    month: MONTH[d.getMonth()],
-    date: d.getDate(),
-    year: d.getFullYear(),
+    weekday: WEEKDAY[d.getUTCDay()],
+    month: MONTH[d.getUTCMonth()],
+    date: d.getUTCDate(),
+    year: d.getUTCFullYear(),
     time: `${h12}:${String(minutes).padStart(2, "0")}${ampm}`,
   };
 }
@@ -54,11 +56,11 @@ export function relativeAgo(when: Date | number, now: Date = new Date()) {
 // "this morning at 6:14a", "overnight", "earlier today"
 export function descriptiveTime(d: Date, now: Date = new Date()) {
   const sameDay =
-    d.getFullYear() === now.getFullYear() &&
-    d.getMonth() === now.getMonth() &&
-    d.getDate() === now.getDate();
+    d.getUTCFullYear() === now.getUTCFullYear() &&
+    d.getUTCMonth() === now.getUTCMonth() &&
+    d.getUTCDate() === now.getUTCDate();
   if (!sameDay) return relativeAgo(d, now);
-  const hr = d.getHours();
+  const hr = d.getUTCHours();
   const t = nowParts(d).time;
   if (hr < 5) return `overnight · ${t}`;
   if (hr < 10) return `this morning · ${t}`;
@@ -69,7 +71,7 @@ export function descriptiveTime(d: Date, now: Date = new Date()) {
 
 // Quarter the date sits in: returns "Q2", "Q3", etc.
 export function currentQuarter(d = new Date()) {
-  return `Q${Math.floor(d.getMonth() / 3) + 1}`;
+  return `Q${Math.floor(d.getUTCMonth() / 3) + 1}`;
 }
 
 // A deterministic past-Date offset from now, used to seed sample
