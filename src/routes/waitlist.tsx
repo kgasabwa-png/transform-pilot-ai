@@ -79,9 +79,9 @@ function WaitlistPage() {
             Show us closed renewals. We'll show what Receipts would have caught.
           </h1>
           <p className="mt-5 text-muted-foreground text-base md:text-lg leading-relaxed max-w-xl">
-            Send 5–15 anonymized closed renewals before you connect anything.
-            We'll show which churns, expansions, and forecast misses the agents
-            would have flagged — with the exact customer moments behind each call.
+            Send 5–15 anonymized closed renewals before you connect anything. We'll show which
+            churns, expansions, and forecast misses the agents would have flagged — with the exact
+            customer moments behind each call.
           </p>
 
           <ul className="mt-8 space-y-3 text-sm text-muted-foreground">
@@ -112,9 +112,8 @@ function WaitlistPage() {
                 <h2 className="text-xl font-semibold tracking-tight">You're on the list.</h2>
                 <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
                   We'll be in touch within 48 hours from{" "}
-                  <span className="font-mono">founders@receipts.dev</span> to
-                  schedule a working session. In the meantime, the live demo
-                  workspace is open — no login.
+                  <span className="font-mono">founders@receipts.dev</span> to schedule a working
+                  session. In the meantime, the live demo workspace is open — no login.
                 </p>
                 <Link
                   to="/app"
@@ -144,7 +143,8 @@ function WaitlistPage() {
                 </div>
                 <div>
                   <label className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-                    What's the messiest part of your CS week? <span className="lowercase opacity-60">(optional)</span>
+                    What's the messiest part of your CS week?{" "}
+                    <span className="lowercase opacity-60">(optional)</span>
                   </label>
                   <textarea
                     value={note}
@@ -162,12 +162,10 @@ function WaitlistPage() {
                   {status === "submitting" ? "Sending…" : "Request access"}
                   {status !== "submitting" && <ArrowUpRight className="size-4" />}
                 </button>
-                {status === "error" && (
-                  <p className="text-xs text-destructive">{errorMsg}</p>
-                )}
+                {status === "error" && <p className="text-xs text-destructive">{errorMsg}</p>}
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  We only use your email to coordinate the beta. No marketing list, no
-                  sharing, ever.
+                  We only use your email to coordinate the beta. No marketing list, no sharing,
+                  ever.
                 </p>
               </form>
             )}
@@ -178,7 +176,9 @@ function WaitlistPage() {
       <footer className="border-t border-border">
         <div className="max-w-[1180px] mx-auto px-6 md:px-10 py-6 flex items-center justify-between text-xs text-muted-foreground">
           <span className="font-mono">Receipts · private beta</span>
-          <Link to="/" className="hover:text-foreground">← back to home</Link>
+          <Link to="/" className="hover:text-foreground">
+            ← back to home
+          </Link>
         </div>
       </footer>
     </div>

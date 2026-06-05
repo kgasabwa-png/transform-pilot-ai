@@ -19,19 +19,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Logo } from "@/components/brand/Logo";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BACKTEST, BACKTEST_STATS } from "@/lib/loop/backtest";
-import {
-  ACCOUNTS,
-  formatARR,
-  type Account,
-  type Receipt,
-} from "@/lib/loop/portfolio";
+import { ACCOUNTS, formatARR, type Account, type Receipt } from "@/lib/loop/portfolio";
 import { AGENTS, AGENT_OUTCOMES, type AgentId } from "@/lib/loop/agents";
 import { PERSONA_ORDER, type PersonaId } from "@/lib/loop/personas";
 import { ReceiptModal } from "@/components/loop/ReceiptModal";
@@ -84,10 +74,8 @@ const DRAFT_ACTIONS: DraftAction[] = [
     accountId: "quill",
     agent: "renewal-risk",
     title: "Send this RFP recovery note to Quill's champion",
-    why:
-      "Procurement BCC'd us on the competitor rubric and the champion has delayed the QBR twice.",
-    body:
-      "Subject: Quick alignment before procurement closes the RFP\n\nHi Morgan,\n\nI saw procurement's publishing-ops RFP is already moving. Rather than guess from the outside, can we do 15 minutes today to decide whether we should submit, partner with you on the rubric, or document why we're not a fit?\n\nIf there is a blocker, I would rather get it in writing today than let your team spend cycles on a silent mismatch.\n\n- Sam",
+    why: "Procurement BCC'd us on the competitor rubric and the champion has delayed the QBR twice.",
+    body: "Subject: Quick alignment before procurement closes the RFP\n\nHi Morgan,\n\nI saw procurement's publishing-ops RFP is already moving. Rather than guess from the outside, can we do 15 minutes today to decide whether we should submit, partner with you on the rubric, or document why we're not a fit?\n\nIf there is a blocker, I would rather get it in writing today than let your team spend cycles on a silent mismatch.\n\n- Sam",
     arrImpact: 96000,
     primaryCta: "Approve & send",
     createdAt: "this morning at 7:41a",
@@ -99,10 +87,8 @@ const DRAFT_ACTIONS: DraftAction[] = [
     accountId: "halcyon",
     agent: "exec-silence",
     title: "Update Halcyon renewal stage before forecast review",
-    why:
-      "Champion left, replacement was the original skeptic, and three exec-reset follow-ups have no reply.",
-    body:
-      "Move renewal stage to Risk, add Devin as economic buyer, and attach the four cited signals to the account note.",
+    why: "Champion left, replacement was the original skeptic, and three exec-reset follow-ups have no reply.",
+    body: "Move renewal stage to Risk, add Devin as economic buyer, and attach the four cited signals to the account note.",
     arrImpact: 312000,
     primaryCta: "Approve CRM diff",
     createdAt: "this morning at 7:33a",
@@ -115,10 +101,8 @@ const DRAFT_ACTIONS: DraftAction[] = [
     accountId: "northwind",
     agent: "champion-watch",
     title: "Ship a CFO-framed value brief to Priya",
-    why:
-      "Renee is reviewing every $100k+ vendor line and a competitor look-alike is already in the budget exercise.",
-    body:
-      "Draft value brief: cost per delivered mile, long-haul override reduction, and Optoro integration timeline. Send to Priya with a request to forward before Renee's budget meeting.",
+    why: "Renee is reviewing every $100k+ vendor line and a competitor look-alike is already in the budget exercise.",
+    body: "Draft value brief: cost per delivered mile, long-haul override reduction, and Optoro integration timeline. Send to Priya with a request to forward before Renee's budget meeting.",
     arrImpact: 184000,
     primaryCta: "Approve brief",
     createdAt: "overnight",
@@ -130,10 +114,8 @@ const DRAFT_ACTIONS: DraftAction[] = [
     accountId: "blueprint",
     agent: "expansion-scout",
     title: "Draft a two-BU expansion proposal for Blueprint",
-    why:
-      "The customer is standardizing on the product while the CRM still reads flat usage as renewal risk.",
-    body:
-      "Create a combined renewal + expansion proposal for Phoenix and Austin, with procurement copied before the renewal call.",
+    why: "The customer is standardizing on the product while the CRM still reads flat usage as renewal risk.",
+    body: "Create a combined renewal + expansion proposal for Phoenix and Austin, with procurement copied before the renewal call.",
     arrImpact: 64000,
     primaryCta: "Draft proposal",
     createdAt: "2h ago",
@@ -149,8 +131,7 @@ const COACHING_MOMENTS: CoachingMoment[] = [
     title: "Sam missed an expansion buying signal on Tessera",
     impact: 84000,
     clipAt: "00:14:22",
-    clip:
-      "Tessera CIO: \"You're table stakes for us now. I'd like to talk multi-year with an expanded footprint at the next review.\"",
+    clip: "Tessera CIO: \"You're table stakes for us now. I'd like to talk multi-year with an expanded footprint at the next review.\"",
     suggestion:
       "Coach Sam to anchor on the CIO's expansion language first, then isolate the weak BU as enablement instead of delaying the proposal.",
     receiptId: "ts-1",
@@ -162,8 +143,7 @@ const COACHING_MOMENTS: CoachingMoment[] = [
     title: "Jordan waited too long to escalate sponsor silence",
     impact: 312000,
     clipAt: "email thread",
-    clip:
-      "Three follow-ups to Devin after Marie's departure received no reply. The account stayed Commit in CRM.",
+    clip: "Three follow-ups to Devin after Marie's departure received no reply. The account stayed Commit in CRM.",
     suggestion:
       "Send Jordan a 1:1 note: after two silent exec follow-ups, move to Risk and ask for exec-to-exec support the same week.",
     receiptId: "hc-2",
@@ -175,8 +155,7 @@ const COACHING_MOMENTS: CoachingMoment[] = [
     title: "Keila nearly ran a save play on an expansion account",
     impact: 64000,
     clipAt: "Slack Connect",
-    clip:
-      "Blueprint: \"Decision: we standardize on this for the Phoenix and Austin sites starting Q1.\"",
+    clip: 'Blueprint: "Decision: we standardize on this for the Phoenix and Austin sites starting Q1."',
     suggestion:
       "Use this in team standup: flat usage can mean automation is working. Ask for standardization language before triggering save motions.",
     receiptId: "bp-1",
@@ -380,7 +359,8 @@ function SampleBanner() {
     <div className="border-b border-border/60 bg-primary/5 px-4 py-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs">
       <SampleTag />
       <span className="text-foreground/75">
-        Previewing as <span className="font-medium text-foreground">Sarah Chen</span>, renewals lead · {ACCOUNTS.length} synthetic accounts · approvals stay in this browser session.
+        Previewing as <span className="font-medium text-foreground">Sarah Chen</span>, renewals lead
+        · {ACCOUNTS.length} synthetic accounts · approvals stay in this browser session.
       </span>
       <Link
         to="/waitlist"
@@ -487,7 +467,9 @@ function ActionCard({
             >
               {account.name}
             </button>
-            <span className="text-xs text-muted-foreground">· {formatARR(action.arrImpact)} at stake</span>
+            <span className="text-xs text-muted-foreground">
+              · {formatARR(action.arrImpact)} at stake
+            </span>
             <span className="text-xs text-muted-foreground">· {action.createdAt}</span>
             <SampleTag compact />
           </div>
@@ -522,8 +504,12 @@ function ActionCard({
 
       <div className="mt-5">
         <div className="flex items-center justify-between gap-3 mb-2">
-          <span className="text-xs font-medium text-muted-foreground">Receipts behind this action</span>
-          <span className="text-[10px] font-mono text-muted-foreground">{evidence.length} cited signals</span>
+          <span className="text-xs font-medium text-muted-foreground">
+            Receipts behind this action
+          </span>
+          <span className="text-[10px] font-mono text-muted-foreground">
+            {evidence.length} cited signals
+          </span>
         </div>
         <div className="grid md:grid-cols-2 gap-2">
           {evidence.map((receipt) => (
@@ -532,7 +518,9 @@ function ActionCard({
               onClick={() => onReceipt(receipt)}
               className="text-left rounded-lg border border-border bg-background p-3 hover:bg-accent/40 transition-colors"
             >
-              <div className="text-[10px] font-mono text-muted-foreground mb-1">{receipt.source}</div>
+              <div className="text-[10px] font-mono text-muted-foreground mb-1">
+                {receipt.source}
+              </div>
               <p className="text-xs leading-relaxed line-clamp-2">"{receipt.quote}"</p>
             </button>
           ))}
@@ -588,7 +576,8 @@ function ShippedToday({
       </div>
       {shipped.length === 0 ? (
         <p className="text-sm text-muted-foreground leading-relaxed">
-          Approve an action and it will move here with a receipt trail. This is the loop investors and users need to feel.
+          Approve an action and it will move here with a receipt trail. This is the loop investors
+          and users need to feel.
         </p>
       ) : (
         <div className="space-y-3">
@@ -642,7 +631,10 @@ function CoachingRoom({
           const receipt = getReceipt(moment.receiptId);
           const status = sent[moment.id];
           return (
-            <article key={moment.id} className="border border-border rounded-2xl bg-surface p-5 md:p-6">
+            <article
+              key={moment.id}
+              className="border border-border rounded-2xl bg-surface p-5 md:p-6"
+            >
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                 <div>
                   <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -654,7 +646,9 @@ function CoachingRoom({
                     >
                       {account.name}
                     </button>
-                    <span className="text-xs text-muted-foreground">· {formatARR(moment.impact)} ARR signal</span>
+                    <span className="text-xs text-muted-foreground">
+                      · {formatARR(moment.impact)} ARR signal
+                    </span>
                     <SampleTag compact />
                   </div>
                   <h2 className="font-display text-xl md:text-2xl font-semibold tracking-tight leading-tight">
@@ -678,13 +672,17 @@ function CoachingRoom({
               <div className="mt-4 grid lg:grid-cols-[1fr_260px] gap-4">
                 <div>
                   <div className="text-xs font-medium mb-1">Suggested coaching note</div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{moment.suggestion}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {moment.suggestion}
+                  </p>
                 </div>
                 <button
                   onClick={() => onReceipt(receipt)}
                   className="text-left rounded-xl border border-border bg-background p-3 hover:bg-accent/40 transition-colors"
                 >
-                  <div className="text-[10px] font-mono text-muted-foreground mb-1">Attached receipt</div>
+                  <div className="text-[10px] font-mono text-muted-foreground mb-1">
+                    Attached receipt
+                  </div>
                   <p className="text-xs line-clamp-3">"{receipt.quote}"</p>
                 </button>
               </div>
@@ -719,7 +717,8 @@ function ManagerAside({ unresolved, impact }: { unresolved: number; impact: numb
         {unresolved} coaching moments likely to protect {formatARR(impact)}.
       </h3>
       <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-        The moat is the receipt graph: every coaching note is tied to the exact call, Slack line, or email that created the signal.
+        The moat is the receipt graph: every coaching note is tied to the exact call, Slack line, or
+        email that created the signal.
       </p>
       <div className="mt-5 border-t border-border pt-4 space-y-3">
         {["Over-discounting", "Procurement signals", "Exec silence"].map((pattern) => (
@@ -855,10 +854,12 @@ function BacktestProof() {
         <SampleTag compact />
       </div>
       <h3 className="font-display text-xl font-semibold tracking-tight">
-        Receipts caught {BACKTEST_STATS.caughtByReceipts}/{BACKTEST_STATS.surpriseChurns} surprise churns in replay.
+        Receipts caught {BACKTEST_STATS.caughtByReceipts}/{BACKTEST_STATS.surpriseChurns} surprise
+        churns in replay.
       </h3>
       <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-        The wedge is proof before integration: replay closed renewals, compare against the incumbent snapshot, and cite the first signal.
+        The wedge is proof before integration: replay closed renewals, compare against the incumbent
+        snapshot, and cite the first signal.
       </p>
       <div className="mt-5 grid grid-cols-2 gap-2">
         <MiniProof label="Avg early warning" value={`${BACKTEST_STATS.avgEarlyWarningDays}d`} />
@@ -978,7 +979,9 @@ function AccountDrawer({
       <DialogContent className="max-w-3xl p-0 gap-0 overflow-hidden">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
           <div className="flex flex-wrap items-center gap-2 mb-2">
-            <span className="eyebrow">{account.segment} · {formatARR(account.arr)} ARR · {account.renewalDays}d to renewal</span>
+            <span className="eyebrow">
+              {account.segment} · {formatARR(account.arr)} ARR · {account.renewalDays}d to renewal
+            </span>
             <SampleTag compact />
           </div>
           <DialogTitle className="font-display text-2xl font-semibold tracking-tight">
@@ -986,12 +989,16 @@ function AccountDrawer({
           </DialogTitle>
         </DialogHeader>
         <div className="px-6 py-5 max-h-[70vh] overflow-y-auto">
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            {account.headline}
-          </p>
+          <p className="text-sm leading-relaxed text-muted-foreground">{account.headline}</p>
           <div className="grid sm:grid-cols-3 gap-3 my-5">
-            <MetricCard label="CRM score" value={`${account.vendorScore.value} ${account.vendorScore.label}`} />
-            <MetricCard label="Receipts score" value={`${account.receiptsScore.value} ${account.receiptsScore.label}`} />
+            <MetricCard
+              label="CRM score"
+              value={`${account.vendorScore.value} ${account.vendorScore.label}`}
+            />
+            <MetricCard
+              label="Receipts score"
+              value={`${account.receiptsScore.value} ${account.receiptsScore.label}`}
+            />
             <MetricCard label="Score gap" value={`${Math.abs(gap)} pts`} />
           </div>
           <div className="rounded-xl border border-border bg-surface p-4 mb-5">
@@ -1020,7 +1027,9 @@ function AccountDrawer({
                   onClick={() => onReceipt(receipt)}
                   className="w-full text-left rounded-lg border border-border bg-background p-3 hover:bg-accent/40 transition-colors"
                 >
-                  <div className="text-[10px] font-mono text-muted-foreground mb-1">{receipt.source}</div>
+                  <div className="text-[10px] font-mono text-muted-foreground mb-1">
+                    {receipt.source}
+                  </div>
                   <p className="text-sm leading-relaxed">"{receipt.quote}"</p>
                 </button>
               ))}
@@ -1070,15 +1079,7 @@ function WorkspaceFrame({
   );
 }
 
-function MetricCard({
-  label,
-  value,
-  sample,
-}: {
-  label: string;
-  value: string;
-  sample?: boolean;
-}) {
+function MetricCard({ label, value, sample }: { label: string; value: string; sample?: boolean }) {
   return (
     <div className="rounded-xl border border-border bg-surface p-4">
       <div className="flex items-center justify-between gap-2 mb-2">
@@ -1118,7 +1119,9 @@ function DiffBlock({
       <div className="text-[10px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
         {label}
       </div>
-      <div className={`text-sm font-semibold ${muted ? "text-muted-foreground" : ""} ${danger ? "text-danger" : ""}`}>
+      <div
+        className={`text-sm font-semibold ${muted ? "text-muted-foreground" : ""} ${danger ? "text-danger" : ""}`}
+      >
         {value}
       </div>
     </div>
@@ -1192,4 +1195,3 @@ function todayLabel() {
     day: "numeric",
   }).format(new Date());
 }
-

@@ -45,8 +45,7 @@ type AppSearch = { role: PersonaId; demo?: boolean };
 export const Route = createFileRoute("/app")({
   validateSearch: (search: Record<string, unknown>): AppSearch => {
     const r = search.role;
-    const role: PersonaId =
-      r === "manager" || r === "leader" || r === "csm" ? r : "csm";
+    const role: PersonaId = r === "manager" || r === "leader" || r === "csm" ? r : "csm";
     return { role, demo: search.demo === true || search.demo === "1" || search.demo === "true" };
   },
   head: () => ({
@@ -86,7 +85,8 @@ function TryBanner() {
         Sample book
       </span>
       <span className="text-foreground/75">
-        You're previewing as <span className="font-medium text-foreground">Sarah Chen</span>, renewals lead · {ACCOUNTS.length} synthetic accounts · nothing leaves your browser.
+        You're previewing as <span className="font-medium text-foreground">Sarah Chen</span>,
+        renewals lead · {ACCOUNTS.length} synthetic accounts · nothing leaves your browser.
       </span>
       <Link
         to="/waitlist"
@@ -182,20 +182,21 @@ function LeftRail({
               b.urgency === "now"
                 ? "bg-danger"
                 : b.urgency === "today"
-                ? "bg-warning"
-                : "bg-muted-foreground/40";
+                  ? "bg-warning"
+                  : "bg-muted-foreground/40";
             return (
               <button
                 key={b.accountId}
                 onClick={() => setPane({ kind: "play", accountId: b.accountId })}
                 className={`relative w-full text-left rounded-md px-2.5 py-2 transition-colors ${
-                  active
-                    ? "bg-primary/5 text-foreground"
-                    : "hover:bg-foreground/[0.04]"
+                  active ? "bg-primary/5 text-foreground" : "hover:bg-foreground/[0.04]"
                 }`}
               >
                 {active && (
-                  <span aria-hidden className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-full bg-primary" />
+                  <span
+                    aria-hidden
+                    className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-full bg-primary"
+                  />
                 )}
                 <div className="flex items-center gap-2">
                   <span className={`size-1.5 rounded-full ${urgencyDot}`} />
@@ -302,18 +303,21 @@ function NavGroup({
           key={it.key}
           onClick={it.onClick}
           className={`relative w-full text-left rounded-md px-2.5 py-1.5 flex items-center gap-2.5 transition-colors ${
-            it.active ? "bg-primary/5 text-foreground" : "hover:bg-foreground/[0.04] text-foreground"
+            it.active
+              ? "bg-primary/5 text-foreground"
+              : "hover:bg-foreground/[0.04] text-foreground"
           }`}
         >
           {it.active && (
-            <span aria-hidden className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-full bg-primary" />
+            <span
+              aria-hidden
+              className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-full bg-primary"
+            />
           )}
           <it.icon className={`size-3.5 ${it.active ? "text-primary" : "text-muted-foreground"}`} />
           <span className="text-sm flex-1">{it.label}</span>
           {it.count !== undefined && (
-            <span className="text-[10px] font-mono text-muted-foreground">
-              {it.count}
-            </span>
+            <span className="text-[10px] font-mono text-muted-foreground">{it.count}</span>
           )}
         </button>
       ))}
@@ -381,10 +385,10 @@ function PlayDetail({
     brief?.urgency === "now"
       ? { text: "DO NOW", cls: "bg-danger/10 text-danger" }
       : brief?.urgency === "today"
-      ? { text: "TODAY", cls: "bg-warning/15 text-warning" }
-      : brief?.urgency === "this-week"
-      ? { text: "THIS WEEK", cls: "bg-muted text-muted-foreground" }
-      : { text: "WATCH", cls: "bg-muted text-muted-foreground" };
+        ? { text: "TODAY", cls: "bg-warning/15 text-warning" }
+        : brief?.urgency === "this-week"
+          ? { text: "THIS WEEK", cls: "bg-muted text-muted-foreground" }
+          : { text: "WATCH", cls: "bg-muted text-muted-foreground" };
 
   return (
     <div className="max-w-5xl px-8 py-8">
@@ -416,10 +420,7 @@ function PlayDetail({
       {/* The play — editorial card, not a black slab */}
       {brief && (
         <div className="relative rounded-2xl p-6 mb-8 bg-surface border border-border shadow-[0_1px_0_rgba(0,0,0,0.02),0_24px_48px_-32px_rgba(0,0,0,0.12)] overflow-hidden">
-          <span
-            aria-hidden
-            className="absolute left-0 top-0 bottom-0 w-1 bg-primary"
-          />
+          <span aria-hidden className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
           <div className="flex items-center justify-between mb-3">
             <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
               {framing.eyebrow} · before lunch
@@ -493,9 +494,9 @@ function PlayDetail({
             ))}
         </div>
         <p className="mt-5 text-[11px] text-muted-foreground leading-relaxed max-w-2xl">
-          Every score is computed from these receipts and nothing else. Click any
-          signal to see the source. Override if you disagree — Receipts learns from
-          your overrides, it doesn't override you.
+          Every score is computed from these receipts and nothing else. Click any signal to see the
+          source. Override if you disagree — Receipts learns from your overrides, it doesn't
+          override you.
         </p>
       </div>
     </div>
@@ -564,11 +565,7 @@ function ReceiptCard({ receipt, onOpen }: { receipt: Receipt; onOpen: () => void
   const Icon = channelIcon[receipt.channel];
   const negative = receipt.weight < 0;
   const positive = receipt.weight > 0;
-  const accent = negative
-    ? "border-l-danger"
-    : positive
-    ? "border-l-success"
-    : "border-l-border";
+  const accent = negative ? "border-l-danger" : positive ? "border-l-success" : "border-l-border";
   return (
     <button
       onClick={onOpen}
@@ -590,17 +587,15 @@ function ReceiptCard({ receipt, onOpen }: { receipt: Receipt; onOpen: () => void
             negative
               ? "bg-danger/10 text-danger"
               : positive
-              ? "bg-success/10 text-success"
-              : "bg-muted text-muted-foreground"
+                ? "bg-success/10 text-success"
+                : "bg-muted text-muted-foreground"
           }`}
         >
           {signalLabel[receipt.signal]} {receipt.weight > 0 ? "+" : ""}
           {receipt.weight}
         </span>
       </div>
-      <blockquote className="text-sm leading-relaxed text-foreground">
-        "{receipt.quote}"
-      </blockquote>
+      <blockquote className="text-sm leading-relaxed text-foreground">"{receipt.quote}"</blockquote>
       <div className="mt-2 text-[10px] font-mono text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1">
         click to see in context →
       </div>
@@ -626,9 +621,7 @@ function WatchlistView({
   const accounts = useMemo(() => {
     let list = [...ACCOUNTS];
     if (filter === "surprises") {
-      list = list.filter(
-        (a) => Math.abs(a.vendorScore.value - a.receiptsScore.value) >= 20,
-      );
+      list = list.filter((a) => Math.abs(a.vendorScore.value - a.receiptsScore.value) >= 20);
     } else if (filter === "red") {
       list = list.filter((a) => a.receiptsScore.label === "Red");
     }
@@ -654,9 +647,7 @@ function WatchlistView({
     <div className="max-w-5xl px-8 py-8">
       <div className="mb-6">
         <span className="eyebrow block mb-2">{p.label} · Watchlist</span>
-        <h2 className="font-display text-2xl font-semibold tracking-tight">
-          {p.watchlistTitle}
-        </h2>
+        <h2 className="font-display text-2xl font-semibold tracking-tight">{p.watchlistTitle}</h2>
         <p className="text-sm text-muted-foreground mt-2 leading-relaxed max-w-2xl">
           {p.watchlistSub}
           {persona === "leader" && (
@@ -667,14 +658,15 @@ function WatchlistView({
         </p>
       </div>
 
-
       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-1.5">
-          {([
-            ["surprises", "Surprises"],
-            ["red", "At risk"],
-            ["all", "All"],
-          ] as const).map(([k, label]) => (
+          {(
+            [
+              ["surprises", "Surprises"],
+              ["red", "At risk"],
+              ["all", "All"],
+            ] as const
+          ).map(([k, label]) => (
             <button
               key={k}
               onClick={() => setFilter(k)}
@@ -693,16 +685,20 @@ function WatchlistView({
         </div>
         <div className="flex items-center gap-1 text-[11px]">
           <span className="text-muted-foreground mr-1">Sort</span>
-          {([
-            ["gap", "Largest gap"],
-            ["renewal", "Soonest renewal"],
-            ["arr", "ARR"],
-          ] as const).map(([k, label]) => (
+          {(
+            [
+              ["gap", "Largest gap"],
+              ["renewal", "Soonest renewal"],
+              ["arr", "ARR"],
+            ] as const
+          ).map(([k, label]) => (
             <button
               key={k}
               onClick={() => setSort(k)}
               className={`px-2 py-0.5 rounded-md transition-colors ${
-                sort === k ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground"
+                sort === k
+                  ? "text-foreground font-medium"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {label}
@@ -727,7 +723,9 @@ function WatchlistView({
                     {a.segment}
                   </span>
                 </div>
-                <div className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{a.headline}</div>
+                <div className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                  {a.headline}
+                </div>
               </div>
               <MiniScore value={a.vendorScore.value} label={a.vendorScore.label} muted />
               <MiniScore
@@ -742,8 +740,8 @@ function WatchlistView({
                     a.renewalDays <= 14
                       ? "text-danger"
                       : a.renewalDays <= 45
-                      ? "text-warning"
-                      : "text-muted-foreground"
+                        ? "text-warning"
+                        : "text-muted-foreground"
                   }`}
                 >
                   {a.renewalDays}d
@@ -769,8 +767,7 @@ function MiniScore({
   muted?: boolean;
   deltaPt?: number;
 }) {
-  const color =
-    label === "Green" ? "bg-success" : label === "Yellow" ? "bg-warning" : "bg-danger";
+  const color = label === "Green" ? "bg-success" : label === "Yellow" ? "bg-warning" : "bg-danger";
   return (
     <div className="flex items-center gap-2">
       <span className={`size-2 rounded-full ${color} ${muted ? "opacity-60" : ""}`} />
@@ -787,7 +784,11 @@ function MiniScore({
             deltaPt > 0 ? "text-danger" : "text-success"
           }`}
         >
-          {deltaPt > 0 ? <ArrowDownRight className="size-3" /> : <ArrowUpRight className="size-3" />}
+          {deltaPt > 0 ? (
+            <ArrowDownRight className="size-3" />
+          ) : (
+            <ArrowUpRight className="size-3" />
+          )}
           {Math.abs(deltaPt)}
         </span>
       )}
@@ -812,7 +813,8 @@ function FeedView() {
     <div className="max-w-4xl px-8 py-8">
       <div className="mb-6">
         <span className="eyebrow block mb-2">
-          Overnight · {AGENT_OUTCOMES.hoursOfWork}h · {AGENT_OUTCOMES.signalsProcessed.toLocaleString()} signals
+          Overnight · {AGENT_OUTCOMES.hoursOfWork}h ·{" "}
+          {AGENT_OUTCOMES.signalsProcessed.toLocaleString()} signals
         </span>
         <h2 className="font-display text-2xl font-semibold tracking-tight">
           What the desk did between 6:14p and 7:42a.
@@ -891,8 +893,8 @@ function AgentsView({ persona }: { persona: PersonaId }) {
           Specialist agents that augment you — not replace you.
         </h2>
         <p className="mt-2 text-sm text-muted-foreground max-w-xl leading-relaxed">
-          Every play awaits your signoff. Override anything — the agent learns
-          from your overrides. It does not override you.
+          Every play awaits your signoff. Override anything — the agent learns from your overrides.
+          It does not override you.
         </p>
       </div>
 
