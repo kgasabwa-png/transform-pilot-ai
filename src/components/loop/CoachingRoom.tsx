@@ -37,10 +37,10 @@ export function CoachingRoom() {
           {shortStamp()} · team forecast · 8 CSMs · 312 accounts
         </div>
         <h1 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight leading-[1.1]">
-          {moments.length} CSM interventions need a manager.
+          {moments.length} team decisions need your call.
           <br />
           <span className="text-muted-foreground">
-            Forecast moved because the customer said something.
+            The agents found the evidence; you choose the workflow.
           </span>
         </h1>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-2 text-sm">
