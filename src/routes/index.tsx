@@ -161,20 +161,22 @@ function Hero() {
   return (
     <section className="mb-10 max-w-3xl pt-2">
       <div className="inline-flex items-center gap-2 mb-5 text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground border border-border rounded-full px-3 py-1">
-        <span className="size-1.5 rounded-full bg-danger animate-pulse" />
-        3 surprises caught this morning · $592k ARR
+        <span className="size-1.5 rounded-full bg-success animate-pulse" />
+        4 agents · {AGENT_OUTCOMES.conversationsRead} conversations read overnight · {AGENT_OUTCOMES.briefsDrafted} briefs on your desk
       </div>
       <h1 className="font-display text-4xl md:text-[56px] font-semibold tracking-tight mb-5 leading-[1.02]">
-        The renewal forecast<br />your CFO has stopped trusting.
+        Your CS team<br />now runs overnight.
       </h1>
       <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl">
-        Health scores read what your team logged. Receipts reads the calls, the Slack
-        messages, and the emails — and tells you which renewals your dashboard is
-        lying to you about. Every number cited back to the moment the customer said it.
+        Four specialist agents read every customer call, Slack thread, and email
+        while you sleep — then leave a 90-second morning brief with every claim
+        cited back to the exact moment the customer said it. The renewal forecast
+        your CFO will finally trust.
       </p>
     </section>
   );
 }
+
 
 function ProofStrip() {
   return (
