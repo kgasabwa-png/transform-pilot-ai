@@ -77,7 +77,7 @@ function WorkspaceApp() {
       {demo && <TryBanner />}
       <DeskTopBar
         persona={role}
-        onPersona={(p) => navigate({ search: (prev) => ({ ...prev, role: p }) })}
+        onPersona={(p) => navigate({ search: (prev: AppSearch) => ({ ...prev, role: p }) })}
       />
 
       <div className="flex-1 grid grid-cols-[260px_1fr] min-h-0">
@@ -580,7 +580,7 @@ const signalLabel: Record<Receipt["signal"], string> = {
   advocacy: "Advocacy",
 };
 
-function ReceiptCard({ receipt }: { receipt: Receipt }) {
+function ReceiptCard({ receipt, onOpen }: { receipt: Receipt; onOpen: () => void }) {
   const Icon = channelIcon[receipt.channel];
   const negative = receipt.weight < 0;
   const positive = receipt.weight > 0;
@@ -590,7 +590,10 @@ function ReceiptCard({ receipt }: { receipt: Receipt }) {
     ? "border-l-success"
     : "border-l-border";
   return (
-    <div className={`border border-border border-l-4 ${accent} rounded-md p-4 bg-surface`}>
+    <button
+      onClick={onOpen}
+      className={`w-full text-left group border border-border border-l-4 ${accent} rounded-md p-4 bg-surface hover:bg-accent/40 transition-colors`}
+    >
       <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
         <div className="flex items-center gap-2 text-xs">
           <Icon className="size-3.5 text-muted-foreground" />
@@ -618,7 +621,10 @@ function ReceiptCard({ receipt }: { receipt: Receipt }) {
       <blockquote className="text-sm leading-relaxed text-foreground">
         "{receipt.quote}"
       </blockquote>
-    </div>
+      <div className="mt-2 text-[10px] font-mono text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1">
+        click to see in context →
+      </div>
+    </button>
   );
 }
 
@@ -626,9 +632,16 @@ function ReceiptCard({ receipt }: { receipt: Receipt }) {
 
 type SortKey = "gap" | "renewal" | "arr";
 
-function WatchlistView({ setPane }: { setPane: (p: RightPane) => void }) {
+function WatchlistView({
+  setPane,
+  persona,
+}: {
+  setPane: (p: RightPane) => void;
+  persona: PersonaId;
+}) {
   const [sort, setSort] = useState<SortKey>("gap");
   const [filter, setFilter] = useState<"all" | "surprises" | "red">("surprises");
+  const p = PERSONAS[persona];
 
   const accounts = useMemo(() => {
     let list = [...ACCOUNTS];
@@ -653,14 +666,27 @@ function WatchlistView({ setPane }: { setPane: (p: RightPane) => void }) {
     return list;
   }, [filter, sort]);
 
+  const totalGapArr = accounts
+    .filter((a) => Math.abs(a.vendorScore.value - a.receiptsScore.value) >= 20)
+    .reduce((s, a) => s + a.arr, 0);
+
   return (
     <div className="max-w-5xl px-8 py-8">
       <div className="mb-6">
-        <span className="eyebrow block mb-2">Watchlist</span>
+        <span className="eyebrow block mb-2">{p.label} · Watchlist</span>
         <h2 className="font-display text-2xl font-semibold tracking-tight">
-          Every account on your book — scored on what the customer actually said.
+          {p.watchlistTitle}
         </h2>
+        <p className="text-sm text-muted-foreground mt-2 leading-relaxed max-w-2xl">
+          {p.watchlistSub}
+          {persona === "leader" && (
+            <span className="block mt-2 font-mono text-foreground">
+              Total mis-scored ARR: {formatARR(totalGapArr)}
+            </span>
+          )}
+        </p>
       </div>
+
 
       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-1.5">
