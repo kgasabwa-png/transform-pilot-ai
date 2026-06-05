@@ -107,10 +107,10 @@ function TryPage() {
   }
 
   const emailText = pkg
-    ? emailEdit ??
+    ? (emailEdit ??
       `Subject: ${pkg.email.subject}\n\nHi ${pkg.email.to},\n\n${pkg.email.bodyParagraphs
         .map((p) => p.text)
-        .join("\n\n")}`
+        .join("\n\n")}`)
     : "";
 
   function copyEmail() {
@@ -163,7 +163,9 @@ function TryPage() {
             Paste a call. See the cited draft.
           </h1>
           <p className="mt-3 text-sm md:text-base text-muted-foreground leading-relaxed">
-            We start you with a sample renewal call. Click <span className="font-medium text-foreground">Generate close package</span>, then click any citation chip to jump to the exact line that justified it.
+            We start you with a sample renewal call. Click{" "}
+            <span className="font-medium text-foreground">Generate close package</span>, then click
+            any citation chip to jump to the exact line that justified it.
           </p>
         </div>
       </div>
@@ -200,9 +202,7 @@ function TryPage() {
                       lineRefs.current[n] = el;
                     }}
                     className={`flex gap-3 rounded-lg p-2 transition-colors ${
-                      isActive
-                        ? "bg-warning/15 ring-1 ring-warning"
-                        : "hover:bg-accent/30"
+                      isActive ? "bg-warning/15 ring-1 ring-warning" : "hover:bg-accent/30"
                     }`}
                   >
                     <span className="font-mono text-[10px] text-muted-foreground w-7 shrink-0 pt-1 text-right">
@@ -263,9 +263,7 @@ function TryPage() {
 
         {/* RIGHT: close package */}
         <section className="border border-border rounded-2xl bg-surface overflow-hidden flex flex-col min-h-[640px]">
-          {!pkg && !loading && (
-            <EmptyRight onRun={generate} />
-          )}
+          {!pkg && !loading && <EmptyRight onRun={generate} />}
           {loading && <LoadingRight />}
           {pkg && (
             <Result
@@ -290,7 +288,8 @@ function TryPage() {
               This is the entire MVP.
             </h3>
             <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
-              One channel (calls), one action (drafted follow-up), one trust mechanic (every line cited). Design partners get persisted history and outcome tracking.
+              One channel (calls), one action (drafted follow-up), one trust mechanic (every line
+              cited). Design partners get persisted history and outcome tracking.
             </p>
           </div>
           <Link
@@ -315,7 +314,8 @@ function EmptyRight({ onRun }: { onRun: () => void }) {
         Your cited close package lands here.
       </h3>
       <p className="text-sm text-muted-foreground mt-2 max-w-sm">
-        A drafted email, a CRM note, and flagged risks. Every paragraph links back to the line that proved it.
+        A drafted email, a CRM note, and flagged risks. Every paragraph links back to the line that
+        proved it.
       </p>
       <button
         onClick={onRun}
@@ -457,9 +457,7 @@ function Result({
               <div className="text-xs text-muted-foreground mb-1">
                 To: <span className="text-foreground">{pkg.email.to}</span>
               </div>
-              <div className="text-sm font-medium tracking-tight mb-3">
-                {pkg.email.subject}
-              </div>
+              <div className="text-sm font-medium tracking-tight mb-3">{pkg.email.subject}</div>
               <div className="space-y-3 text-sm leading-relaxed">
                 {pkg.email.bodyParagraphs.map((p, i) => (
                   <p key={i}>
@@ -515,7 +513,10 @@ function Result({
             </h3>
             <div className="space-y-2">
               {pkg.recordUpdates.map((u, i) => (
-                <div key={i} className="border border-border rounded-lg p-3 bg-background text-[13px]">
+                <div
+                  key={i}
+                  className="border border-border rounded-lg p-3 bg-background text-[13px]"
+                >
                   <div className="text-xs font-medium tracking-tight mb-1">{u.field}</div>
                   <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
                     <span className="line-through">{u.before}</span>

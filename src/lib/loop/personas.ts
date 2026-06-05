@@ -25,7 +25,7 @@ export const PERSONAS: Record<PersonaId, Persona> = {
     who: "The CSM or renewals manager carrying the book.",
     promise: "Walk in ready, not behind. Three plays before lunch.",
     hero: {
-      eyebrow: "Your morning · Tue Nov 11 · 7:42a",
+      eyebrow: "Your morning · approval queue",
       title: "Three plays before lunch. Every claim cited.",
       sub: "Your renewal agents read the customer record, stage the next action, and cite the customer moment behind every recommendation. You approve the work before anything ships.",
     },
@@ -74,7 +74,8 @@ export const PERSONAS: Record<PersonaId, Persona> = {
       question: "How this account moves the Q1 number, and the moment in a call that proves it.",
     },
     watchlistTitle: "ARR mis-scored in your CRM today.",
-    watchlistSub: "Every account where the conversation grade disagrees with the platform score by 20+ points.",
+    watchlistSub:
+      "Every account where the conversation grade disagrees with the platform score by 20+ points.",
     priorityAgents: ["renewal-risk", "expansion-scout", "exec-silence", "champion-watch"],
     topMetricLabel: "ARR mis-scored in your CRM today",
     hides: { brief: false, backtest: false, wedge: false },

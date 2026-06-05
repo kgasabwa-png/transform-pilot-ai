@@ -4,6 +4,8 @@ import { useState, type FormEvent } from "react";
 import { ArrowUpRight, CheckCircle2 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { joinWaitlist } from "@/lib/waitlist.functions";
+import { BACKTEST, BACKTEST_STATS } from "@/lib/loop/backtest";
+import { formatARR } from "@/lib/loop/portfolio";
 
 export const Route = createFileRoute("/waitlist")({
   head: () => ({
@@ -77,9 +79,9 @@ function WaitlistPage() {
             Show us closed renewals. We'll show what Receipts would have caught.
           </h1>
           <p className="mt-5 text-muted-foreground text-base md:text-lg leading-relaxed max-w-xl">
-            Send 5–15 anonymized closed renewals before you connect anything.
-            We'll show which churns, expansions, and forecast misses the agents
-            would have flagged — with the exact customer moments behind each call.
+            Send 5–15 anonymized closed renewals before you connect anything. We'll show which
+            churns, expansions, and forecast misses the agents would have flagged — with the exact
+            customer moments behind each call.
           </p>
 
           <ul className="mt-8 space-y-3 text-sm text-muted-foreground">
@@ -98,6 +100,8 @@ function WaitlistPage() {
           <p className="mt-10 text-xs text-muted-foreground font-mono">
             No integration required · sample output first
           </p>
+
+          <BacktestPreview />
         </section>
 
         <section className="bg-accent/30 border-l border-border px-6 md:px-12 py-16 md:py-24 flex items-start">
@@ -108,9 +112,8 @@ function WaitlistPage() {
                 <h2 className="text-xl font-semibold tracking-tight">You're on the list.</h2>
                 <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
                   We'll be in touch within 48 hours from{" "}
-                  <span className="font-mono">founders@receipts.dev</span> to
-                  schedule a working session. In the meantime, the live demo
-                  workspace is open — no login.
+                  <span className="font-mono">founders@receipts.dev</span> to schedule a working
+                  session. In the meantime, the live demo workspace is open — no login.
                 </p>
                 <Link
                   to="/app"
@@ -140,7 +143,8 @@ function WaitlistPage() {
                 </div>
                 <div>
                   <label className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-                    What's the messiest part of your CS week? <span className="lowercase opacity-60">(optional)</span>
+                    What's the messiest part of your CS week?{" "}
+                    <span className="lowercase opacity-60">(optional)</span>
                   </label>
                   <textarea
                     value={note}
@@ -158,12 +162,10 @@ function WaitlistPage() {
                   {status === "submitting" ? "Sending…" : "Request access"}
                   {status !== "submitting" && <ArrowUpRight className="size-4" />}
                 </button>
-                {status === "error" && (
-                  <p className="text-xs text-destructive">{errorMsg}</p>
-                )}
+                {status === "error" && <p className="text-xs text-destructive">{errorMsg}</p>}
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  We only use your email to coordinate the beta. No marketing list, no
-                  sharing, ever.
+                  We only use your email to coordinate the beta. No marketing list, no sharing,
+                  ever.
                 </p>
               </form>
             )}
@@ -174,9 +176,57 @@ function WaitlistPage() {
       <footer className="border-t border-border">
         <div className="max-w-[1180px] mx-auto px-6 md:px-10 py-6 flex items-center justify-between text-xs text-muted-foreground">
           <span className="font-mono">Receipts · private beta</span>
-          <Link to="/" className="hover:text-foreground">← back to home</Link>
+          <Link to="/" className="hover:text-foreground">
+            ← back to home
+          </Link>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function BacktestPreview() {
+  return (
+    <div className="mt-10 rounded-2xl border border-border bg-surface p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <span className="eyebrow">Sample backtest output</span>
+        <span className="text-[10px] font-mono uppercase tracking-[0.14em] text-primary border border-primary/15 bg-primary/5 rounded-full px-2 py-0.5">
+          sample data
+        </span>
+      </div>
+      <div className="grid sm:grid-cols-3 gap-3 mb-5">
+        <BacktestStat label="renewals replayed" value={`${BACKTEST_STATS.totalRenewals}`} />
+        <BacktestStat
+          label="surprise churns caught"
+          value={`${BACKTEST_STATS.caughtByReceipts}/${BACKTEST_STATS.surpriseChurns}`}
+        />
+        <BacktestStat label="avg early warning" value={`${BACKTEST_STATS.avgEarlyWarningDays}d`} />
+      </div>
+      <div className="space-y-3">
+        {BACKTEST.slice(0, 2).map((item) => (
+          <div key={item.id} className="rounded-xl border border-border bg-background p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-sm font-medium">{item.account.replace(" (real)", "")}</span>
+              <span className="text-xs font-mono text-muted-foreground">{formatARR(item.arr)}</span>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground leading-relaxed">{item.oneLine}</p>
+            <p className="mt-2 text-[11px] font-mono text-foreground/70">
+              first receipt · "{item.firstSignal.quote}"
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BacktestStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-background p-3">
+      <div className="text-[10px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
+        {label}
+      </div>
+      <div className="mt-1 font-display text-2xl font-semibold tracking-tight">{value}</div>
     </div>
   );
 }

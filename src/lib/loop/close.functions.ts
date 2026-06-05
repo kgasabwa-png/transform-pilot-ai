@@ -56,9 +56,7 @@ export const runClose = createServerFn({ method: "POST" })
       throw new Error("AI gateway not configured. Add LOVABLE_API_KEY.");
     }
 
-    const numbered = data.transcript
-      .map((l, i) => `[${i + 1}] ${l.speaker}: ${l.text}`)
-      .join("\n");
+    const numbered = data.transcript.map((l, i) => `[${i + 1}] ${l.speaker}: ${l.text}`).join("\n");
 
     const userPrompt =
       (data.accountName ? `Account: ${data.accountName}\n\n` : "") +

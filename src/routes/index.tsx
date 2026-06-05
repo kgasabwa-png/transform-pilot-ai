@@ -44,9 +44,15 @@ function Header() {
           <span className="font-display font-semibold tracking-tight">Receipts</span>
         </Link>
         <nav className="hidden md:flex items-center gap-7 text-xs text-muted-foreground">
-          <a href="#receipts" className="hover:text-foreground">How it works</a>
-          <a href="#why" className="hover:text-foreground">Why it matters</a>
-          <a href="#partners" className="hover:text-foreground">Design partners</a>
+          <a href="#receipts" className="hover:text-foreground">
+            How it works
+          </a>
+          <a href="#why" className="hover:text-foreground">
+            Why it matters
+          </a>
+          <a href="#partners" className="hover:text-foreground">
+            Design partners
+          </a>
         </nav>
         <div className="flex items-center gap-2">
           <Link
@@ -80,7 +86,8 @@ function Hero() {
             The renewal tool that shows its work.
           </h1>
           <p className="mt-7 text-base md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
-            Paste a customer call. Get a drafted follow-up email and a CRM update where every single line cites the exact moment that justified it. Approve in 90 seconds.
+            Paste a customer call. Get a drafted follow-up email and a CRM update where every single
+            line cites the exact moment that justified it. Approve in 90 seconds.
           </p>
 
           <div className="mt-9 flex flex-wrap items-center gap-3">
@@ -203,7 +210,9 @@ function Partners() {
             Send us five closed renewals. We will show you what we would have caught.
           </h2>
           <p className="mt-5 text-base text-muted-foreground leading-relaxed">
-            Pick five renewals from the last twelve months, anything that ended in churn, downgrade, or surprise expansion. We run a concierge backtest and return the customer moments your team did not act on, with citations.
+            Pick five renewals from the last twelve months, anything that ended in churn, downgrade,
+            or surprise expansion. We run a concierge backtest and return the customer moments your
+            team did not act on, with citations.
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <Link
@@ -221,7 +230,8 @@ function Partners() {
         <figure className="border border-border rounded-2xl bg-surface p-6 md:p-8">
           <Quote className="size-5 text-muted-foreground mb-4" />
           <blockquote className="text-base md:text-lg font-display tracking-tight leading-snug">
-            "If the citations are real, the budget conversation gets much easier. Show me the moments my team missed, in the customer's own words."
+            "If the citations are real, the budget conversation gets much easier. Show me the
+            moments my team missed, in the customer's own words."
           </blockquote>
           <figcaption className="mt-5 text-xs text-muted-foreground">
             What we hear from VP CS in every first call.
@@ -241,8 +251,12 @@ function Footer() {
           <span className="font-mono">Receipts , shows its work.</span>
         </div>
         <div className="flex items-center gap-5">
-          <Link to="/try" className="hover:text-foreground">Try the demo</Link>
-          <Link to="/waitlist" className="hover:text-foreground">Request access</Link>
+          <Link to="/try" className="hover:text-foreground">
+            Try the demo
+          </Link>
+          <Link to="/waitlist" className="hover:text-foreground">
+            Request access
+          </Link>
           <a href="mailto:founders@receipts.dev" className="hover:text-foreground">
             founders@receipts.dev
           </a>
