@@ -9,17 +9,17 @@ import { IntegrationsStrip } from "@/components/integrations/IntegrationsStrip";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Receipts — the night-shift research desk for CS teams" },
+      { title: "Receipts — agentic renewal desk for CS teams" },
       {
         name: "description",
         content:
-          "Four specialist agents read every call, Slack thread, and email on your book overnight, then leave each CSM a 90-second morning brief — with every claim cited back to the moment the customer said it.",
+          "Receipts turns customer conversations into cited renewal actions: drafts, forecast moves, and manager approvals your CS team can trust.",
       },
-      { property: "og:title", content: "Receipts — night-shift research desk for CS teams" },
+      { property: "og:title", content: "Receipts — agentic renewal desk for CS teams" },
       {
         property: "og:description",
         content:
-          "Walk in ready, not behind. Three plays before lunch — every claim cited.",
+          "Customer-backed actions for renewals, expansion, and forecast — every claim cited.",
       },
     ],
   }),
@@ -90,13 +90,12 @@ function Hero() {
             For CSMs · renewals managers · CCOs
           </div>
           <h1 className="font-display text-5xl md:text-[64px] font-semibold tracking-tight leading-[1.02]">
-            Your CSMs deserve a night-shift research desk.
+            Your CS team deserves agents that move the renewal work.
           </h1>
           <p className="mt-6 text-base md:text-lg text-muted-foreground leading-relaxed">
-            Receipts is the team you'd hire if you could. Four specialist agents
-            read every call, Slack thread, and email on your book overnight —
-            and leave each CSM a 90-second morning brief with every claim cited
-            back to the moment the customer said it.
+            Receipts reads the customer record, stages the next action, and shows
+            the exact receipt behind every forecast move, rescue play, and
+            expansion signal. Your team approves the work before anything ships.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -116,7 +115,7 @@ function Hero() {
 
           <p className="mt-6 text-[11px] font-mono text-muted-foreground inline-flex items-center gap-2">
             <Clock className="size-3" />
-            SOC 2 Type I · tenant isolation · your data never trains a shared model
+            Read-only by default · human approval before writes · your data never trains shared models
           </p>
         </div>
 
@@ -134,11 +133,11 @@ function InlineBrief() {
         <div className="flex items-center gap-2">
           <span className="size-2 rounded-full bg-success animate-pulse" />
           <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
-            Your morning · Tue Nov 11 · 7:42a
+            Sample book · today · 7:42a
           </span>
         </div>
         <span className="text-[10px] font-mono text-muted-foreground">
-          {AGENT_OUTCOMES.conversationsRead} read overnight
+          {AGENT_OUTCOMES.conversationsRead} sample conversations
         </span>
       </div>
       <div className="p-5">
@@ -259,15 +258,14 @@ function Wedge() {
     <section id="partners" className="border-b border-border">
       <div className="max-w-[1180px] mx-auto px-6 md:px-10 py-16 md:py-24 grid lg:grid-cols-[1fr_0.8fr] gap-12 items-start">
         <div className="max-w-xl">
-          <span className="eyebrow block mb-3">Q1 design partners</span>
+          <span className="eyebrow block mb-3">Design partner preview</span>
           <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight leading-[1.05]">
-            We're shipping with six CS teams this quarter.
+            See what Receipts would have caught before you connect anything.
           </h2>
           <p className="mt-5 text-base text-muted-foreground leading-relaxed">
-            You get the night-shift research desk, weekly working sessions with
-            the founders, lifetime founding pricing, and a direct line into the
-            roadmap. We get receipts on what actually works in front of a real
-            book.
+            Send 5–15 anonymized closed renewals. We'll run a concierge backtest
+            and show which churns, expansions, and forecast misses the agents
+            would have flagged — with the customer moments that prove it.
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <Link
@@ -277,7 +275,7 @@ function Wedge() {
               Request access <ArrowUpRight className="size-4" />
             </Link>
             <span className="text-[11px] font-mono text-muted-foreground">
-              3 of 6 slots open · Q1 2026
+              No integration required · sample output first
             </span>
           </div>
         </div>
@@ -285,12 +283,12 @@ function Wedge() {
         <figure className="border border-border rounded-2xl bg-surface p-6 md:p-8">
           <Quote className="size-5 text-muted-foreground mb-4" />
           <blockquote className="text-base md:text-lg font-display tracking-tight leading-snug">
-            "Every CSM I've ever managed spends Monday morning re-reading their
-            book. Receipts is the first thing that actually does that work — and
-            shows me where it got the answer. That's the whole job."
+            "Give Receipts the renewals we already lost, then show me the exact
+            customer moments we ignored. If the receipts are real, the budget
+            conversation gets much easier."
           </blockquote>
           <figcaption className="mt-5 text-xs text-muted-foreground">
-            Director of Customer Success · SaaS, $40M ARR · design partner #2
+            Example buyer reaction · illustrative preview
           </figcaption>
         </figure>
       </div>

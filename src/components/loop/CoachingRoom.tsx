@@ -1,7 +1,6 @@
-// Coaching Room — the CS manager's surface. Not "team rollup". A feed of
-// specific, replayable coaching moments the agents flagged from this
-// week's calls. Each one comes with a 30-second transcript clip and a
-// next-time line the manager can send to the CSM or save for 1:1.
+// Team Forecast — the CS manager's surface. The manager is not being coached;
+// they see where agents changed forecast, found risk, or staged interventions
+// across their CSMs, then decide what to send, save, or operationalize.
 
 import { useState } from "react";
 import { Play, Send, Save, Quote, Sparkles, AlertTriangle } from "lucide-react";
@@ -35,23 +34,23 @@ export function CoachingRoom() {
     <div className="max-w-3xl mx-auto px-6 py-8 space-y-8">
       <header className="space-y-3">
         <div className="text-[12px] font-mono uppercase tracking-[0.16em] text-muted-foreground">
-          {shortStamp()} · coaching room · 8 CSMs · 312 accounts
+          {shortStamp()} · team forecast · 8 CSMs · 312 accounts
         </div>
         <h1 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight leading-[1.1]">
-          {moments.length} coaching moments this week.
+          {moments.length} team decisions need your call.
           <br />
           <span className="text-muted-foreground">
-            Coach the moment, not the metric.
+            The agents found the evidence; you choose the workflow.
           </span>
         </h1>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-2 text-sm">
           <Stat
-            label="Likely ARR upside if patterns fix"
+            label="ARR protected if handled"
             value={`$${(totalUpside / 1000).toFixed(0)}k`}
             tone="success"
           />
-          <Stat label="High-severity moments" value={`${moments.filter((m) => m.severity === "high").length}`} />
-          <Stat label="Team patterns detected" value={`${patterns.length}`} />
+          <Stat label="Manager approvals needed" value={`${moments.filter((m) => m.severity === "high").length}`} />
+          <Stat label="Automations ready" value={`${patterns.length}`} />
           <span className="text-[11px] font-mono text-muted-foreground ml-auto">
             <Sparkles className="size-3 inline -translate-y-0.5 mr-1" />
             Sample book · numbers illustrative
@@ -63,7 +62,7 @@ export function CoachingRoom() {
       {patterns.length > 0 && (
         <section className="space-y-3">
           <h2 className="text-[11px] font-mono uppercase tracking-[0.16em] text-muted-foreground">
-            Team patterns · run a workshop
+            Cross-team workflow · ready to automate
           </h2>
           <div className="grid gap-3 sm:grid-cols-2">
             {patterns.map((p) => (
@@ -74,7 +73,7 @@ export function CoachingRoom() {
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="size-3.5 text-warning" />
                   <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
-                    {p.csmCount} CSMs · {p.missCount} misses
+                    {p.csmCount} CSMs · {p.missCount} accounts
                   </span>
                   <span className="ml-auto text-[11px] font-mono text-success">
                     +{formatARR(p.arrUpside)} upside
@@ -83,7 +82,7 @@ export function CoachingRoom() {
                 <h3 className="font-display text-sm font-semibold leading-snug">{p.headline}</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">{p.detail}</p>
                 <button className="text-xs font-medium underline decoration-foreground/30 underline-offset-4 hover:decoration-foreground">
-                  Generate 20-min workshop →
+                  Draft manager play →
                 </button>
               </div>
             ))}
@@ -94,7 +93,7 @@ export function CoachingRoom() {
       {/* Coaching moments */}
       <section className="space-y-4">
         <h2 className="text-[11px] font-mono uppercase tracking-[0.16em] text-muted-foreground">
-          This week's moments
+          CSM intervention queue
         </h2>
         {moments.map((m) => (
           <CoachingCard
@@ -205,7 +204,7 @@ function CoachingCard({
       {/* What to say next time */}
       <div className="px-5 pb-4">
         <div className="text-[11px] font-mono uppercase tracking-[0.14em] text-muted-foreground mb-1.5 flex items-center gap-1">
-          <Quote className="size-3" /> What to say next time
+            <Quote className="size-3" /> Manager note to send or save
         </div>
         <p className="text-sm leading-relaxed">{moment.whatToSayNextTime}</p>
       </div>

@@ -37,7 +37,7 @@ const TABS: {
   Icon: React.ComponentType<{ className?: string }>;
 }[] = [
   { id: "csm", label: "CSM", product: "Approval Queue", Icon: Users },
-  { id: "manager", label: "Manager", product: "Coaching Room", Icon: LayoutGrid },
+  { id: "manager", label: "Manager", product: "Team Forecast", Icon: LayoutGrid },
   { id: "leader", label: "VP / CCO", product: "Forecast Floor", Icon: TrendingUp },
 ];
 
