@@ -1084,26 +1084,26 @@ function Founder() {
       <div className="max-w-2xl">
         <span className="eyebrow block mb-4">Why we're building this</span>
         <h2 className="font-display text-2xl md:text-3xl font-semibold tracking-tight mb-5 leading-tight">
-          We don't replace your CRM.<br />We replace the fiction inside it.
+          We're not selling software.<br />We're staffing your CS team — overnight.
         </h2>
         <div className="space-y-4 text-[15px] text-foreground/85 leading-relaxed">
           <p>
             Every VP of CS we talked to said the same thing: the renewal forecast is the
-            metric that gets them fired, and they don't trust their own dashboard. CSMs
-            spend two hours on a Friday backfilling Gainsight so the number looks defensible
-            on Monday — and the CFO still doesn't believe it.
+            number that gets them fired, and they don't trust their own dashboard. CSMs
+            burn Fridays backfilling Gainsight to make Monday's number look defensible —
+            and the CFO still doesn't believe it.
           </p>
           <p>
-            The signal that actually predicts churn is in the conversation. Champion changes,
-            economic buyer shifts, competitive mentions, exec silence — the customer says it
-            on a call or in a Slack thread, and it never makes it to the system of record.
-            We read those moments, score them, and cite every number back to the source.
+            So we built the team you'd hire if you could: four specialist agents that
+            read every call, Slack thread, and email overnight, score every renewal from
+            the customer's own voice, and cite every claim back to the moment it was
+            said. Your CSM walks in at 7:42a to a brief, not an inbox.
           </p>
           <p className="text-muted-foreground">
-            <span className="text-foreground font-medium">Where we go:</span> Receipts
-            is the wedge. Once a CSM trusts our score more than their CRM's, we own the
-            renewal forecast. That's the foothold to rebuild the post-sales stack — coaching,
-            staffing, expansion modeling — from conversation-grade data, not log-grade.
+            <span className="text-foreground font-medium">Where we go:</span> the brief is
+            the wedge. Once the CSM trusts the agent's score more than their CRM's, we own
+            the renewal forecast — then expansion, coaching, and staffing. The post-sales
+            stack rebuilt from conversation-grade data instead of log-grade.
           </p>
         </div>
         <div className="mt-8 flex flex-wrap items-center gap-3">
