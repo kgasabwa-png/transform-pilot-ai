@@ -391,29 +391,39 @@ function PlayDetail({
         </button>
       </div>
 
-      {/* The play */}
+      {/* The play — editorial card, not a black slab */}
       {brief && (
-        <div className="border border-foreground rounded-2xl p-6 mb-8 bg-foreground text-background">
-          <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-background/60 mb-3">
-            Today's play · before lunch
+        <div className="relative rounded-2xl p-6 mb-8 bg-surface border border-border shadow-[0_1px_0_rgba(0,0,0,0.02),0_24px_48px_-32px_rgba(0,0,0,0.12)] overflow-hidden">
+          <span
+            aria-hidden
+            className="absolute left-0 top-0 bottom-0 w-1 bg-primary"
+          />
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
+              Today's play · before lunch
+            </div>
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground">
+              <span className="size-1.5 rounded-full bg-primary" />
+              drafted 7:42a
+            </span>
           </div>
-          <p className="text-xl font-display font-semibold leading-snug tracking-tight">
+          <p className="text-xl md:text-2xl font-display font-semibold leading-snug tracking-tight text-foreground">
             {brief.action}
           </p>
-          <p className="text-sm text-background/70 mt-3 leading-relaxed">
-            <span className="font-medium text-background">Because: </span>
+          <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
+            <span className="font-medium text-foreground">Because: </span>
             {brief.because}
           </p>
 
           {/* Draft action surface — honest "draft only" affordance */}
-          <div className="mt-5 pt-5 border-t border-background/15 flex flex-wrap items-center gap-2">
-            <button className="inline-flex items-center gap-1.5 text-xs font-medium bg-background text-foreground px-3 py-1.5 rounded-full hover:opacity-90">
+          <div className="mt-5 pt-5 border-t border-border flex flex-wrap items-center gap-2">
+            <button className="inline-flex items-center gap-1.5 text-xs font-medium bg-foreground text-background px-3 py-1.5 rounded-full hover:opacity-90 transition-opacity">
               <Send className="size-3" /> Open drafted email
             </button>
-            <button className="inline-flex items-center gap-1.5 text-xs text-background/80 hover:text-background border border-background/20 px-3 py-1.5 rounded-full">
+            <button className="inline-flex items-center gap-1.5 text-xs text-foreground hover:bg-foreground/5 border border-border px-3 py-1.5 rounded-full transition-colors">
               <CornerDownLeft className="size-3" /> Log to Salesforce
             </button>
-            <span className="text-[10px] font-mono text-background/50 ml-auto">
+            <span className="text-[10px] font-mono text-muted-foreground ml-auto">
               awaiting your signoff
             </span>
           </div>
