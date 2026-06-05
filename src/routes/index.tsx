@@ -66,11 +66,10 @@ function Header() {
             Request access
           </Link>
           <Link
-            to="/app"
-            search={{ role: "csm" }}
+            to="/try"
             className="inline-flex items-center gap-1.5 text-xs font-medium bg-foreground text-background px-3.5 py-1.5 rounded-full hover:opacity-90"
           >
-            Open the desk <ArrowUpRight className="size-3" />
+            Try the desk <ArrowUpRight className="size-3" />
           </Link>
         </div>
       </div>
@@ -102,11 +101,10 @@ function Hero() {
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link
-              to="/app"
-              search={{ role: "csm" }}
+              to="/try"
               className="inline-flex items-center gap-2 text-sm font-medium bg-foreground text-background px-5 py-3 rounded-full hover:opacity-90"
             >
-              Open the live desk <ArrowUpRight className="size-4" />
+              Try it on a sample book <ArrowUpRight className="size-4" />
             </Link>
             <Link
               to="/waitlist"
