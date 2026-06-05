@@ -40,11 +40,11 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Receipts — the renewal risk your health score is missing" },
+      { title: "Receipts — your CS team's overnight agents" },
       {
         name: "description",
         content:
-          "The morning view CSMs open before their first call. Every renewal forecast cited back to the exact moment a customer said it. Backtested on 47 renewals.",
+          "Four specialist agents read every customer call, Slack, and email overnight — and leave your CSM a 90-second morning brief with every claim cited. Backtested on 47 renewals.",
       },
     ],
   }),
