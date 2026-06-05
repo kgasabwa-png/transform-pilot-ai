@@ -86,10 +86,13 @@ function ReceiptsApp() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <TopBar />
+      <AutopilotTicker />
       <main className="max-w-[1280px] mx-auto px-8 py-10">
         <Hero />
         <ProofStrip />
         <TodaysBrief onOpen={(id) => setOpenAccountId(id)} />
+        <AgentRoster />
+        <OvernightFeed />
         <section className="mt-16">
           <SectionHead
             eyebrow="The portfolio"
