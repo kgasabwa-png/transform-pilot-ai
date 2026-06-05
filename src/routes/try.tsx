@@ -20,24 +20,24 @@ import { runClose, type ClosePackage, type Citation } from "@/lib/loop/close.fun
 export const Route = createFileRoute("/try")({
   head: () => ({
     meta: [
-      { title: "Try Receipts , paste a call, see the cited draft" },
+      { title: "Try Receipts - paste a call, see the cited evidence" },
       {
         name: "description",
         content:
-          "Paste a renewal call transcript. Receipts returns a drafted follow-up email and CRM update where every line cites the exact moment that justified it.",
+          "Paste a renewal call transcript. Receipts returns a cited evidence package with risks, stakeholder changes, CRM updates, and a reviewed follow-up draft.",
       },
       { property: "og:title", content: "Try Receipts" },
       {
         property: "og:description",
         content:
-          "Paste a call. Get a draft renewal email where every line cites the moment that justified it.",
+          "Paste a call. Get renewal evidence where every claim cites the moment that justified it.",
       },
     ],
   }),
   component: TryPage,
 });
 
-// Sample renewal call (Northwind Logistics) , gives visitors something to run in one click.
+// Sample renewal call (Northwind Logistics) gives visitors something to run in one click.
 const SAMPLE = `Keila (CSM): Thanks for making time. Before Q4 numbers, Priya, I heard Daniel moved over to Ops. Is he still your exec sponsor on this?
 Priya (VP Ops): Honestly, no. Daniel's now running the warehouse modernization track and our new CFO Renee is the one asking the hard questions about routing spend. I'd like to bring her in next time.
 Keila (CSM): Got it. I'll set up a 30-min intro with Renee before the next review. What is she focused on?
@@ -107,10 +107,10 @@ function TryPage() {
   }
 
   const emailText = pkg
-    ? emailEdit ??
+    ? (emailEdit ??
       `Subject: ${pkg.email.subject}\n\nHi ${pkg.email.to},\n\n${pkg.email.bodyParagraphs
         .map((p) => p.text)
-        .join("\n\n")}`
+        .join("\n\n")}`)
     : "";
 
   function copyEmail() {
@@ -160,10 +160,12 @@ function TryPage() {
         <div className="max-w-3xl">
           <span className="eyebrow block mb-3">Live demo, no signup</span>
           <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight leading-tight">
-            Paste a call. See the cited draft.
+            Paste a call. See the cited evidence package.
           </h1>
           <p className="mt-3 text-sm md:text-base text-muted-foreground leading-relaxed">
-            We start you with a sample renewal call. Click <span className="font-medium text-foreground">Generate close package</span>, then click any citation chip to jump to the exact line that justified it.
+            We start you with a sample renewal call. Click{" "}
+            <span className="font-medium text-foreground">Generate evidence package</span>, then
+            click any citation chip to jump to the exact line that justified it.
           </p>
         </div>
       </div>
@@ -200,9 +202,7 @@ function TryPage() {
                       lineRefs.current[n] = el;
                     }}
                     className={`flex gap-3 rounded-lg p-2 transition-colors ${
-                      isActive
-                        ? "bg-warning/15 ring-1 ring-warning"
-                        : "hover:bg-accent/30"
+                      isActive ? "bg-warning/15 ring-1 ring-warning" : "hover:bg-accent/30"
                     }`}
                   >
                     <span className="font-mono text-[10px] text-muted-foreground w-7 shrink-0 pt-1 text-right">
@@ -253,7 +253,7 @@ function TryPage() {
                   </>
                 ) : (
                   <>
-                    <Sparkles className="size-3.5" /> Generate close package
+                    <Sparkles className="size-3.5" /> Generate evidence package
                   </>
                 )}
               </button>
@@ -261,11 +261,9 @@ function TryPage() {
           </div>
         </section>
 
-        {/* RIGHT: close package */}
+        {/* RIGHT: evidence package */}
         <section className="border border-border rounded-2xl bg-surface overflow-hidden flex flex-col min-h-[640px]">
-          {!pkg && !loading && (
-            <EmptyRight onRun={generate} />
-          )}
+          {!pkg && !loading && <EmptyRight onRun={generate} />}
           {loading && <LoadingRight />}
           {pkg && (
             <Result
@@ -287,10 +285,12 @@ function TryPage() {
         <div className="border border-border rounded-2xl p-6 md:p-8 bg-surface/40 flex flex-wrap items-center justify-between gap-4">
           <div className="max-w-lg">
             <h3 className="font-display text-lg font-semibold tracking-tight">
-              This is the entire MVP.
+              This is the wedge we can prove.
             </h3>
             <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
-              One channel (calls), one action (drafted follow-up), one trust mechanic (every line cited). Design partners get persisted history and outcome tracking.
+              One channel (calls), one decision surface (renewal evidence), one trust mechanic
+              (every claim cited). Design partners get account history, outcome tracking, and
+              team-level coaching loops.
             </p>
           </div>
           <Link
@@ -312,10 +312,11 @@ function EmptyRight({ onRun }: { onRun: () => void }) {
         <Sparkles className="size-5 text-muted-foreground" />
       </div>
       <h3 className="font-display text-lg font-semibold tracking-tight">
-        Your cited close package lands here.
+        Your cited evidence package lands here.
       </h3>
       <p className="text-sm text-muted-foreground mt-2 max-w-sm">
-        A drafted email, a CRM note, and flagged risks. Every paragraph links back to the line that proved it.
+        Renewal risks, CRM updates, value proof, and a reviewed follow-up. Every claim links back to
+        the line that proved it.
       </p>
       <button
         onClick={onRun}
@@ -330,8 +331,8 @@ function EmptyRight({ onRun }: { onRun: () => void }) {
 function LoadingRight() {
   const steps = [
     "Reading the transcript",
-    "Mapping stakeholders and signals",
-    "Drafting follow-up and CRM update",
+    "Mapping stakeholders, value proof, and risks",
+    "Drafting follow-up and CRM evidence updates",
     "Citing every claim back to a line",
   ];
   return (
@@ -428,7 +429,7 @@ function Result({
         <section className="p-5 border-b border-border">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
-              Drafted follow-up email
+              CSM follow-up draft
             </h3>
             <div className="flex items-center gap-1.5">
               <button
@@ -457,9 +458,7 @@ function Result({
               <div className="text-xs text-muted-foreground mb-1">
                 To: <span className="text-foreground">{pkg.email.to}</span>
               </div>
-              <div className="text-sm font-medium tracking-tight mb-3">
-                {pkg.email.subject}
-              </div>
+              <div className="text-sm font-medium tracking-tight mb-3">{pkg.email.subject}</div>
               <div className="space-y-3 text-sm leading-relaxed">
                 {pkg.email.bodyParagraphs.map((p, i) => (
                   <p key={i}>
@@ -478,7 +477,7 @@ function Result({
         {pkg.risks?.length > 0 && (
           <section className="p-5 border-b border-border">
             <h3 className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground mb-3">
-              Risks and plays
+              Renewal risks and plays
             </h3>
             <div className="space-y-2.5">
               {pkg.risks.map((r, i) => (
@@ -511,11 +510,14 @@ function Result({
         {pkg.recordUpdates?.length > 0 && (
           <section className="p-5 border-b border-border">
             <h3 className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground mb-3">
-              Account record updates
+              CRM evidence updates
             </h3>
             <div className="space-y-2">
               {pkg.recordUpdates.map((u, i) => (
-                <div key={i} className="border border-border rounded-lg p-3 bg-background text-[13px]">
+                <div
+                  key={i}
+                  className="border border-border rounded-lg p-3 bg-background text-[13px]"
+                >
                   <div className="text-xs font-medium tracking-tight mb-1">{u.field}</div>
                   <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
                     <span className="line-through">{u.before}</span>
