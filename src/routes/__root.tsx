@@ -77,17 +77,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Receipts — agentic renewal desk for CS teams" },
+      { title: "Receipts - renewal work with citations" },
       {
         name: "description",
         content:
-          "Receipts turns customer conversations into cited renewal actions, forecast moves, and manager coaching moments your CS team can approve.",
+          "Receipts turns customer conversations into cited renewal actions, follow-up drafts, CRM updates, and forecast evidence humans can approve.",
       },
-      { property: "og:title", content: "Receipts — agentic renewal desk for CS teams" },
+      { property: "og:title", content: "Receipts - renewal work with citations" },
       {
         property: "og:description",
         content:
-          "Agents read the customer record, stage renewal work, and cite every claim before a human approves the ship.",
+          "Paste a call or open a renewal workspace. Every AI recommendation cites the customer moment that justified it.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

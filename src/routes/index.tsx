@@ -1,25 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowUpRight, Clock, Quote } from "lucide-react";
+import { ArrowUpRight, Quote, Clock, Check } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
-import { TODAYS_BRIEF, briefAccount } from "@/lib/loop/brief";
-import { formatARR } from "@/lib/loop/portfolio";
-import { AGENT_OUTCOMES } from "@/lib/loop/agents";
-import { IntegrationsStrip } from "@/components/integrations/IntegrationsStrip";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Receipts — agentic renewal desk for CS teams" },
+      { title: "Receipts , the renewal tool that shows its work" },
       {
         name: "description",
         content:
-          "Receipts turns customer conversations into cited renewal actions: drafts, forecast moves, and manager approvals your CS team can trust.",
+          "Paste a customer call. Get a drafted renewal email and CRM update where every line cites the exact moment that justified it. Approve in 90 seconds.",
       },
-      { property: "og:title", content: "Receipts — agentic renewal desk for CS teams" },
+      { property: "og:title", content: "Receipts , the renewal tool that shows its work" },
       {
         property: "og:description",
         content:
-          "Customer-backed actions for renewals, expansion, and forecast — every claim cited.",
+          "Drafted renewal follow-ups where every claim is cited back to the line of the call that justified it.",
       },
     ],
   }),
@@ -31,15 +27,13 @@ function LandingPage() {
     <div className="min-h-screen bg-background text-foreground">
       <Header />
       <Hero />
-      <HowItWorks />
-      <IntegrationsStrip />
-      <Wedge />
+      <Receipts />
+      <Why />
+      <Partners />
       <Footer />
     </div>
   );
 }
-
-// ───────────────────────── HEADER ─────────────────────────
 
 function Header() {
   return (
@@ -48,15 +42,17 @@ function Header() {
         <Link to="/" className="flex items-center gap-2 shrink-0">
           <Logo size={20} />
           <span className="font-display font-semibold tracking-tight">Receipts</span>
-          <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.18em] text-success ml-3">
-            <span className="size-1.5 rounded-full bg-success animate-pulse" />
-            live demo
-          </span>
         </Link>
         <nav className="hidden md:flex items-center gap-7 text-xs text-muted-foreground">
-          <a href="#how" className="hover:text-foreground">How it works</a>
-          <a href="#stack" className="hover:text-foreground">Your stack</a>
-          <a href="#partners" className="hover:text-foreground">Design partners</a>
+          <a href="#receipts" className="hover:text-foreground">
+            How it works
+          </a>
+          <a href="#why" className="hover:text-foreground">
+            Why it matters
+          </a>
+          <a href="#partners" className="hover:text-foreground">
+            Design partners
+          </a>
         </nav>
         <div className="flex items-center gap-2">
           <Link
@@ -69,7 +65,7 @@ function Header() {
             to="/try"
             className="inline-flex items-center gap-1.5 text-xs font-medium bg-foreground text-background px-3.5 py-1.5 rounded-full hover:opacity-90"
           >
-            Try the desk <ArrowUpRight className="size-3" />
+            Try the demo <ArrowUpRight className="size-3" />
           </Link>
         </div>
       </div>
@@ -77,33 +73,29 @@ function Header() {
   );
 }
 
-// ───────────────────────── HERO + INLINE BRIEF ─────────────────────────
-
 function Hero() {
   return (
     <section className="border-b border-border">
-      <div className="max-w-[1180px] mx-auto px-6 md:px-10 pt-16 pb-16 md:pt-24 md:pb-24 grid lg:grid-cols-[1.05fr_0.95fr] gap-12 lg:gap-16 items-start">
-        {/* Left: positioning */}
-        <div className="max-w-xl">
-          <div className="inline-flex items-center gap-2 mb-6 text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground border border-border rounded-full px-3 py-1">
+      <div className="max-w-[1180px] mx-auto px-6 md:px-10 pt-20 pb-16 md:pt-28 md:pb-24">
+        <div className="max-w-3xl">
+          <div className="inline-flex items-center gap-2 mb-7 text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground border border-border rounded-full px-3 py-1">
             <span className="size-1.5 rounded-full bg-success animate-pulse" />
-            For CSMs · renewals managers · CCOs
+            For CS teams at mid-market SaaS
           </div>
-          <h1 className="font-display text-5xl md:text-[64px] font-semibold tracking-tight leading-[1.02]">
-            Your CS team deserves agents that move the renewal work.
+          <h1 className="font-display text-5xl md:text-[72px] font-semibold tracking-tight leading-[1.02]">
+            The renewal tool that shows its work.
           </h1>
-          <p className="mt-6 text-base md:text-lg text-muted-foreground leading-relaxed">
-            Receipts reads the customer record, stages the next action, and shows
-            the exact receipt behind every forecast move, rescue play, and
-            expansion signal. Your team approves the work before anything ships.
+          <p className="mt-7 text-base md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
+            Paste a customer call. Get a drafted follow-up email and a CRM update where every single
+            line cites the exact moment that justified it. Approve in 90 seconds.
           </p>
 
-          <div className="mt-8 flex flex-wrap items-center gap-3">
+          <div className="mt-9 flex flex-wrap items-center gap-3">
             <Link
               to="/try"
               className="inline-flex items-center gap-2 text-sm font-medium bg-foreground text-background px-5 py-3 rounded-full hover:opacity-90"
             >
-              Try it on a sample book <ArrowUpRight className="size-4" />
+              Try it on a sample call <ArrowUpRight className="size-4" />
             </Link>
             <Link
               to="/waitlist"
@@ -113,120 +105,41 @@ function Hero() {
             </Link>
           </div>
 
-          <p className="mt-6 text-[11px] font-mono text-muted-foreground inline-flex items-center gap-2">
+          <p className="mt-7 text-[11px] font-mono text-muted-foreground inline-flex items-center gap-2">
             <Clock className="size-3" />
-            Read-only by default · human approval before writes · your data never trains shared models
+            No signup for the demo. Your transcript is not stored.
           </p>
         </div>
-
-        {/* Right: actual product artifact — Tuesday morning brief */}
-        <InlineBrief />
       </div>
     </section>
   );
 }
 
-function InlineBrief() {
-  return (
-    <div className="border border-border rounded-2xl bg-surface shadow-sm overflow-hidden">
-      <div className="px-5 py-3 border-b border-border flex items-center justify-between bg-background">
-        <div className="flex items-center gap-2">
-          <span className="size-2 rounded-full bg-success animate-pulse" />
-          <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
-            Sample book · today · 7:42a
-          </span>
-        </div>
-        <span className="text-[10px] font-mono text-muted-foreground">
-          {AGENT_OUTCOMES.conversationsRead} sample conversations
-        </span>
-      </div>
-      <div className="p-5">
-        <div className="font-display text-base font-semibold tracking-tight mb-1">
-          Three plays before lunch.
-        </div>
-        <div className="text-xs text-muted-foreground mb-4">
-          Every claim cited. Every play awaits your signoff.
-        </div>
-        <div className="space-y-2.5">
-          {TODAYS_BRIEF.map((b) => {
-            const acc = briefAccount(b.accountId);
-            if (!acc) return null;
-            const dot =
-              b.urgency === "now"
-                ? "bg-danger"
-                : b.urgency === "today"
-                ? "bg-warning"
-                : "bg-muted-foreground/40";
-            return (
-              <Link
-                key={b.accountId}
-                to="/app"
-                search={{ role: "csm" }}
-                className="block border border-border rounded-xl p-3.5 bg-background hover:border-foreground/30 transition-colors group"
-              >
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className={`size-1.5 rounded-full ${dot}`} />
-                  <span className="font-mono text-[10px] text-muted-foreground">#{b.rank}</span>
-                  <span className="text-sm font-semibold tracking-tight">{acc.name}</span>
-                  <span className="ml-auto text-[10px] font-mono text-muted-foreground">
-                    {formatARR(b.arrAtStake)} · {acc.renewalDays}d
-                  </span>
-                </div>
-                <p className="text-[13px] leading-snug">{b.action}</p>
-                <p className="text-[11px] text-muted-foreground mt-1.5 line-clamp-1">
-                  <span className="text-foreground/70">Because:</span> {b.because}
-                </p>
-              </Link>
-            );
-          })}
-        </div>
-        <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
-          <span className="text-[11px] text-muted-foreground">
-            Live demo · interact with the full desk
-          </span>
-          <Link
-            to="/app"
-            search={{ role: "csm" }}
-            className="text-[11px] font-medium inline-flex items-center gap-1 hover:opacity-80"
-          >
-            Open <ArrowUpRight className="size-3" />
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ───────────────────────── HOW IT WORKS ─────────────────────────
-
-function HowItWorks() {
+function Receipts() {
   const steps = [
     {
       n: "01",
-      title: "Overnight, the desk reads.",
-      body: "Four specialist agents — Renewal-Risk, Champion-Watch, Expansion-Scout, Exec-Silence — read every call, Slack thread, and email on your book between 6:14p and 7:42a.",
-      meta: `${AGENT_OUTCOMES.conversationsRead} conversations · ${AGENT_OUTCOMES.signalsProcessed.toLocaleString()} signals`,
+      title: "Paste a call.",
+      body: "Drop in the transcript from Gong, Zoom, Fathom, or a meeting note. One call at a time. No integration to set up.",
     },
     {
       n: "02",
-      title: "At 7:42a, the brief lands.",
-      body: "Three plays, ranked. Each one has the action, the reason it's the right action, the ARR at stake, and a drafted next move — email, Slack note, CRM update — waiting for your signoff.",
-      meta: "90-second read · 3 plays before lunch",
+      title: "Get the cited draft.",
+      body: "Receipts returns a follow-up email, a CRM update, and flagged risks. Every paragraph carries a citation chip linking back to the line of the call that justified it.",
     },
     {
       n: "03",
-      title: "Every claim cites the moment.",
-      body: "Click any score and see the receipts: the quote, the speaker, the timestamp, the channel. Disagree? Override. The agent learns from your override — it doesn't override you.",
-      meta: "3.2 citations per claim · 100% traceable",
+      title: "Approve in 90 seconds.",
+      body: "Click any chip to jump to the source line. Edit, approve and copy to clipboard, or reject. Nothing sends without you.",
     },
   ];
   return (
-    <section id="how" className="border-b border-border">
+    <section id="receipts" className="border-b border-border">
       <div className="max-w-[1180px] mx-auto px-6 md:px-10 py-16 md:py-24">
         <div className="max-w-2xl mb-12">
           <span className="eyebrow block mb-3">How it works</span>
           <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight leading-tight">
-            One product moment, repeated every morning.
+            One call in. A cited renewal package out.
           </h2>
         </div>
         <div className="grid md:grid-cols-3 gap-px bg-border rounded-2xl overflow-hidden border border-border">
@@ -239,33 +152,67 @@ function HowItWorks() {
                 {s.title}
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed flex-1">{s.body}</p>
-              <p className="mt-5 pt-4 border-t border-border text-[11px] font-mono text-muted-foreground">
-                {s.meta}
-              </p>
             </div>
           ))}
         </div>
-        <div id="stack" />
       </div>
     </section>
   );
 }
 
-// ───────────────────────── WEDGE + CTA ─────────────────────────
+function Why() {
+  const points = [
+    {
+      h: "CSMs do not trust black-box AI.",
+      b: "Receipts shows the quote behind every claim. No score without a source line. That is the whole product.",
+    },
+    {
+      h: "Managers can coach from real evidence.",
+      b: "Every approved or rejected draft is a labeled signal. Patterns surface across the team, anchored to the moments that matter.",
+    },
+    {
+      h: "Forecast scrutiny gets easier.",
+      b: "When the CFO asks why a renewal is at risk, the answer is the customer's own words, with a timestamp.",
+    },
+  ];
+  return (
+    <section id="why" className="border-b border-border bg-surface/40">
+      <div className="max-w-[1180px] mx-auto px-6 md:px-10 py-16 md:py-24">
+        <div className="max-w-2xl mb-12">
+          <span className="eyebrow block mb-3">Why receipts</span>
+          <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight leading-tight">
+            Every other AI tool surfaces a score. We show the line that proved it.
+          </h2>
+        </div>
+        <div className="grid md:grid-cols-3 gap-6">
+          {points.map((p) => (
+            <div key={p.h} className="border border-border rounded-2xl bg-background p-6">
+              <Check className="size-4 text-success mb-3" />
+              <h3 className="font-display text-base font-semibold tracking-tight mb-2 leading-snug">
+                {p.h}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{p.b}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
-function Wedge() {
+function Partners() {
   return (
     <section id="partners" className="border-b border-border">
       <div className="max-w-[1180px] mx-auto px-6 md:px-10 py-16 md:py-24 grid lg:grid-cols-[1fr_0.8fr] gap-12 items-start">
         <div className="max-w-xl">
-          <span className="eyebrow block mb-3">Design partner preview</span>
+          <span className="eyebrow block mb-3">Design partner program</span>
           <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight leading-[1.05]">
-            See what Receipts would have caught before you connect anything.
+            Send us five closed renewals. We will show you what we would have caught.
           </h2>
           <p className="mt-5 text-base text-muted-foreground leading-relaxed">
-            Send 5–15 anonymized closed renewals. We'll run a concierge backtest
-            and show which churns, expansions, and forecast misses the agents
-            would have flagged — with the customer moments that prove it.
+            Pick five renewals from the last twelve months, anything that ended in churn, downgrade,
+            or surprise expansion. We run a concierge backtest and return the customer moments your
+            team did not act on, with citations.
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <Link
@@ -275,7 +222,7 @@ function Wedge() {
               Request access <ArrowUpRight className="size-4" />
             </Link>
             <span className="text-[11px] font-mono text-muted-foreground">
-              No integration required · sample output first
+              No integration. No commitment. Sample output first.
             </span>
           </div>
         </div>
@@ -283,12 +230,11 @@ function Wedge() {
         <figure className="border border-border rounded-2xl bg-surface p-6 md:p-8">
           <Quote className="size-5 text-muted-foreground mb-4" />
           <blockquote className="text-base md:text-lg font-display tracking-tight leading-snug">
-            "Give Receipts the renewals we already lost, then show me the exact
-            customer moments we ignored. If the receipts are real, the budget
-            conversation gets much easier."
+            "If the citations are real, the budget conversation gets much easier. Show me the
+            moments my team missed, in the customer's own words."
           </blockquote>
           <figcaption className="mt-5 text-xs text-muted-foreground">
-            Example buyer reaction · illustrative preview
+            What we hear from VP CS in every first call.
           </figcaption>
         </figure>
       </div>
@@ -296,20 +242,20 @@ function Wedge() {
   );
 }
 
-// ───────────────────────── FOOTER ─────────────────────────
-
 function Footer() {
   return (
     <footer>
       <div className="max-w-[1180px] mx-auto px-6 md:px-10 py-10 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
           <Logo size={18} />
-          <span className="font-mono">Receipts · augments humans · cites every claim</span>
+          <span className="font-mono">Receipts , shows its work.</span>
         </div>
         <div className="flex items-center gap-5">
-          <Link to="/waitlist" className="hover:text-foreground">Request access</Link>
-          <Link to="/app" search={{ role: "csm" }} className="hover:text-foreground">
-            Open the desk
+          <Link to="/try" className="hover:text-foreground">
+            Try the demo
+          </Link>
+          <Link to="/waitlist" className="hover:text-foreground">
+            Request access
           </Link>
           <a href="mailto:founders@receipts.dev" className="hover:text-foreground">
             founders@receipts.dev
