@@ -23,10 +23,10 @@ export function nowParts(d = new Date()) {
   };
 }
 
-// "Fri Jun 5 · 9:14a"
+// "Fri Jun 5" — date-only to avoid SSR/client minute drift during hydration.
 export function shortStamp(d = new Date()) {
   const p = nowParts(d);
-  return `${p.weekday} ${p.month} ${p.date} · ${p.time}`;
+  return `${p.weekday} ${p.month} ${p.date}`;
 }
 
 // "Jun 5"
