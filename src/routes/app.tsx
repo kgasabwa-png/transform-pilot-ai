@@ -347,18 +347,28 @@ function RightPane({
   pane,
   persona,
   setPane,
+  onReceipt,
 }: {
   pane: RightPane;
   persona: PersonaId;
   setPane: (p: RightPane) => void;
+  onReceipt: (r: Receipt) => void;
 }) {
   if (pane.kind === "play") {
     const account = ACCOUNTS.find((a) => a.id === pane.accountId);
     const brief = TODAYS_BRIEF.find((b) => b.accountId === pane.accountId);
     if (!account) return null;
-    return <PlayDetail account={account} brief={brief} setPane={setPane} />;
+    return (
+      <PlayDetail
+        account={account}
+        brief={brief}
+        setPane={setPane}
+        persona={persona}
+        onReceipt={onReceipt}
+      />
+    );
   }
-  if (pane.kind === "portfolio") return <WatchlistView setPane={setPane} />;
+  if (pane.kind === "portfolio") return <WatchlistView setPane={setPane} persona={persona} />;
   if (pane.kind === "feed") return <FeedView />;
   if (pane.kind === "agents") return <AgentsView persona={persona} />;
   if (pane.kind === "integrations")
@@ -376,11 +386,16 @@ function PlayDetail({
   account,
   brief,
   setPane,
+  persona,
+  onReceipt,
 }: {
   account: Account;
   brief?: BriefItem;
   setPane: (p: RightPane) => void;
+  persona: PersonaId;
+  onReceipt: (r: Receipt) => void;
 }) {
+  const framing = PERSONAS[persona].playFraming;
   const gap = account.vendorScore.value - account.receiptsScore.value;
   const urgencyChip =
     brief?.urgency === "now"
