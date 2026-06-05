@@ -1132,8 +1132,8 @@ function Founder() {
 function Footer() {
   return (
     <footer className="border-t border-border mt-20 pt-8 pb-12 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
-      <div className="font-mono">Receipts · v0.2 · 8-account demo · 47-account backtest</div>
-      <div>The morning view your CFO will trust.</div>
+      <div className="font-mono">Receipts · v0.3 · 4 agents · 8-account demo · 47-account backtest</div>
+      <div>Your CS team now runs overnight.</div>
     </footer>
   );
 }
