@@ -79,17 +79,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Fluent — The AI Transformation Execution Platform" },
+      { title: "Receipts — agentic renewal desk for CS teams" },
       {
         name: "description",
         content:
-          "Fluent turns unclear AI ambition into governance, adoption plans, use cases, roadmaps, and execution.",
+          "Receipts turns customer conversations into cited renewal actions, forecast moves, and manager coaching moments your CS team can approve.",
       },
-      { property: "og:title", content: "Fluent — The AI Transformation Execution Platform" },
+      { property: "og:title", content: "Receipts — agentic renewal desk for CS teams" },
       {
         property: "og:description",
         content:
-          "Fluent turns unclear AI ambition into governance, adoption plans, use cases, roadmaps, and execution.",
+          "Agents read the customer record, stage renewal work, and cite every claim before a human approves the ship.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

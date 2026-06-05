@@ -38,6 +38,7 @@ import { PERSONAS, PERSONA_ORDER, type PersonaId } from "@/lib/loop/personas";
 import { Logo } from "@/components/brand/Logo";
 import { IntegrationsGrid } from "@/components/integrations/IntegrationsGrid";
 import { ReceiptModal } from "@/components/loop/ReceiptModal";
+import { ApprovalWorkspace } from "@/components/loop/ApprovalWorkspace";
 
 type AppSearch = { role: PersonaId; demo?: boolean };
 
@@ -49,7 +50,7 @@ export const Route = createFileRoute("/app")({
     return { role, demo: search.demo === true || search.demo === "1" || search.demo === "true" };
   },
   head: () => ({
-    meta: [{ title: "Receipts — night-shift desk" }],
+    meta: [{ title: "Receipts — approval queue" }],
   }),
   component: WorkspaceApp,
 });
@@ -66,33 +67,12 @@ function WorkspaceApp() {
   const { role, demo } = useSearch({ from: "/app" });
   const navigate = useNavigate({ from: "/app" });
 
-  const [pane, setPane] = useState<RightPane>(() => ({
-    kind: "play",
-    accountId: TODAYS_BRIEF[0]?.accountId ?? ACCOUNTS[0].id,
-  }));
-  const [openReceipt, setOpenReceipt] = useState<Receipt | null>(null);
-
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      {demo && <TryBanner />}
-      <DeskTopBar
-        persona={role}
-        onPersona={(p) => navigate({ search: (prev: AppSearch) => ({ ...prev, role: p }) })}
-      />
-
-      <div className="flex-1 grid grid-cols-[260px_1fr] min-h-0">
-        <LeftRail persona={role} pane={pane} setPane={setPane} />
-        <main className="overflow-y-auto bg-background">
-          <RightPane pane={pane} persona={role} setPane={setPane} onReceipt={setOpenReceipt} />
-        </main>
-      </div>
-
-      <ReceiptModal
-        receipt={openReceipt}
-        open={openReceipt !== null}
-        onClose={() => setOpenReceipt(null)}
-      />
-    </div>
+    <ApprovalWorkspace
+      role={role}
+      demo={demo}
+      onRoleChange={(p) => navigate({ search: (prev: AppSearch) => ({ ...prev, role: p }) })}
+    />
   );
 }
 
@@ -106,7 +86,7 @@ function TryBanner() {
         Sample book
       </span>
       <span className="text-foreground/75">
-        You're previewing as <span className="font-medium text-foreground">Sarah Chen</span>, CSM · 12 live accounts · nothing leaves your browser.
+        You're previewing as <span className="font-medium text-foreground">Sarah Chen</span>, renewals lead · {ACCOUNTS.length} synthetic accounts · nothing leaves your browser.
       </span>
       <Link
         to="/waitlist"
@@ -136,10 +116,10 @@ function DeskTopBar({
         </Link>
         <span className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.18em] text-success">
           <span className="size-1.5 rounded-full bg-success animate-pulse" />
-          Night-shift · live
+          The closing crew
         </span>
         <span className="hidden md:inline text-[10px] font-mono text-muted-foreground">
-          Tue Nov 11 · 7:42a · {AGENT_OUTCOMES.conversationsRead} conversations read overnight
+          Today · {AGENT_OUTCOMES.conversationsRead} sample conversations read
         </span>
       </div>
 

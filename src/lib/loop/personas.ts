@@ -25,7 +25,7 @@ export const PERSONAS: Record<PersonaId, Persona> = {
     who: "The CSM or renewals manager carrying the book.",
     promise: "Walk in ready, not behind. Three plays before lunch.",
     hero: {
-      eyebrow: "Your morning · Tue Nov 11 · 7:42a",
+      eyebrow: "Your morning · approval queue",
       title: "Three plays before lunch. Every claim cited.",
       sub: "Your renewal agents read the customer record, stage the next action, and cite the customer moment behind every recommendation. You approve the work before anything ships.",
     },

@@ -4,6 +4,8 @@ import { useState, type FormEvent } from "react";
 import { ArrowUpRight, CheckCircle2 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { joinWaitlist } from "@/lib/waitlist.functions";
+import { BACKTEST, BACKTEST_STATS } from "@/lib/loop/backtest";
+import { formatARR } from "@/lib/loop/portfolio";
 
 export const Route = createFileRoute("/waitlist")({
   head: () => ({
@@ -98,6 +100,8 @@ function WaitlistPage() {
           <p className="mt-10 text-xs text-muted-foreground font-mono">
             No integration required · sample output first
           </p>
+
+          <BacktestPreview />
         </section>
 
         <section className="bg-accent/30 border-l border-border px-6 md:px-12 py-16 md:py-24 flex items-start">
@@ -177,6 +181,52 @@ function WaitlistPage() {
           <Link to="/" className="hover:text-foreground">← back to home</Link>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function BacktestPreview() {
+  return (
+    <div className="mt-10 rounded-2xl border border-border bg-surface p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <span className="eyebrow">Sample backtest output</span>
+        <span className="text-[10px] font-mono uppercase tracking-[0.14em] text-primary border border-primary/15 bg-primary/5 rounded-full px-2 py-0.5">
+          sample data
+        </span>
+      </div>
+      <div className="grid sm:grid-cols-3 gap-3 mb-5">
+        <BacktestStat label="renewals replayed" value={`${BACKTEST_STATS.totalRenewals}`} />
+        <BacktestStat
+          label="surprise churns caught"
+          value={`${BACKTEST_STATS.caughtByReceipts}/${BACKTEST_STATS.surpriseChurns}`}
+        />
+        <BacktestStat label="avg early warning" value={`${BACKTEST_STATS.avgEarlyWarningDays}d`} />
+      </div>
+      <div className="space-y-3">
+        {BACKTEST.slice(0, 2).map((item) => (
+          <div key={item.id} className="rounded-xl border border-border bg-background p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-sm font-medium">{item.account.replace(" (real)", "")}</span>
+              <span className="text-xs font-mono text-muted-foreground">{formatARR(item.arr)}</span>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground leading-relaxed">{item.oneLine}</p>
+            <p className="mt-2 text-[11px] font-mono text-foreground/70">
+              first receipt · "{item.firstSignal.quote}"
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BacktestStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-background p-3">
+      <div className="text-[10px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
+        {label}
+      </div>
+      <div className="mt-1 font-display text-2xl font-semibold tracking-tight">{value}</div>
     </div>
   );
 }

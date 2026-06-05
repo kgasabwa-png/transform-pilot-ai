@@ -14,7 +14,7 @@ export function AuthShell({
     <div className="min-h-screen grid lg:grid-cols-2 bg-background">
       <div className="flex flex-col p-8 lg:p-16">
         <Link to="/" className="font-display text-xl font-bold tracking-tighter uppercase">
-          Fluent
+          Receipts
         </Link>
         <div className="flex-1 flex items-center">
           <div className="w-full max-w-md mx-auto">
@@ -27,16 +27,16 @@ export function AuthShell({
       </div>
       <div className="hidden lg:flex bg-foreground text-background p-16 flex-col justify-between">
         <div className="font-mono text-[10px] uppercase tracking-widest text-background/60">
-          The AI Transformation Execution Platform
+          The agentic renewal desk
         </div>
         <blockquote className="font-display text-3xl xl:text-4xl leading-tight tracking-tight">
-          "Fluent compressed three months of transformation consulting into one afternoon."
+          "Receipts showed the exact customer moments our renewal forecast was missing."
           <footer className="mt-6 font-sans text-sm font-normal text-background/60">
-            — Chief Transformation Officer, Fortune 500
+            - VP Customer Success, design partner preview
           </footer>
         </blockquote>
         <div className="font-mono text-[10px] uppercase tracking-widest text-background/60">
-          Governance · Adoption · Execution
+          Evidence · Approval · Forecast
         </div>
       </div>
     </div>
