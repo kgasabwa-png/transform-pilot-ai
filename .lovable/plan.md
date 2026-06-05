@@ -1,98 +1,47 @@
-# Fluent — Build Plan
+## Goal
 
-A production-ready SaaS for AI transformation execution. Landing → auth → dashboard → intake → AI-generated execution package with 8 output tabs.
+Remove every trace of the old "Fluent AI Transformation" template so this project is only Receipts, and replace the broken Sign in flow with a clean pre-launch waitlist.
 
-## Design System (locked from "Executive Editorial")
+## What's leftover from Fluent (confirmed)
 
-- Palette: background `#fcfcfc`, foreground `#121212`, primary `#0047ff`, muted `#666`, border `rgba(18,18,18,0.08)`.
-- Typography: Inter Tight (display), Inter (body), JetBrains Mono (labels/metrics).
-- Motion: subtle `slideUp` reveal on scroll; restrained.
-- Components: large rounded cards (rounded-2xl/3xl), shadow-2xl panels on white, mono uppercase eyebrow labels, score cards with thin progress bars, status pill badges.
-- Tokens go verbatim into `src/styles.css` as oklch equivalents + raw hex CSS vars; fonts loaded via `<link>` in `__root.tsx`.
+- Routes: `src/routes/login.tsx`, `src/routes/signup.tsx`, `src/routes/_authenticated.tsx`, `src/routes/_authenticated/dashboard.tsx`, `src/routes/_authenticated/projects/$projectId.tsx`, `src/routes/_authenticated/projects/new.tsx`
+- Server fns: `src/lib/transformation.functions.ts` (Fluent intake/scoring schema)
+- DB tables (public): `organizations`, `projects`, `company_intakes`, `transformation_scores`, `use_cases`, `roadmap_items`, `risks`, `governance_artifacts`, `adoption_artifacts`, `generated_outputs`, `profiles`
+- Index header links `to="/login"` ("Sign in") and `to="/signup"` ("Request access") — both land in Fluent's dashboard, which is what the user just hit
 
-## Backend (Lovable Cloud + AI Gateway)
+## Changes
 
-Enable Lovable Cloud (Supabase) and Lovable AI Gateway. Tables (all with RLS scoped to `auth.uid()` via `organization_id` ownership):
+### 1. Delete Fluent code
+- Remove the 6 route files above. After deletion the only routes are `/` (landing), `/app` (workspace demo), `__root`, plus the new waitlist route.
+- Remove `src/lib/transformation.functions.ts`.
+- `src/routeTree.gen.ts` regenerates automatically.
 
-- `profiles` (id=auth.users.id, full_name, role, org_id)
-- `organizations` (id, name, owner_id)
-- `projects` (id, org_id, name, status, created_at)
-- `company_intakes` (project_id PK, all 17 intake fields as jsonb + typed columns)
-- `generated_outputs` (project_id, section enum, content jsonb, version, updated_at)
-- `transformation_scores` (project_id, category, score, rating, explanation, risk_level, recommendation, next_action)
-- `use_cases` (project_id, name, department, problem, opportunity, complexity, risk_level, impact, data, tools, owner, timeline, metric, quadrant)
-- `risks` (project_id, title, severity, owner, mitigation)
-- `roadmap_items` (project_id, horizon[30/60/90/365], task, owner, timeline, priority, dependencies, risks, metric)
-- `governance_artifacts` (project_id, kind, content_md)
-- `adoption_artifacts` (project_id, kind, content_md)
+### 2. Drop Fluent DB tables (migration)
+Drop all 11 tables above with `CASCADE`. Also drop any Fluent-specific enums/functions/triggers they created (e.g. `handle_new_user` trigger that auto-inserts a profile row). This kills the "Unauthorized: No authorization header" runtime error too, since nothing will call protected server fns anymore.
 
-Trigger: auto-create profile + personal org on signup.
+Note: `profiles` is part of the Fluent scaffold, not Receipts. Receipts has no user data yet, so dropping it is safe. We can add a Receipts-shaped profiles table later when real auth ships.
 
-Edge function `generate-transformation`: takes `project_id`, loads intake, calls Lovable AI Gateway (`google/gemini-3-flash-preview`) with tool-calling to extract structured JSON per section, persists into the appropriate tables. One function with `section` param to allow per-section regeneration. Handles 429/402 with clean errors.
+### 3. Replace Sign in with Waitlist
+- New route `src/routes/waitlist.tsx` — single email capture, branded as Receipts ("Become a design partner"), success state inline.
+- New table `public.waitlist_signups` (email, source, note, ts) with RLS: anon `INSERT` only, no `SELECT` for anyone except `service_role`. Standard GRANT block.
+- New server fn `src/lib/waitlist.functions.ts` — `joinWaitlist({ email, note? })`, no auth middleware, uses `supabaseAdmin` to insert. Validates email with zod, rate-limit-friendly (unique constraint on lower(email)).
+- Update `src/routes/index.tsx`:
+  - Header: remove the `to="/login"` Sign in link. Keep a single `to="/waitlist"` "Request access" CTA.
+  - Footer: same swap.
+  - The existing `mailto:founders@receipts.dev` "Become a design partner" button on the Wedge section → point to `/waitlist` instead (keeps everything in-product).
 
-## Routes (TanStack Start, file-based)
+### 4. Auth posture
+No login/signup, no `_authenticated` gate. `/app` stays publicly viewable as the interactive demo (matches the "no login" promise already in the hero copy). `attachSupabaseAuth` middleware in `src/start.ts` stays — harmless without protected fns.
 
-Public:
-- `/` — landing (executive editorial layout from prototype)
-- `/login`, `/signup`, `/reset-password`
+### 5. Rename the Lovable project
+I can't rename the Lovable project from code. After this ships: click the project name in the top-left of the editor → **Rename project** → enter `Receipts`. That changes the dashboard label and the stable preview URL slug. The codebase, routes, and copy are already Receipts.
 
-Authenticated (`/_authenticated/`):
-- `/dashboard` — project list + aggregate scores
-- `/projects/new` — multi-step intake wizard (17 fields, 5 steps)
-- `/projects/$id` — output package shell with 8 tabs:
-  - A. Executive Summary
-  - B. Maturity Assessment (10 scored categories with cards)
-  - C. Use Case Discovery (list + filters)
-  - D. Prioritization Matrix (2x2 quadrants)
-  - E. Governance Package (collapsible artifacts)
-  - F. Adoption Package
-  - G. Roadmap (30/60/90/365 horizons)
-  - H. Metrics (score cards)
+## Out of scope (not touching)
 
-Each tab: edit-in-place (rich text via textarea+markdown render), Regenerate button (calls edge fn with `section`), Copy-to-clipboard per artifact.
+- The `auth`, `storage`, `realtime`, `supabase_functions`, `vault` schemas.
+- `src/integrations/supabase/*` auto-generated files.
+- `src/integrations/lovable/index.ts` (matched on "login" string, not Fluent-specific).
 
-## Intake Wizard (5 steps, 17 fields)
+## Result
 
-1. Company: name, industry, employee count, departments (multi-select)
-2. Current AI state: tools, maturity (slider), data sensitivity, compliance reqs
-3. Goals & challenges: business goals, operational challenges, desired outcomes
-4. People: leadership alignment, employee readiness, change management maturity (sliders)
-5. Constraints: timeline, budget range
-
-On submit: insert `projects` + `company_intakes` → invoke `generate-transformation` for all sections → navigate to `/projects/$id` with loading skeletons → realtime/poll for completed rows.
-
-## AI Behavior
-
-System prompt frames the model as transformation consultant + governance advisor + change-mgmt expert. Every generated item enforces the 8-question schema (What/Why/Who/When/Risks/Measure/Artifact/Next Action) via tool-calling JSON schemas. Outputs are structured (not freeform markdown blobs) so the UI can render score cards, matrices, and timeline rows natively.
-
-## Out of scope for v1 (per chosen scope)
-
-- PDF export, Markdown file download — only clipboard copy ships in v1.
-- Team/multi-user org invites — single owner per org for v1.
-- Real OAuth providers — email/password + Google sign-in only.
-
-## Files (high level)
-
-- `src/styles.css` — design tokens
-- `src/routes/__root.tsx` — font links, auth state listener, query invalidation
-- `src/routes/index.tsx` — landing
-- `src/routes/login.tsx`, `signup.tsx`, `reset-password.tsx`
-- `src/routes/_authenticated.tsx` — auth gate
-- `src/routes/_authenticated/dashboard.tsx`
-- `src/routes/_authenticated/projects.new.tsx`
-- `src/routes/_authenticated/projects.$id.tsx` + tab components in `src/components/output/`
-- `src/components/intake/` — wizard steps
-- `src/components/ui/score-card.tsx`, `status-badge.tsx`, `artifact-card.tsx`
-- `src/lib/transformation.functions.ts` — server fns calling edge function + reads
-- `supabase/functions/generate-transformation/index.ts`
-- Migrations for all tables + RLS + GRANTs + signup trigger
-
-## Build order
-
-1. Tokens + fonts + landing page
-2. Enable Lovable Cloud, migrations, auth pages, `_authenticated` gate
-3. Dashboard shell
-4. Intake wizard + project create
-5. Edge function + AI generation (all sections in parallel)
-6. Output page with 8 tabs, edit/regenerate/copy
-7. QA the flow end-to-end
+Zero Fluent references. Sign in is gone. Header CTA → `/waitlist`. Database is Receipts-only. No more 401 errors in the preview.
