@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Phone,
   MessageSquare,
@@ -14,6 +14,9 @@ import {
   Loader2,
   CheckCircle2,
   XCircle,
+  Radio,
+  Bot,
+  Activity,
 } from "lucide-react";
 import {
   ACCOUNTS,
@@ -26,6 +29,13 @@ import {
 } from "@/lib/loop/portfolio";
 import { BACKTEST, BACKTEST_STATS, type BacktestCase } from "@/lib/loop/backtest";
 import { TODAYS_BRIEF, briefAccount } from "@/lib/loop/brief";
+import {
+  AGENTS,
+  AGENT_OUTCOMES,
+  OVERNIGHT_FEED,
+  type Agent,
+  type FeedEvent,
+} from "@/lib/loop/agents";
 
 export const Route = createFileRoute("/")({
   head: () => ({
