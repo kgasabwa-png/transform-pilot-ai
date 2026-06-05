@@ -179,22 +179,21 @@ function LeftRail({
               <button
                 key={b.accountId}
                 onClick={() => setPane({ kind: "play", accountId: b.accountId })}
-                className={`w-full text-left rounded-md px-2.5 py-2 transition-colors ${
+                className={`relative w-full text-left rounded-md px-2.5 py-2 transition-colors ${
                   active
-                    ? "bg-foreground text-background"
-                    : "hover:bg-foreground/5"
+                    ? "bg-primary/5 text-foreground"
+                    : "hover:bg-foreground/[0.04]"
                 }`}
               >
+                {active && (
+                  <span aria-hidden className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-full bg-primary" />
+                )}
                 <div className="flex items-center gap-2">
                   <span className={`size-1.5 rounded-full ${urgencyDot}`} />
-                  <span className="font-mono text-[10px] opacity-70">#{b.rank}</span>
+                  <span className="font-mono text-[10px] text-muted-foreground">#{b.rank}</span>
                   <span className="text-sm font-medium truncate">{acc.name}</span>
                 </div>
-                <div
-                  className={`text-[11px] mt-0.5 ${
-                    active ? "text-background/70" : "text-muted-foreground"
-                  } font-mono`}
-                >
+                <div className="text-[11px] mt-0.5 text-muted-foreground font-mono">
                   {formatARR(b.arrAtStake)} · {acc.renewalDays}d
                 </div>
               </button>
