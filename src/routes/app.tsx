@@ -442,13 +442,14 @@ function PlayDetail({
           />
           <div className="flex items-center justify-between mb-3">
             <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
-              Today's play · before lunch
+              {framing.eyebrow} · before lunch
             </div>
             <span className="inline-flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground">
               <span className="size-1.5 rounded-full bg-primary" />
               drafted 7:42a
             </span>
           </div>
+          <p className="text-[11px] text-muted-foreground mb-2 italic">{framing.question}</p>
           <p className="text-xl md:text-2xl font-display font-semibold leading-snug tracking-tight text-foreground">
             {brief.action}
           </p>
@@ -508,7 +509,7 @@ function PlayDetail({
             .slice()
             .sort((a, b) => a.weight - b.weight)
             .map((r) => (
-              <ReceiptCard key={r.id} receipt={r} />
+              <ReceiptCard key={r.id} receipt={r} onOpen={() => onReceipt(r)} />
             ))}
         </div>
         <p className="mt-5 text-[11px] text-muted-foreground leading-relaxed max-w-2xl">
