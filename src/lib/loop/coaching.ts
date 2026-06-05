@@ -1,6 +1,6 @@
-// CoachingMoments — what the Coaching Room shows to a CS manager.
-// Each one is a specific, replayable moment from a CSM's call this week
-// plus an agent-drafted next-time line the manager can send or save.
+// ManagerInterventions — what Team Forecast shows to a CS manager.
+// Each one is a customer-backed intervention across the manager's CSMs:
+// forecast changed, risk found, or a workflow is ready to send/save.
 
 import { daysAgo, hoursAgo } from "./time";
 
@@ -49,7 +49,7 @@ export function buildCoachingMoments(): CoachingMoment[] {
       callDurationMin: 47,
       severity: "high",
       arrUpside: 240000,
-      headline: "Missed a multi-year expansion opening from the CIO. Pulled to the discount talk instead.",
+      headline: "Tessera moved up $240K, but Maya's next step is still discount-led.",
       transcriptSnippet: {
         customer:
           "You're table stakes for us now. I'd like to talk multi-year with an expanded footprint at the next review.",
@@ -72,7 +72,7 @@ export function buildCoachingMoments(): CoachingMoment[] {
       callDurationMin: 32,
       severity: "high",
       arrUpside: 312000,
-      headline: "Champion transition mentioned in passing — Dre didn't pause to map the new buyer.",
+      headline: "Halcyon moved to risk because Dre's renewal plan still names the departed champion.",
       transcriptSnippet: {
         customer:
           "Oh, fyi Marie's leaving Friday. Devin's taking over — you've met him.",
@@ -95,7 +95,7 @@ export function buildCoachingMoments(): CoachingMoment[] {
       callDurationMin: 28,
       severity: "medium",
       arrUpside: 96000,
-      headline: "Over-discounted in final-stage without flagging exec approval threshold.",
+      headline: "Quill discount drift is now a manager approval issue, not a CSM judgment call.",
       transcriptSnippet: {
         customer: "We get value but the per-seat pricing is the conversation every renewal.",
         csmSaid: "I can probably get you 20% off if we lock in today.",
@@ -116,7 +116,7 @@ export function buildCoachingMoments(): CoachingMoment[] {
       callDurationMin: 41,
       severity: "medium",
       arrUpside: 184000,
-      headline: "New economic buyer (CFO) named twice — Lou kept the deck on the original champion.",
+      headline: "Northwind forecast depends on Renee, but Lou's account plan still centers Daniel.",
       transcriptSnippet: {
         customer:
           "Our new CFO Renee is the one asking the hard questions about routing spend.",
@@ -133,18 +133,18 @@ export function buildTeamPatterns(): TeamPattern[] {
   return [
     {
       id: "tp-1",
-      headline: "Team is missing procurement signals — 4 in 30 days.",
+      headline: "Procurement-entry signals are not turning into renewal workflows.",
       detail:
-        "When procurement enters a renewal conversation, your team treats it as an FYI. It's actually the buying-process signal. A 20-min workshop closes this gap.",
+        "When procurement enters a renewal conversation, the system now stages exec alignment, legal review, and forecast inspection instead of leaving the CSM to notice it manually.",
       csmCount: 5,
       missCount: 4,
       arrUpside: 620000,
     },
     {
       id: "tp-2",
-      headline: "Discounting drift: 3 deals dropped >15% without exec sign-off.",
+      headline: "Discounting drift is ready for auto-escalation.",
       detail:
-        "Three CSMs offered 15%+ discounts in final-stage calls without flagging the exec-approval threshold. Procurement noticed.",
+        "Three CSMs offered 15%+ discounts in final-stage calls. Receipts can route future discounts to manager approval before the customer hears a number.",
       csmCount: 3,
       missCount: 3,
       arrUpside: 180000,
