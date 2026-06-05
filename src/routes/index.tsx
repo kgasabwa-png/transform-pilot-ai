@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowUpRight, Quote } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 
@@ -193,28 +193,73 @@ function formatElapsed(s: number) {
   return `${m}m ${r}s`;
 }
 
+// The product writes a timestamped ledger during every call. That artifact
+// does not exist in any other CS tool, so the section is shaped like the
+// artifact itself. The layout IS the differentiator.
+const ENTRIES: {
+  t: string;
+  surface: string;
+  action: string;
+  detail: string;
+  weight?: "primary" | "muted";
+}[] = [
+  { t: "00:04", surface: "Listening", action: "Call joined", detail: "Acme · Q1 renewal · 4 attendees", weight: "muted" },
+  { t: "07:12", surface: "Salesforce", action: "Stage staged", detail: "Negotiation → Verbal commit" },
+  { t: "11:48", surface: "Salesforce", action: "Field staged", detail: "Renewal risk: Medium → Low" },
+  { t: "18:30", surface: "Asana", action: "Task queued", detail: "Send pricing addendum to procurement" },
+  { t: "18:31", surface: "Asana", action: "Task queued", detail: "Loop in Solutions on SSO rollout" },
+  { t: "24:09", surface: "Gmail", action: "Draft written", detail: "Recap to champion. 312 words. Cites 3 commitments." },
+  { t: "31:55", surface: "Asana", action: "Task queued", detail: "Schedule QBR for week of Mar 17" },
+  { t: "36:20", surface: "Slack", action: "Note composed", detail: "#renewals brief. 1 paragraph. 2 asks for manager." },
+  { t: "41:02", surface: "Asana", action: "Task queued", detail: "Update mutual action plan with new milestone" },
+  { t: "42:00", surface: "Compound", action: "Call ended", detail: "Workspace ready. Waiting for one signature.", weight: "primary" },
+];
+
+const SURFACES = ["Listening", "Salesforce", "Asana", "Gmail", "Slack", "Compound"] as const;
+const RANGES = [
+  { label: "All", min: 0, max: 60 },
+  { label: "0–15 min", min: 0, max: 15 },
+  { label: "15–30 min", min: 15, max: 30 },
+  { label: "30–45 min", min: 30, max: 45 },
+] as const;
+
+function parseMinutes(t: string) {
+  const [m, s] = t.split(":").map(Number);
+  return m + s / 60;
+}
+
 function Proof() {
-  // The product writes a timestamped ledger during every call. That artifact
-  // does not exist in any other CS tool, so the section is shaped like the
-  // artifact itself. The layout IS the differentiator.
-  const entries: {
-    t: string;
-    surface: string;
-    action: string;
-    detail: string;
-    weight?: "primary" | "muted";
-  }[] = [
-    { t: "00:04", surface: "Listening", action: "Call joined", detail: "Acme · Q1 renewal · 4 attendees", weight: "muted" },
-    { t: "07:12", surface: "Salesforce", action: "Stage staged", detail: "Negotiation → Verbal commit" },
-    { t: "11:48", surface: "Salesforce", action: "Field staged", detail: "Renewal risk: Medium → Low" },
-    { t: "18:30", surface: "Asana", action: "Task queued", detail: "Send pricing addendum to procurement" },
-    { t: "18:31", surface: "Asana", action: "Task queued", detail: "Loop in Solutions on SSO rollout" },
-    { t: "24:09", surface: "Gmail", action: "Draft written", detail: "Recap to champion. 312 words. Cites 3 commitments." },
-    { t: "31:55", surface: "Asana", action: "Task queued", detail: "Schedule QBR for week of Mar 17" },
-    { t: "36:20", surface: "Slack", action: "Note composed", detail: "#renewals brief. 1 paragraph. 2 asks for manager." },
-    { t: "41:02", surface: "Asana", action: "Task queued", detail: "Update mutual action plan with new milestone" },
-    { t: "42:00", surface: "Compound", action: "Call ended", detail: "Workspace ready. Waiting for one signature.", weight: "primary" },
-  ];
+  const [activeSurfaces, setActiveSurfaces] = useState<Set<string>>(
+    new Set(SURFACES)
+  );
+  const [rangeIdx, setRangeIdx] = useState(0);
+
+  const range = RANGES[rangeIdx];
+
+  const filtered = useMemo(() => {
+    return ENTRIES.filter((e) => {
+      const inRange =
+        parseMinutes(e.t) >= range.min && parseMinutes(e.t) < range.max;
+      return activeSurfaces.has(e.surface) && inRange;
+    });
+  }, [activeSurfaces, range]);
+
+  const toolsTouched = useMemo(
+    () => new Set(filtered.map((e) => e.surface)).size,
+    [filtered]
+  );
+
+  function toggleSurface(name: string) {
+    setActiveSurfaces((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) {
+        next.delete(name);
+      } else {
+        next.add(name);
+      }
+      return next;
+    });
+  }
 
   return (
     <section id="proof" className="border-b border-border bg-background">
@@ -233,8 +278,8 @@ function Proof() {
               it came from. Nothing leaves your tools without your signature.
             </p>
             <div className="mt-8 grid grid-cols-3 gap-px bg-border border border-border rounded-lg overflow-hidden">
-              <Stat n="4" l="Tools touched" />
-              <Stat n="9" l="Actions staged" />
+              <Stat n={String(toolsTouched)} l="Tools touched" />
+              <Stat n={String(filtered.length)} l="Actions staged" />
               <Stat n="1" l="Signature left" />
             </div>
           </div>
@@ -251,8 +296,54 @@ function Proof() {
                 ledger.compound
               </span>
             </div>
+
+            <div className="px-5 py-3 border-b border-border bg-background/60">
+              <div className="flex flex-wrap items-center gap-2 mb-2.5">
+                <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground mr-1">
+                  Tool
+                </span>
+                {SURFACES.map((s) => {
+                  const on = activeSurfaces.has(s);
+                  return (
+                    <button
+                      key={s}
+                      onClick={() => toggleSurface(s)}
+                      className={`text-[10px] font-mono uppercase tracking-[0.12em] px-2.5 py-1 rounded-full border transition cursor-pointer ${
+                        on
+                          ? "bg-foreground text-background border-foreground"
+                          : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground mr-1">
+                  Window
+                </span>
+                {RANGES.map((r, i) => {
+                  const on = i === rangeIdx;
+                  return (
+                    <button
+                      key={r.label}
+                      onClick={() => setRangeIdx(i)}
+                      className={`text-[10px] font-mono uppercase tracking-[0.12em] px-2.5 py-1 rounded-full border transition cursor-pointer ${
+                        on
+                          ? "bg-foreground text-background border-foreground"
+                          : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
+                      }`}
+                    >
+                      {r.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <ol>
-              {entries.map((e, i) => (
+              {filtered.map((e, i) => (
                 <li
                   key={i}
                   className={`grid grid-cols-[56px_104px_1fr] gap-4 px-5 py-3.5 items-baseline border-b border-border/60 last:border-0 transition ${
@@ -285,6 +376,11 @@ function Proof() {
                   </span>
                 </li>
               ))}
+              {filtered.length === 0 && (
+                <li className="px-5 py-8 text-center text-[13px] text-muted-foreground">
+                  No entries match the selected filters.
+                </li>
+              )}
             </ol>
             <div className="px-5 py-4 border-t border-border bg-background flex items-center justify-between">
               <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
