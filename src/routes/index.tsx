@@ -67,10 +67,10 @@ function LandingNav() {
         </nav>
         <div className="flex items-center gap-2">
           <Link
-            to="/login"
+            to="/waitlist"
             className="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5"
           >
-            Sign in
+            Request access
           </Link>
           <Link
             to="/app"
@@ -498,12 +498,12 @@ function Founder() {
           >
             See the workspace <ArrowUpRight className="size-4" />
           </Link>
-          <a
-            href="mailto:founders@receipts.dev?subject=Design%20partner"
+          <Link
+            to="/waitlist"
             className="inline-flex items-center gap-2 text-sm font-medium border border-border px-5 py-3 rounded-full hover:bg-accent/40"
           >
             Become a design partner
-          </a>
+          </Link>
           <span className="text-xs text-muted-foreground inline-flex items-center gap-1.5 ml-1">
             3 of 6 partner slots open · Q1
           </span>
@@ -522,8 +522,7 @@ function Footer() {
           <span className="font-mono">Receipts · v0.4 · augments humans · cites every claim</span>
         </div>
         <div className="flex items-center gap-4">
-          <Link to="/login" className="hover:text-foreground">Sign in</Link>
-          <Link to="/signup" className="hover:text-foreground">Request access</Link>
+          <Link to="/waitlist" className="hover:text-foreground">Request access</Link>
           <a href="mailto:founders@receipts.dev" className="hover:text-foreground">founders@receipts.dev</a>
         </div>
       </div>
