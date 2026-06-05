@@ -100,19 +100,19 @@ function WorkspaceApp() {
 
 function TryBanner() {
   return (
-    <div className="bg-foreground text-background px-4 py-2 flex flex-wrap items-center justify-center gap-3 text-[11px] font-mono">
-      <span className="inline-flex items-center gap-1.5">
+    <div className="border-b border-border/60 bg-muted/40 backdrop-blur-sm px-4 py-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[12px]">
+      <span className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
         <span className="size-1.5 rounded-full bg-success animate-pulse" />
-        SAMPLE BOOK
+        Sample book
       </span>
-      <span className="text-background/70">
-        You're exploring Receipts as <span className="text-background font-semibold">Sarah Chen</span>, a CSM at a B2B SaaS co. 12 accounts, all interactions live, no data leaves your browser.
+      <span className="text-foreground/75">
+        You're previewing as <span className="font-medium text-foreground">Sarah Chen</span>, CSM · 12 live accounts · nothing leaves your browser.
       </span>
       <Link
         to="/waitlist"
-        className="inline-flex items-center gap-1 bg-background text-foreground px-2.5 py-0.5 rounded-full font-semibold hover:opacity-90 transition-opacity"
+        className="inline-flex items-center gap-1 text-foreground font-medium underline decoration-foreground/30 underline-offset-4 hover:decoration-foreground transition-colors"
       >
-        Get this on your book →
+        Run it on your book <span aria-hidden>→</span>
       </Link>
     </div>
   );
