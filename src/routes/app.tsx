@@ -1,18 +1,23 @@
 import { createFileRoute, Link, useSearch, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Phone,
   MessageSquare,
   Mail,
-  X,
   ArrowUpRight,
   ArrowDownRight,
-  Filter,
-  Clock,
+  ArrowLeft,
   Bot,
   Users,
   LayoutGrid,
   TrendingUp,
+  Sparkles,
+  Activity,
+  Plug,
+  ListChecks,
+  Send,
+  CornerDownLeft,
+  Check,
 } from "lucide-react";
 import {
   ACCOUNTS,
@@ -21,7 +26,7 @@ import {
   type Channel,
   type Receipt,
 } from "@/lib/loop/portfolio";
-import { TODAYS_BRIEF, briefAccount } from "@/lib/loop/brief";
+import { TODAYS_BRIEF, briefAccount, type BriefItem } from "@/lib/loop/brief";
 import {
   AGENTS,
   AGENT_OUTCOMES,
@@ -31,6 +36,7 @@ import {
 } from "@/lib/loop/agents";
 import { PERSONAS, PERSONA_ORDER, type PersonaId } from "@/lib/loop/personas";
 import { Logo } from "@/components/brand/Logo";
+import { IntegrationsGrid } from "@/components/integrations/IntegrationsGrid";
 
 type AppSearch = { role: PersonaId };
 
@@ -42,117 +48,50 @@ export const Route = createFileRoute("/app")({
     return { role };
   },
   head: () => ({
-    meta: [{ title: "Receipts — workspace" }],
+    meta: [{ title: "Receipts — night-shift desk" }],
   }),
   component: WorkspaceApp,
 });
 
-type SortKey = "gap" | "renewal" | "arr";
+// What the right pane is currently showing.
+type RightPane =
+  | { kind: "play"; accountId: string } // a specific account expanded
+  | { kind: "portfolio" } // full book
+  | { kind: "feed" } // overnight activity
+  | { kind: "agents" } // the four agents
+  | { kind: "integrations" }; // connector grid
 
 function WorkspaceApp() {
-  const search = useSearch({ from: "/app" }) as AppSearch;
-  const role: PersonaId = search.role;
-  const persona = PERSONAS[role];
+  const { role } = useSearch({ from: "/app" });
   const navigate = useNavigate({ from: "/app" });
 
-  const [openAccountId, setOpenAccountId] = useState<string | null>(null);
-  const [sort, setSort] = useState<SortKey>("gap");
-  const [filter, setFilter] = useState<"all" | "surprises" | "red">(
-    role === "leader" ? "all" : "surprises",
-  );
-
-  const accounts = useMemo(() => {
-    let list = [...ACCOUNTS];
-    if (filter === "surprises") {
-      list = list.filter(
-        (a) => Math.abs(a.vendorScore.value - a.receiptsScore.value) >= 20,
-      );
-    } else if (filter === "red") {
-      list = list.filter((a) => a.receiptsScore.label === "Red");
-    }
-    list.sort((a, b) => {
-      if (sort === "gap") {
-        return (
-          (b.vendorScore.value - b.receiptsScore.value) -
-          (a.vendorScore.value - a.receiptsScore.value)
-        );
-      }
-      if (sort === "renewal") return a.renewalDays - b.renewalDays;
-      return b.arr - a.arr;
-    });
-    return list;
-  }, [filter, sort]);
-
-  const openAccount = openAccountId
-    ? ACCOUNTS.find((a) => a.id === openAccountId) ?? null
-    : null;
+  // Default = the #1 play of the day, expanded. The thing users came to
+  // see is on screen at load — no scroll, no overview, no marketing.
+  const [pane, setPane] = useState<RightPane>(() => ({
+    kind: "play",
+    accountId: TODAYS_BRIEF[0]?.accountId ?? ACCOUNTS[0].id,
+  }));
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <WorkspaceNav
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <DeskTopBar
         persona={role}
         onPersona={(p) => navigate({ search: { role: p } })}
       />
-      <AutopilotTicker />
-      <main className="max-w-[1280px] mx-auto px-8 py-10">
-        <PersonaHero persona={role} />
 
-        {role === "csm" && (
-          <TodaysBrief onOpen={(id) => setOpenAccountId(id)} />
-        )}
-
-        {role === "leader" && <LeaderRollup />}
-
-        {role === "manager" && <ManagerRollup />}
-
-        <AgentRoster persona={role} />
-
-        <section className="mt-16">
-          <SectionHead
-            eyebrow={
-              role === "leader"
-                ? "The book · cited forecast"
-                : role === "manager"
-                ? "Team coverage · gap by account"
-                : "Your portfolio"
-            }
-            title={
-              role === "leader"
-                ? "Every account scored from the customer's own voice."
-                : role === "manager"
-                ? "Where your CSMs are flying blind."
-                : "Every account on your book — scored on what the customer is saying."
-            }
-            sub={persona.who}
-          />
-          <Controls
-            sort={sort}
-            setSort={setSort}
-            filter={filter}
-            setFilter={setFilter}
-            count={accounts.length}
-          />
-          <PortfolioTable accounts={accounts} onOpen={(id) => setOpenAccountId(id)} />
-        </section>
-
-        <OvernightFeed />
-
-        <Footer />
-      </main>
-
-      {openAccount && (
-        <AccountDrawer
-          account={openAccount}
-          onClose={() => setOpenAccountId(null)}
-        />
-      )}
+      <div className="flex-1 grid grid-cols-[260px_1fr] min-h-0">
+        <LeftRail persona={role} pane={pane} setPane={setPane} />
+        <main className="overflow-y-auto bg-background">
+          <RightPane pane={pane} persona={role} setPane={setPane} />
+        </main>
+      </div>
     </div>
   );
 }
 
-// ───────────────────────── NAV ─────────────────────────
+// ───────────────────────── TOP BAR ─────────────────────────
 
-function WorkspaceNav({
+function DeskTopBar({
   persona,
   onPersona,
 }: {
@@ -160,14 +99,23 @@ function WorkspaceNav({
   onPersona: (p: PersonaId) => void;
 }) {
   return (
-    <header className="border-b border-border sticky top-0 z-40 bg-background/85 backdrop-blur">
-      <div className="max-w-[1280px] mx-auto px-8 h-14 flex items-center justify-between gap-6">
-        <Link to="/" className="flex items-center gap-2 shrink-0">
-          <Logo />
-          <span className="font-display font-semibold tracking-tight">Receipts</span>
+    <header className="border-b border-border h-12 flex items-center justify-between px-4 shrink-0">
+      <div className="flex items-center gap-6">
+        <Link to="/" className="flex items-center gap-2">
+          <Logo size={18} />
+          <span className="font-display font-semibold tracking-tight text-sm">Receipts</span>
         </Link>
+        <span className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.18em] text-success">
+          <span className="size-1.5 rounded-full bg-success animate-pulse" />
+          Night-shift · live
+        </span>
+        <span className="hidden md:inline text-[10px] font-mono text-muted-foreground">
+          Tue Nov 11 · 7:42a · {AGENT_OUTCOMES.conversationsRead} conversations read overnight
+        </span>
+      </div>
 
-        <div className="flex items-center gap-1 p-1 bg-surface border border-border rounded-full">
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-0.5 p-0.5 bg-surface border border-border rounded-full">
           {PERSONA_ORDER.map((p) => {
             const active = p === persona;
             const Icon = p === "csm" ? Users : p === "manager" ? LayoutGrid : TrendingUp;
@@ -175,7 +123,7 @@ function WorkspaceNav({
               <button
                 key={p}
                 onClick={() => onPersona(p)}
-                className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full transition-colors ${
+                className={`inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full transition-colors ${
                   active
                     ? "bg-foreground text-background"
                     : "text-muted-foreground hover:text-foreground"
@@ -187,378 +135,375 @@ function WorkspaceNav({
             );
           })}
         </div>
-
-        <div className="flex items-center gap-3 text-sm">
-          <span className="text-muted-foreground hidden md:inline text-xs">
-            Keila Ramos · {PERSONAS[persona].label}
-          </span>
-          <div className="size-7 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center">
-            KR
-          </div>
+        <div className="size-7 rounded-full bg-foreground/5 border border-border text-[10px] font-mono font-semibold flex items-center justify-center">
+          KR
         </div>
       </div>
     </header>
   );
 }
 
-function PersonaHero({ persona }: { persona: PersonaId }) {
-  const p = PERSONAS[persona];
+// ───────────────────────── LEFT RAIL ─────────────────────────
+
+function LeftRail({
+  persona,
+  pane,
+  setPane,
+}: {
+  persona: PersonaId;
+  pane: RightPane;
+  setPane: (p: RightPane) => void;
+}) {
+  const briefCount = TODAYS_BRIEF.length;
+  const watchCount = ACCOUNTS.length;
+  const feedCount = OVERNIGHT_FEED.length;
+  const agentCount = AGENTS.length;
+
+  const activePlayId = pane.kind === "play" ? pane.accountId : null;
+
   return (
-    <section className="mb-10 max-w-3xl pt-2">
-      <div className="inline-flex items-center gap-2 mb-5 text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground border border-border rounded-full px-3 py-1">
-        <span className="size-1.5 rounded-full bg-success animate-pulse" />
-        {p.hero.eyebrow}
+    <aside className="border-r border-border bg-surface/40 overflow-y-auto">
+      <div className="p-4 space-y-6">
+        <Section title="Today's brief" count={briefCount}>
+          {TODAYS_BRIEF.map((b) => {
+            const acc = briefAccount(b.accountId);
+            if (!acc) return null;
+            const active = activePlayId === b.accountId;
+            const urgencyDot =
+              b.urgency === "now"
+                ? "bg-danger"
+                : b.urgency === "today"
+                ? "bg-warning"
+                : "bg-muted-foreground/40";
+            return (
+              <button
+                key={b.accountId}
+                onClick={() => setPane({ kind: "play", accountId: b.accountId })}
+                className={`w-full text-left rounded-md px-2.5 py-2 transition-colors ${
+                  active
+                    ? "bg-foreground text-background"
+                    : "hover:bg-foreground/5"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className={`size-1.5 rounded-full ${urgencyDot}`} />
+                  <span className="font-mono text-[10px] opacity-70">#{b.rank}</span>
+                  <span className="text-sm font-medium truncate">{acc.name}</span>
+                </div>
+                <div
+                  className={`text-[11px] mt-0.5 ${
+                    active ? "text-background/70" : "text-muted-foreground"
+                  } font-mono`}
+                >
+                  {formatARR(b.arrAtStake)} · {acc.renewalDays}d
+                </div>
+              </button>
+            );
+          })}
+        </Section>
+
+        <NavGroup
+          items={[
+            {
+              key: "portfolio",
+              label: "Watchlist",
+              count: watchCount,
+              icon: ListChecks,
+              active: pane.kind === "portfolio",
+              onClick: () => setPane({ kind: "portfolio" }),
+            },
+            {
+              key: "feed",
+              label: "Overnight feed",
+              count: feedCount,
+              icon: Activity,
+              active: pane.kind === "feed",
+              onClick: () => setPane({ kind: "feed" }),
+            },
+            {
+              key: "agents",
+              label: "Agents",
+              count: agentCount,
+              icon: Bot,
+              active: pane.kind === "agents",
+              onClick: () => setPane({ kind: "agents" }),
+            },
+            {
+              key: "integrations",
+              label: "Integrations",
+              icon: Plug,
+              active: pane.kind === "integrations",
+              onClick: () => setPane({ kind: "integrations" }),
+            },
+          ]}
+        />
+
+        <div className="border-t border-border pt-4">
+          <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground mb-2">
+            {PERSONAS[persona].label} view
+          </div>
+          <p className="text-[11px] text-muted-foreground leading-snug">
+            {PERSONAS[persona].promise}
+          </p>
+        </div>
       </div>
-      <h1 className="font-display text-4xl md:text-[52px] font-semibold tracking-tight mb-5 leading-[1.05]">
-        {p.hero.title}
-      </h1>
-      <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl">
-        {p.hero.sub}
-      </p>
-    </section>
+    </aside>
   );
 }
 
-// ───────────────────────── LEADER / MANAGER STRIPS ─────────────────────────
-
-function LeaderRollup() {
-  const misScored = ACCOUNTS.filter(
-    (a) => a.vendorScore.label === "Green" && a.receiptsScore.label !== "Green",
-  );
-  const misScoredARR = misScored.reduce((s, a) => s + a.arr, 0);
-  const totalARR = ACCOUNTS.reduce((s, a) => s + a.arr, 0);
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border rounded-2xl overflow-hidden mb-12 border border-border">
-      <Stat label="Cited forecast · Q1" value={formatARR(totalARR * 0.84)} sub="84% of book renewing on conversation evidence" />
-      <Stat label="ARR mis-scored in CRM" value={formatARR(misScoredARR)} sub={`${misScored.length} accounts green in CRM, not in receipts`} accent="text-danger" />
-      <Stat label="Avg early warning" value="38d" sub="before the incumbent score flipped" accent="text-foreground" />
-      <Stat label="Citations per claim" value="3.2" sub="every score traces to source moments" />
-    </div>
-  );
-}
-
-function ManagerRollup() {
-  const gaps = ACCOUNTS.filter(
-    (a) => Math.abs(a.vendorScore.value - a.receiptsScore.value) >= 20,
-  );
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border rounded-2xl overflow-hidden mb-12 border border-border">
-      <Stat label="Team CSMs covered" value="8" sub="312 accounts under watch" />
-      <Stat label="Coaching surface" value={`${gaps.length}`} sub="accounts with 20+ pt score gap" accent="text-warning" />
-      <Stat label="ARR at risk · uncoached" value={formatARR(gaps.reduce((s, a) => s + a.arr, 0))} sub="surface-up to your 1:1s" />
-      <Stat label="Briefs delivered today" value={`${AGENT_OUTCOMES.briefsDrafted}`} sub="across the team this morning" />
-    </div>
-  );
-}
-
-// ───────────────────────── SHARED PRIMITIVES ─────────────────────────
-
-function Stat({ label, value, sub, accent }: { label: string; value: string; sub: string; accent?: string }) {
-  return (
-    <div className="bg-surface p-6">
-      <div className="eyebrow mb-3">{label}</div>
-      <div className={`font-display text-3xl font-semibold mb-1 tabular-nums ${accent ?? ""}`}>
-        {value}
-      </div>
-      <div className="text-xs text-muted-foreground">{sub}</div>
-    </div>
-  );
-}
-
-function SectionHead({ eyebrow, title, sub }: { eyebrow: string; title: string; sub?: string }) {
-  return (
-    <div className="mb-6 max-w-2xl">
-      <span className="eyebrow block mb-3">{eyebrow}</span>
-      <h2 className="font-display text-2xl md:text-3xl font-semibold tracking-tight leading-tight mb-2">
-        {title}
-      </h2>
-      {sub && <p className="text-sm text-muted-foreground leading-relaxed">{sub}</p>}
-    </div>
-  );
-}
-
-function TodaysBrief({ onOpen }: { onOpen: (id: string) => void }) {
-  const urgencyStyle: Record<string, string> = {
-    now: "bg-danger/10 text-danger",
-    today: "bg-warning/15 text-warning",
-    "this-week": "bg-muted text-muted-foreground",
-  };
-  return (
-    <section id="brief" className="mb-4 scroll-mt-20">
-      <SectionHead
-        eyebrow="Today's brief · 3 plays before lunch"
-        title="The three calls that move your number this quarter."
-      />
-      <div className="grid md:grid-cols-3 gap-3">
-        {TODAYS_BRIEF.map((b) => {
-          const acc = briefAccount(b.accountId);
-          if (!acc) return null;
-          return (
-            <button
-              key={b.accountId}
-              onClick={() => onOpen(b.accountId)}
-              className="text-left border border-border rounded-2xl p-5 bg-surface hover:border-foreground/40 transition-colors group flex flex-col"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <span className="font-mono text-[10px] tracking-widest text-muted-foreground">#{b.rank}</span>
-                <span className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full ${urgencyStyle[b.urgency]}`}>
-                  {b.urgency.replace("-", " ")}
-                </span>
-              </div>
-              <div className="font-display font-semibold text-base mb-1 tracking-tight">{acc.name}</div>
-              <div className="font-mono text-[11px] text-muted-foreground mb-3">
-                {formatARR(b.arrAtStake)} · {acc.renewalDays}d to renewal
-              </div>
-              <p className="text-sm leading-relaxed mb-3 flex-1">{b.action}</p>
-              <p className="text-xs text-muted-foreground leading-relaxed border-t border-border pt-3">
-                <span className="text-foreground/70 font-medium">Because: </span>
-                {b.because}
-              </p>
-              <div className="mt-4 text-xs text-muted-foreground group-hover:text-foreground inline-flex items-center gap-1">
-                Open receipts <ArrowUpRight className="size-3" />
-              </div>
-            </button>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-function Controls({
-  sort,
-  setSort,
-  filter,
-  setFilter,
+function Section({
+  title,
   count,
+  children,
 }: {
-  sort: SortKey;
-  setSort: (s: SortKey) => void;
-  filter: "all" | "surprises" | "red";
-  setFilter: (f: "all" | "surprises" | "red") => void;
-  count: number;
+  title: string;
+  count?: number;
+  children: React.ReactNode;
 }) {
-  return (
-    <div id="portfolio" className="flex flex-wrap items-center justify-between gap-4 mb-3 scroll-mt-20">
-      <div className="flex items-center gap-2">
-        <Filter className="size-3.5 text-muted-foreground" />
-        {([["surprises", "Surprises"], ["red", "At risk"], ["all", "All accounts"]] as const).map(([k, label]) => (
-          <button
-            key={k}
-            onClick={() => setFilter(k)}
-            className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-              filter === k
-                ? "bg-foreground text-background border-foreground"
-                : "border-border text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-        <span className="text-xs text-muted-foreground ml-2 font-mono">{count} shown</span>
-      </div>
-      <div className="flex items-center gap-2 text-xs">
-        <span className="eyebrow">Sort</span>
-        {([["gap", "Largest gap"], ["renewal", "Soonest renewal"], ["arr", "ARR"]] as const).map(([k, label]) => (
-          <button
-            key={k}
-            onClick={() => setSort(k)}
-            className={`px-2.5 py-1 rounded-md transition-colors ${
-              sort === k ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function PortfolioTable({ accounts, onOpen }: { accounts: Account[]; onOpen: (id: string) => void }) {
-  return (
-    <div className="border border-border rounded-2xl overflow-hidden bg-surface">
-      <div className="grid grid-cols-[1.6fr_0.8fr_0.8fr_0.7fr_0.6fr] gap-4 px-6 py-3 border-b border-border text-[10px] uppercase tracking-[0.18em] font-mono text-muted-foreground">
-        <div>Account</div>
-        <div>CRM score</div>
-        <div>Receipts</div>
-        <div>ARR · Renewal</div>
-        <div className="text-right">Open</div>
-      </div>
-      {accounts.map((a) => (
-        <Row key={a.id} account={a} onOpen={() => onOpen(a.id)} />
-      ))}
-      {accounts.length === 0 && (
-        <div className="p-12 text-center text-sm text-muted-foreground">No accounts match this filter.</div>
-      )}
-    </div>
-  );
-}
-
-function Row({ account, onOpen }: { account: Account; onOpen: () => void }) {
-  const gap = account.vendorScore.value - account.receiptsScore.value;
-  const direction = gap >= 20 ? "down" : gap <= -20 ? "up" : "flat";
-  const renewalColor =
-    account.renewalDays <= 14 ? "text-danger" : account.renewalDays <= 45 ? "text-warning" : "text-muted-foreground";
-  return (
-    <button
-      onClick={onOpen}
-      className="w-full text-left grid grid-cols-[1.6fr_0.8fr_0.8fr_0.7fr_0.6fr] gap-4 px-6 py-5 border-b border-border last:border-b-0 hover:bg-accent/40 transition-colors group"
-    >
-      <div className="min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="font-display font-semibold text-base">{account.name}</span>
-          <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{account.segment}</span>
-        </div>
-        <div className="text-sm text-muted-foreground line-clamp-2 max-w-xl">{account.headline}</div>
-        <SignalTimeline receipts={account.receipts} />
-      </div>
-      <ScoreCell value={account.vendorScore.value} label={account.vendorScore.label} muted />
-      <ScoreCell
-        value={account.receiptsScore.value}
-        label={account.receiptsScore.label}
-        delta={direction === "down" ? "down" : direction === "up" ? "up" : undefined}
-        deltaMagnitude={Math.abs(gap)}
-      />
-      <div>
-        <div className="font-mono text-sm">{formatARR(account.arr)}</div>
-        <div className={`text-xs flex items-center gap-1 ${renewalColor}`}>
-          <Clock className="size-3" />
-          {account.renewalDays}d
-        </div>
-      </div>
-      <div className="flex justify-end items-center">
-        <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors inline-flex items-center gap-1">
-          Open receipts <ArrowUpRight className="size-3" />
-        </span>
-      </div>
-    </button>
-  );
-}
-
-function SignalTimeline({ receipts }: { receipts: Receipt[] }) {
-  return (
-    <div className="flex items-end gap-0.5 mt-2 h-3">
-      {receipts.map((r) => {
-        const color = r.weight < 0 ? "bg-danger" : r.weight > 0 ? "bg-success" : "bg-muted-foreground/30";
-        const h = Math.min(12, 4 + Math.abs(r.weight) * 3);
-        return (
-          <span key={r.id} className={`w-1 rounded-sm ${color}`} style={{ height: `${h}px` }} title={r.source} />
-        );
-      })}
-    </div>
-  );
-}
-
-function ScoreCell({
-  value,
-  label,
-  delta,
-  deltaMagnitude,
-  muted,
-}: {
-  value: number;
-  label: "Green" | "Yellow" | "Red";
-  delta?: "up" | "down";
-  deltaMagnitude?: number;
-  muted?: boolean;
-}) {
-  const color = label === "Green" ? "bg-success" : label === "Yellow" ? "bg-warning" : "bg-danger";
   return (
     <div>
-      <div className="flex items-center gap-2 mb-1.5">
-        <span className={`size-2 rounded-full ${color} ${muted ? "opacity-60" : ""}`} />
-        <span className={`font-mono text-sm tabular-nums ${muted ? "text-muted-foreground" : "text-foreground font-semibold"}`}>
-          {value}
+      <div className="flex items-baseline justify-between px-2 mb-1.5">
+        <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
+          {title}
         </span>
-        {delta && deltaMagnitude !== undefined && (
-          <span className={`inline-flex items-center text-[10px] font-mono ${delta === "down" ? "text-danger" : "text-success"}`}>
-            {delta === "down" ? <ArrowDownRight className="size-3" /> : <ArrowUpRight className="size-3" />}
-            {deltaMagnitude}
+        {count !== undefined && (
+          <span className="text-[10px] font-mono text-muted-foreground">{count}</span>
+        )}
+      </div>
+      <div className="space-y-0.5">{children}</div>
+    </div>
+  );
+}
+
+function NavGroup({
+  items,
+}: {
+  items: Array<{
+    key: string;
+    label: string;
+    count?: number;
+    icon: React.ComponentType<{ className?: string }>;
+    active: boolean;
+    onClick: () => void;
+  }>;
+}) {
+  return (
+    <div className="space-y-0.5">
+      {items.map((it) => (
+        <button
+          key={it.key}
+          onClick={it.onClick}
+          className={`w-full text-left rounded-md px-2.5 py-1.5 flex items-center gap-2.5 transition-colors ${
+            it.active ? "bg-foreground text-background" : "hover:bg-foreground/5"
+          }`}
+        >
+          <it.icon className="size-3.5" />
+          <span className="text-sm flex-1">{it.label}</span>
+          {it.count !== undefined && (
+            <span
+              className={`text-[10px] font-mono ${
+                it.active ? "text-background/70" : "text-muted-foreground"
+              }`}
+            >
+              {it.count}
+            </span>
+          )}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ───────────────────────── RIGHT PANE ─────────────────────────
+
+function RightPane({
+  pane,
+  persona,
+  setPane,
+}: {
+  pane: RightPane;
+  persona: PersonaId;
+  setPane: (p: RightPane) => void;
+}) {
+  if (pane.kind === "play") {
+    const account = ACCOUNTS.find((a) => a.id === pane.accountId);
+    const brief = TODAYS_BRIEF.find((b) => b.accountId === pane.accountId);
+    if (!account) return null;
+    return <PlayDetail account={account} brief={brief} setPane={setPane} />;
+  }
+  if (pane.kind === "portfolio") return <WatchlistView setPane={setPane} />;
+  if (pane.kind === "feed") return <FeedView />;
+  if (pane.kind === "agents") return <AgentsView persona={persona} />;
+  if (pane.kind === "integrations")
+    return (
+      <div className="max-w-4xl px-8 py-10">
+        <IntegrationsGrid />
+      </div>
+    );
+  return null;
+}
+
+// ───────────────────────── PLAY DETAIL (hero view) ─────────────────────────
+
+function PlayDetail({
+  account,
+  brief,
+  setPane,
+}: {
+  account: Account;
+  brief?: BriefItem;
+  setPane: (p: RightPane) => void;
+}) {
+  const gap = account.vendorScore.value - account.receiptsScore.value;
+  const urgencyChip =
+    brief?.urgency === "now"
+      ? { text: "DO NOW", cls: "bg-danger/10 text-danger" }
+      : brief?.urgency === "today"
+      ? { text: "TODAY", cls: "bg-warning/15 text-warning" }
+      : brief?.urgency === "this-week"
+      ? { text: "THIS WEEK", cls: "bg-muted text-muted-foreground" }
+      : { text: "WATCH", cls: "bg-muted text-muted-foreground" };
+
+  return (
+    <div className="max-w-5xl px-8 py-8">
+      {/* Header: account identity + urgency */}
+      <div className="flex items-start justify-between gap-6 mb-8">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span
+              className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full ${urgencyChip.cls}`}
+            >
+              {urgencyChip.text}
+            </span>
+            <span className="eyebrow">
+              {account.segment} · {formatARR(account.arr)} ARR · {account.renewalDays}d to renewal
+            </span>
+          </div>
+          <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight">
+            {account.name}
+          </h1>
+        </div>
+        <button
+          onClick={() => setPane({ kind: "portfolio" })}
+          className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 shrink-0"
+        >
+          <ArrowLeft className="size-3" /> Watchlist
+        </button>
+      </div>
+
+      {/* The play */}
+      {brief && (
+        <div className="border border-foreground rounded-2xl p-6 mb-8 bg-foreground text-background">
+          <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-background/60 mb-3">
+            Today's play · before lunch
+          </div>
+          <p className="text-xl font-display font-semibold leading-snug tracking-tight">
+            {brief.action}
+          </p>
+          <p className="text-sm text-background/70 mt-3 leading-relaxed">
+            <span className="font-medium text-background">Because: </span>
+            {brief.because}
+          </p>
+
+          {/* Draft action surface — honest "draft only" affordance */}
+          <div className="mt-5 pt-5 border-t border-background/15 flex flex-wrap items-center gap-2">
+            <button className="inline-flex items-center gap-1.5 text-xs font-medium bg-background text-foreground px-3 py-1.5 rounded-full hover:opacity-90">
+              <Send className="size-3" /> Open drafted email
+            </button>
+            <button className="inline-flex items-center gap-1.5 text-xs text-background/80 hover:text-background border border-background/20 px-3 py-1.5 rounded-full">
+              <CornerDownLeft className="size-3" /> Log to Salesforce
+            </button>
+            <span className="text-[10px] font-mono text-background/50 ml-auto">
+              awaiting your signoff
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Two scores side by side */}
+      <div className="grid sm:grid-cols-2 gap-4 mb-8">
+        <ScoreCard
+          kind="vendor"
+          value={account.vendorScore.value}
+          label={account.vendorScore.label}
+          basis={account.vendorScore.basis}
+        />
+        <ScoreCard
+          kind="receipts"
+          value={account.receiptsScore.value}
+          label={account.receiptsScore.label}
+          basis={`${Math.abs(gap)} pt ${gap >= 0 ? "below" : "above"} CRM · ${account.receipts.length} receipts`}
+          gap={gap}
+        />
+      </div>
+
+      {/* Headline narrative */}
+      <div className="mb-8">
+        <div className="eyebrow mb-2">What's actually going on</div>
+        <p className="text-base leading-relaxed max-w-3xl">{account.headline}</p>
+      </div>
+
+      {/* Receipts */}
+      <div>
+        <div className="flex items-end justify-between mb-3">
+          <div className="eyebrow">Receipts · raw evidence</div>
+          <span className="text-[10px] font-mono text-muted-foreground">
+            {account.receipts.length} signals · sorted by impact
+          </span>
+        </div>
+        <div className="space-y-2">
+          {account.receipts
+            .slice()
+            .sort((a, b) => a.weight - b.weight)
+            .map((r) => (
+              <ReceiptCard key={r.id} receipt={r} />
+            ))}
+        </div>
+        <p className="mt-5 text-[11px] text-muted-foreground leading-relaxed max-w-2xl">
+          Every score is computed from these receipts and nothing else. Click any
+          signal to see the source. Override if you disagree — Receipts learns from
+          your overrides, it doesn't override you.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function ScoreCard({
+  kind,
+  value,
+  label,
+  basis,
+  gap,
+}: {
+  kind: "vendor" | "receipts";
+  value: number;
+  label: "Green" | "Yellow" | "Red";
+  basis: string;
+  gap?: number;
+}) {
+  const color =
+    label === "Green" ? "text-success" : label === "Yellow" ? "text-warning" : "text-danger";
+  return (
+    <div className="border border-border rounded-xl p-5 bg-surface">
+      <div className="flex items-center justify-between mb-3">
+        <span className="eyebrow">{kind === "vendor" ? "Your CRM score" : "Receipts score"}</span>
+        {kind === "receipts" && gap !== undefined && Math.abs(gap) >= 20 && (
+          <span
+            className={`inline-flex items-center gap-1 text-[10px] font-mono ${
+              gap > 0 ? "text-danger" : "text-success"
+            }`}
+          >
+            {gap > 0 ? <ArrowDownRight className="size-3" /> : <ArrowUpRight className="size-3" />}
+            {Math.abs(gap)} pt vs CRM
           </span>
         )}
       </div>
-      <div className="h-1 w-20 bg-foreground/5 rounded-full overflow-hidden">
-        <div className={`h-full ${color} ${muted ? "opacity-60" : ""}`} style={{ width: `${value}%` }} />
-      </div>
-    </div>
-  );
-}
-
-// ───────────────────────── DRAWER ─────────────────────────
-
-function AccountDrawer({ account, onClose }: { account: Account; onClose: () => void }) {
-  const gap = account.vendorScore.value - account.receiptsScore.value;
-  return (
-    <div className="fixed inset-0 z-50 bg-foreground/30 backdrop-blur-sm flex justify-end" onClick={onClose}>
-      <div
-        className="w-full max-w-2xl h-full bg-background border-l border-border overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="sticky top-0 bg-background/95 backdrop-blur border-b border-border px-8 py-5 flex items-start justify-between gap-4 z-10">
-          <div>
-            <span className="eyebrow block mb-2">
-              {account.segment} · {formatARR(account.arr)} ARR · {account.renewalDays}d to renewal
-            </span>
-            <h2 className="font-display text-2xl font-semibold tracking-tight">{account.name}</h2>
-          </div>
-          <button onClick={onClose} className="size-8 rounded-full hover:bg-accent flex items-center justify-center" aria-label="Close">
-            <X className="size-4" />
-          </button>
-        </div>
-
-        <div className="px-8 py-6 space-y-8">
-          <div className="grid grid-cols-2 gap-4">
-            <ScoreCard kind="vendor" value={account.vendorScore.value} label={account.vendorScore.label} basis={account.vendorScore.basis} />
-            <ScoreCard
-              kind="receipts"
-              value={account.receiptsScore.value}
-              label={account.receiptsScore.label}
-              basis={`${gap >= 0 ? gap : -gap} pt ${gap >= 0 ? "below" : "above"} CRM · ${account.receipts.length} receipts`}
-            />
-          </div>
-
-          <section>
-            <div className="eyebrow mb-2">What's actually going on</div>
-            <p className="text-base leading-relaxed">{account.headline}</p>
-          </section>
-
-          <section className="border-l-2 border-primary pl-4">
-            <div className="eyebrow mb-1 text-primary">Next play · 48h</div>
-            <p className="text-sm leading-relaxed">{account.nextPlay}</p>
-          </section>
-
-          <section>
-            <div className="flex items-end justify-between mb-3">
-              <div className="eyebrow">Receipts · raw evidence</div>
-              <span className="text-[10px] font-mono text-muted-foreground">{account.receipts.length} signals</span>
-            </div>
-            <div className="space-y-2">
-              {account.receipts.slice().sort((a, b) => a.weight - b.weight).map((r) => (
-                <ReceiptCard key={r.id} receipt={r} />
-              ))}
-            </div>
-          </section>
-
-          <section className="text-xs text-muted-foreground border-t border-border pt-4">
-            Every score is computed from these receipts and nothing else. No black box — click a signal, see the source, override if you disagree. Receipts learns from your overrides; it doesn't override you.
-          </section>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ScoreCard({ kind, value, label, basis }: { kind: "vendor" | "receipts"; value: number; label: "Green" | "Yellow" | "Red"; basis: string }) {
-  const color = label === "Green" ? "text-success" : label === "Yellow" ? "text-warning" : "text-danger";
-  return (
-    <div className="border border-border rounded-xl p-4 bg-surface">
-      <div className="eyebrow mb-3">{kind === "vendor" ? "Your CRM score" : "Receipts score"}</div>
-      <div className={`font-display text-3xl font-semibold mb-1 ${color}`}>
+      <div className={`font-display text-4xl font-semibold mb-1 tabular-nums ${color}`}>
         {value}
         <span className="text-sm text-muted-foreground font-sans font-normal ml-2">{label}</span>
       </div>
-      <div className="text-xs text-muted-foreground leading-relaxed">{basis}</div>
+      <div className="text-xs text-muted-foreground leading-relaxed mt-2">{basis}</div>
     </div>
   );
 }
@@ -586,10 +531,14 @@ function ReceiptCard({ receipt }: { receipt: Receipt }) {
   const Icon = channelIcon[receipt.channel];
   const negative = receipt.weight < 0;
   const positive = receipt.weight > 0;
-  const accent = negative ? "border-l-danger" : positive ? "border-l-success" : "border-l-border";
+  const accent = negative
+    ? "border-l-danger"
+    : positive
+    ? "border-l-success"
+    : "border-l-border";
   return (
     <div className={`border border-border border-l-4 ${accent} rounded-md p-4 bg-surface`}>
-      <div className="flex items-center justify-between gap-3 mb-2">
+      <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
         <div className="flex items-center gap-2 text-xs">
           <Icon className="size-3.5 text-muted-foreground" />
           <span className="font-mono text-muted-foreground">{receipt.source}</span>
@@ -602,70 +551,271 @@ function ReceiptCard({ receipt }: { receipt: Receipt }) {
         </div>
         <span
           className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full ${
-            negative ? "bg-danger/10 text-danger" : positive ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"
+            negative
+              ? "bg-danger/10 text-danger"
+              : positive
+              ? "bg-success/10 text-success"
+              : "bg-muted text-muted-foreground"
           }`}
         >
           {signalLabel[receipt.signal]} {receipt.weight > 0 ? "+" : ""}
           {receipt.weight}
         </span>
       </div>
-      <blockquote className="text-sm leading-relaxed text-foreground">"{receipt.quote}"</blockquote>
+      <blockquote className="text-sm leading-relaxed text-foreground">
+        "{receipt.quote}"
+      </blockquote>
     </div>
   );
 }
 
-// ───────────────────────── AUTOPILOT TICKER ─────────────────────────
+// ───────────────────────── WATCHLIST ─────────────────────────
 
-function AutopilotTicker() {
-  const [idx, setIdx] = useState(0);
-  const [paused, setPaused] = useState(false);
+type SortKey = "gap" | "renewal" | "arr";
 
-  useEffect(() => {
-    if (paused) return;
-    const t = setInterval(() => setIdx((i) => (i + 1) % OVERNIGHT_FEED.length), 3200);
-    return () => clearInterval(t);
-  }, [paused]);
+function WatchlistView({ setPane }: { setPane: (p: RightPane) => void }) {
+  const [sort, setSort] = useState<SortKey>("gap");
+  const [filter, setFilter] = useState<"all" | "surprises" | "red">("surprises");
 
-  const e = OVERNIGHT_FEED[idx];
-  const agent = AGENTS.find((a) => a.id === e.agent)!;
-  const weightStyle: Record<FeedEvent["weight"], string> = {
-    info: "text-muted-foreground",
-    warn: "text-warning",
-    danger: "text-danger",
-    win: "text-success",
-  };
+  const accounts = useMemo(() => {
+    let list = [...ACCOUNTS];
+    if (filter === "surprises") {
+      list = list.filter(
+        (a) => Math.abs(a.vendorScore.value - a.receiptsScore.value) >= 20,
+      );
+    } else if (filter === "red") {
+      list = list.filter((a) => a.receiptsScore.label === "Red");
+    }
+    list.sort((a, b) => {
+      if (sort === "gap") {
+        return (
+          b.vendorScore.value -
+          b.receiptsScore.value -
+          (a.vendorScore.value - a.receiptsScore.value)
+        );
+      }
+      if (sort === "renewal") return a.renewalDays - b.renewalDays;
+      return b.arr - a.arr;
+    });
+    return list;
+  }, [filter, sort]);
 
   return (
-    <div
-      className="border-b border-border bg-surface/60 backdrop-blur sticky top-14 z-30"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-    >
-      <div className="max-w-[1280px] mx-auto px-8 h-10 flex items-center gap-3 overflow-hidden">
-        <span className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.18em] text-success shrink-0">
-          <span className="size-1.5 rounded-full bg-success animate-pulse" />
-          Night-shift desk · live
-        </span>
-        <span className="text-[10px] font-mono text-muted-foreground shrink-0 hidden sm:inline">{e.at}</span>
-        <span className="text-[10px] font-mono text-foreground shrink-0">{agent.name}</span>
-        <span className="text-muted-foreground/40 shrink-0">·</span>
-        <p key={e.id} className="text-xs truncate animate-reveal" title={e.detail}>
-          <span className={`font-medium ${weightStyle[e.weight]}`}>{e.verb}</span>
-          {e.account && <span className="text-muted-foreground"> on </span>}
-          {e.account && <span className="text-foreground">{e.account}</span>}
-          <span className="text-muted-foreground"> — {e.detail}</span>
-        </p>
-        <span className="ml-auto shrink-0 text-[10px] font-mono text-muted-foreground hidden md:inline">
-          {idx + 1} / {OVERNIGHT_FEED.length}
-        </span>
+    <div className="max-w-5xl px-8 py-8">
+      <div className="mb-6">
+        <span className="eyebrow block mb-2">Watchlist</span>
+        <h2 className="font-display text-2xl font-semibold tracking-tight">
+          Every account on your book — scored on what the customer actually said.
+        </h2>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <div className="flex items-center gap-1.5">
+          {([
+            ["surprises", "Surprises"],
+            ["red", "At risk"],
+            ["all", "All"],
+          ] as const).map(([k, label]) => (
+            <button
+              key={k}
+              onClick={() => setFilter(k)}
+              className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
+                filter === k
+                  ? "bg-foreground text-background border-foreground"
+                  : "border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+          <span className="text-[10px] font-mono text-muted-foreground ml-2">
+            {accounts.length} shown
+          </span>
+        </div>
+        <div className="flex items-center gap-1 text-[11px]">
+          <span className="text-muted-foreground mr-1">Sort</span>
+          {([
+            ["gap", "Largest gap"],
+            ["renewal", "Soonest renewal"],
+            ["arr", "ARR"],
+          ] as const).map(([k, label]) => (
+            <button
+              key={k}
+              onClick={() => setSort(k)}
+              className={`px-2 py-0.5 rounded-md transition-colors ${
+                sort === k ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="border border-border rounded-xl overflow-hidden bg-surface">
+        {accounts.map((a) => {
+          const gap = a.vendorScore.value - a.receiptsScore.value;
+          return (
+            <button
+              key={a.id}
+              onClick={() => setPane({ kind: "play", accountId: a.id })}
+              className="w-full text-left grid grid-cols-[1.6fr_0.7fr_0.7fr_0.6fr_auto] gap-4 px-5 py-4 border-b border-border last:border-b-0 hover:bg-accent/40 transition-colors items-center"
+            >
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-display font-semibold text-sm">{a.name}</span>
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                    {a.segment}
+                  </span>
+                </div>
+                <div className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{a.headline}</div>
+              </div>
+              <MiniScore value={a.vendorScore.value} label={a.vendorScore.label} muted />
+              <MiniScore
+                value={a.receiptsScore.value}
+                label={a.receiptsScore.label}
+                deltaPt={gap >= 20 ? gap : gap <= -20 ? gap : undefined}
+              />
+              <div className="text-xs">
+                <div className="font-mono">{formatARR(a.arr)}</div>
+                <div
+                  className={`text-[11px] ${
+                    a.renewalDays <= 14
+                      ? "text-danger"
+                      : a.renewalDays <= 45
+                      ? "text-warning"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {a.renewalDays}d
+                </div>
+              </div>
+              <ArrowUpRight className="size-3.5 text-muted-foreground" />
+            </button>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-// ───────────────────────── AGENT ROSTER ─────────────────────────
+function MiniScore({
+  value,
+  label,
+  muted,
+  deltaPt,
+}: {
+  value: number;
+  label: "Green" | "Yellow" | "Red";
+  muted?: boolean;
+  deltaPt?: number;
+}) {
+  const color =
+    label === "Green" ? "bg-success" : label === "Yellow" ? "bg-warning" : "bg-danger";
+  return (
+    <div className="flex items-center gap-2">
+      <span className={`size-2 rounded-full ${color} ${muted ? "opacity-60" : ""}`} />
+      <span
+        className={`font-mono text-sm tabular-nums ${
+          muted ? "text-muted-foreground" : "text-foreground font-semibold"
+        }`}
+      >
+        {value}
+      </span>
+      {deltaPt !== undefined && (
+        <span
+          className={`inline-flex items-center text-[10px] font-mono ${
+            deltaPt > 0 ? "text-danger" : "text-success"
+          }`}
+        >
+          {deltaPt > 0 ? <ArrowDownRight className="size-3" /> : <ArrowUpRight className="size-3" />}
+          {Math.abs(deltaPt)}
+        </span>
+      )}
+    </div>
+  );
+}
 
-function AgentRoster({ persona }: { persona: PersonaId }) {
+// ───────────────────────── OVERNIGHT FEED ─────────────────────────
+
+function FeedView() {
+  const [filter, setFilter] = useState<"all" | Agent["id"]>("all");
+  const events =
+    filter === "all" ? OVERNIGHT_FEED : OVERNIGHT_FEED.filter((e) => e.agent === filter);
+  const weightStyle: Record<FeedEvent["weight"], string> = {
+    info: "border-l-muted text-muted-foreground",
+    warn: "border-l-warning text-warning",
+    danger: "border-l-danger text-danger",
+    win: "border-l-success text-success",
+  };
+
+  return (
+    <div className="max-w-4xl px-8 py-8">
+      <div className="mb-6">
+        <span className="eyebrow block mb-2">
+          Overnight · {AGENT_OUTCOMES.hoursOfWork}h · {AGENT_OUTCOMES.signalsProcessed.toLocaleString()} signals
+        </span>
+        <h2 className="font-display text-2xl font-semibold tracking-tight">
+          What the desk did between 6:14p and 7:42a.
+        </h2>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-1.5 mb-4">
+        {([["all", "All"], ...AGENTS.map((a) => [a.id, a.name] as const)] as const).map(
+          ([k, label]) => (
+            <button
+              key={k}
+              onClick={() => setFilter(k as typeof filter)}
+              className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
+                filter === k
+                  ? "bg-foreground text-background border-foreground"
+                  : "border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {label}
+            </button>
+          ),
+        )}
+      </div>
+
+      <div className="border border-border rounded-xl overflow-hidden bg-surface divide-y divide-border">
+        {events.map((e) => {
+          const agent = AGENTS.find((a) => a.id === e.agent)!;
+          const [borderCls, textCls] = weightStyle[e.weight].split(" ");
+          return (
+            <div
+              key={e.id}
+              className={`grid grid-cols-[56px_120px_1fr_auto] gap-3 px-4 py-3 border-l-2 ${borderCls} items-start`}
+            >
+              <span className="font-mono text-[11px] text-muted-foreground pt-0.5">{e.at}</span>
+              <span className="text-xs font-medium pt-0.5 truncate">{agent.name}</span>
+              <div className="min-w-0">
+                <p className="text-sm leading-snug">
+                  <span className={`font-medium ${textCls}`}>{e.verb}</span>
+                  {e.account && <span className="text-muted-foreground"> on </span>}
+                  {e.account && <span className="text-foreground font-medium">{e.account}</span>}
+                  <span className="text-muted-foreground"> — {e.detail}</span>
+                </p>
+                {e.citation && (
+                  <p className="text-[11px] text-muted-foreground font-mono mt-1">
+                    cite · {e.citation}
+                  </p>
+                )}
+              </div>
+              <span className="text-[10px] font-mono text-muted-foreground pt-1 whitespace-nowrap">
+                awaiting human
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ───────────────────────── AGENTS ─────────────────────────
+
+function AgentsView({ persona }: { persona: PersonaId }) {
   const statusDot: Record<Agent["status"], string> = {
     working: "bg-success",
     standby: "bg-warning",
@@ -673,30 +823,36 @@ function AgentRoster({ persona }: { persona: PersonaId }) {
   };
   const order = PERSONAS[persona].priorityAgents;
   const ordered = order.map((id) => AGENTS.find((a) => a.id === id)!).filter(Boolean);
-  const personaCharter: Record<PersonaId, string> = {
-    csm: "Reports to you. You sign every play before it ships. Override anything — the agent learns.",
-    manager: "Reports the team-wide gap pattern. Highlights where coaching has the highest payoff this week.",
-    leader: "Rebuilds the renewal forecast from raw conversation. Every score traces to source moments.",
-  };
+
   return (
-    <section id="agents" className="mt-16 scroll-mt-20">
-      <SectionHead
-        eyebrow={`The bench · 4 agents · ${PERSONAS[persona].label.toLowerCase()} view`}
-        title="Specialist agents that augment you — not replace you."
-        sub={personaCharter[persona]}
-      />
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="max-w-4xl px-8 py-8">
+      <div className="mb-6">
+        <span className="eyebrow block mb-2">The bench · 4 agents</span>
+        <h2 className="font-display text-2xl font-semibold tracking-tight">
+          Specialist agents that augment you — not replace you.
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground max-w-xl leading-relaxed">
+          Every play awaits your signoff. Override anything — the agent learns
+          from your overrides. It does not override you.
+        </p>
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-3">
         {ordered.map((a) => (
-          <div key={a.id} className="border border-border rounded-2xl p-5 bg-surface flex flex-col">
+          <div key={a.id} className="border border-border rounded-xl p-5 bg-surface flex flex-col">
             <div className="flex items-center justify-between mb-3">
               <div className="inline-flex items-center gap-2">
                 <div className="size-7 rounded-md bg-foreground/5 border border-border flex items-center justify-center">
-                  <Bot className="size-3.5 text-foreground" />
+                  <Sparkles className="size-3.5 text-foreground" />
                 </div>
                 <span className="font-display font-semibold text-sm tracking-tight">{a.name}</span>
               </div>
               <span className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
-                <span className={`size-1.5 rounded-full ${statusDot[a.status]} ${a.status === "working" ? "animate-pulse" : ""}`} />
+                <span
+                  className={`size-1.5 rounded-full ${statusDot[a.status]} ${
+                    a.status === "working" ? "animate-pulse" : ""
+                  }`}
+                />
                 {a.status}
               </span>
             </div>
@@ -707,95 +863,25 @@ function AgentRoster({ persona }: { persona: PersonaId }) {
               <p className="text-xs leading-relaxed">{a.nowDoing}</p>
             </div>
             <div className="grid grid-cols-3 gap-2 text-center">
-              <div>
-                <div className="font-mono text-sm tabular-nums">{a.watching}</div>
-                <div className="text-[10px] text-muted-foreground uppercase tracking-wider">watching</div>
-              </div>
-              <div>
-                <div className="font-mono text-sm tabular-nums">{a.completedToday}</div>
-                <div className="text-[10px] text-muted-foreground uppercase tracking-wider">done today</div>
-              </div>
-              <div>
-                <div className="font-mono text-sm tabular-nums text-danger">{a.flagged}</div>
-                <div className="text-[10px] text-muted-foreground uppercase tracking-wider">flagged</div>
-              </div>
+              <Stat label="watching" value={a.watching} />
+              <Stat label="done today" value={a.completedToday} />
+              <Stat label="flagged" value={a.flagged} danger />
             </div>
           </div>
         ))}
       </div>
-    </section>
+    </div>
   );
 }
 
-// ───────────────────────── OVERNIGHT FEED ─────────────────────────
-
-function OvernightFeed() {
-  const [filter, setFilter] = useState<"all" | Agent["id"]>("all");
-  const events = filter === "all" ? OVERNIGHT_FEED : OVERNIGHT_FEED.filter((e) => e.agent === filter);
-  const weightStyle: Record<FeedEvent["weight"], string> = {
-    info: "border-l-muted text-muted-foreground",
-    warn: "border-l-warning text-warning",
-    danger: "border-l-danger text-danger",
-    win: "border-l-success text-success",
-  };
+function Stat({ label, value, danger }: { label: string; value: number; danger?: boolean }) {
   return (
-    <section id="overnight" className="mt-16 scroll-mt-20">
-      <div className="flex flex-wrap items-end justify-between gap-4 mb-4">
-        <div className="max-w-xl">
-          <span className="eyebrow block mb-2">
-            Overnight · {AGENT_OUTCOMES.hoursOfWork}h of work · {AGENT_OUTCOMES.conversationsRead} conversations · {AGENT_OUTCOMES.signalsProcessed.toLocaleString()} signals
-          </span>
-          <h2 className="font-display text-xl md:text-2xl font-semibold tracking-tight leading-tight">
-            What the desk did between 6:14p and 7:42a.
-          </h2>
-        </div>
-        <div className="flex flex-wrap items-center gap-1.5">
-          {([["all", "All"], ...AGENTS.map((a) => [a.id, a.name] as const)] as const).map(([k, label]) => (
-            <button
-              key={k}
-              onClick={() => setFilter(k as typeof filter)}
-              className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
-                filter === k ? "bg-foreground text-background border-foreground" : "border-border text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="border border-border rounded-2xl overflow-hidden bg-surface divide-y divide-border">
-        {events.map((e) => {
-          const agent = AGENTS.find((a) => a.id === e.agent)!;
-          const [borderCls, textCls] = weightStyle[e.weight].split(" ");
-          return (
-            <div key={e.id} className={`grid grid-cols-[64px_140px_1fr_auto] gap-4 px-5 py-3.5 border-l-2 ${borderCls} items-start`}>
-              <span className="font-mono text-[11px] text-muted-foreground pt-0.5">{e.at}</span>
-              <span className="text-xs font-medium pt-0.5">{agent.name}</span>
-              <div className="min-w-0">
-                <p className="text-sm leading-relaxed">
-                  <span className={`font-medium ${textCls}`}>{e.verb}</span>
-                  {e.account && <span className="text-muted-foreground"> on </span>}
-                  {e.account && <span className="text-foreground font-medium">{e.account}</span>}
-                  <span className="text-muted-foreground"> — {e.detail}</span>
-                </p>
-                {e.citation && (
-                  <p className="text-[11px] text-muted-foreground font-mono mt-1">cite · {e.citation}</p>
-                )}
-              </div>
-              <span className="text-[10px] font-mono text-muted-foreground pt-1 whitespace-nowrap">awaiting human</span>
-            </div>
-          );
-        })}
-      </div>
-    </section>
+    <div>
+      <div className={`font-mono text-sm tabular-nums ${danger ? "text-danger" : ""}`}>{value}</div>
+      <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</div>
+    </div>
   );
 }
 
-function Footer() {
-  return (
-    <footer className="border-t border-border mt-20 pt-8 pb-12 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
-      <div className="font-mono">Receipts · v0.4 · 4 agents · 3 personas · 47-account backtest</div>
-      <div>Augments humans. Cites every claim.</div>
-    </footer>
-  );
-}
+// Compile-safe (unused-import suppressors get noisy otherwise)
+void Check;
