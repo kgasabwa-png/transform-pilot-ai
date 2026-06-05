@@ -11,11 +11,12 @@ const Input = z.object({
   accountName: z.string().min(1).max(200).optional(),
 });
 
-const SYSTEM = `You are Receipts, an execution agent for B2B SaaS customer-success teams.
+const SYSTEM = `You are Receipts, a renewal evidence analyst for B2B SaaS customer-success teams.
 You receive a raw call transcript (numbered lines) and return a strictly-JSON
-"close package" that a CSM reviews in under 90 seconds. Every claim you make MUST cite
-the 1-indexed line numbers it came from. NEVER fabricate. If a section has no
-evidence in the transcript, return an empty array.
+evidence package that a CSM reviews in under 90 seconds and a VP CS can use in a
+forecast discussion. Every claim you make MUST cite the 1-indexed line numbers it
+came from. NEVER fabricate. If a section has no evidence in the transcript, return
+an empty array.
 
 Return ONLY valid JSON matching this shape, no prose, no markdown fences:
 
@@ -43,6 +44,8 @@ Return ONLY valid JSON matching this shape, no prose, no markdown fences:
 
 Rules:
 - "before" is the prior account state if known, otherwise "unknown".
+- Prioritize stakeholder changes, renewal risks, value proof, adoption gaps, expansion signals, and concrete next plays.
+- CRM updates should read like fields RevOps or a manager would actually want changed.
 - Email is in the CSM's voice: short, direct, ordered by customer priority. No emojis. No em-dashes.
 - Every paragraph and every risk MUST include at least one citation.
 - 2-5 record updates, 2-4 risks. Email: 2-4 short paragraphs.
@@ -56,13 +59,11 @@ export const runClose = createServerFn({ method: "POST" })
       throw new Error("AI gateway not configured. Add LOVABLE_API_KEY.");
     }
 
-    const numbered = data.transcript
-      .map((l, i) => `[${i + 1}] ${l.speaker}: ${l.text}`)
-      .join("\n");
+    const numbered = data.transcript.map((l, i) => `[${i + 1}] ${l.speaker}: ${l.text}`).join("\n");
 
     const userPrompt =
       (data.accountName ? `Account: ${data.accountName}\n\n` : "") +
-      `TRANSCRIPT (1-indexed lines):\n\n${numbered}\n\nReturn the close package as raw JSON.`;
+      `TRANSCRIPT (1-indexed lines):\n\n${numbered}\n\nReturn the evidence package as raw JSON.`;
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

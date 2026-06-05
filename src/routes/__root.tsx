@@ -49,9 +49,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
           This page didn't load
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong. Try refreshing.
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">Something went wrong. Try refreshing.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
@@ -79,11 +77,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Receipts , the renewal tool that shows its work" },
+      { title: "Receipts - renewal evidence desk for CS leaders" },
       {
         name: "description",
         content:
-          "Paste a customer call. Get a drafted renewal email and CRM update where every line cites the exact moment that justified it.",
+          "Turn customer calls into cited renewal evidence, CRM updates, risks, and follow-up drafts your team can trust.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
