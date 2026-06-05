@@ -39,7 +39,7 @@ export function IntegrationsGrid() {
       <div>
         <span className="eyebrow block mb-2">Integrations</span>
         <h2 className="font-display text-2xl font-semibold tracking-tight">
-          The surfaces your renewal agents read.
+          The surfaces your night-shift desk reads.
         </h2>
         <p className="mt-2 text-sm text-muted-foreground max-w-xl leading-relaxed">
           Read-only by default. Every outbound from Receipts is a draft your CSM

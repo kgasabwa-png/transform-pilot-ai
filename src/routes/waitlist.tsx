@@ -12,13 +12,13 @@ export const Route = createFileRoute("/waitlist")({
       {
         name: "description",
         content:
-          "Request access to Receipts: the agentic renewal desk that turns customer conversations into cited, human-reviewed CS work.",
+          "Receipts is in private beta with 6 CS teams. Request access to the night-shift research desk that augments your CSMs with cited, human-reviewed prep work.",
       },
       { property: "og:title", content: "Become a design partner — Receipts" },
       {
         property: "og:description",
         content:
-          "Run a concierge backtest on closed renewals before connecting your stack. Your data, your overrides, every claim cited.",
+          "Private beta. 6 design-partner slots, 3 still open for Q1. No demo theater — your data, your overrides.",
       },
     ],
   }),
@@ -72,14 +72,15 @@ function WaitlistPage() {
 
       <main className="flex-1 grid lg:grid-cols-[1.1fr_0.9fr]">
         <section className="px-6 md:px-12 lg:px-16 py-16 md:py-24 max-w-2xl">
-          <span className="eyebrow block mb-4">Concierge backtest · design partner preview</span>
+          <span className="eyebrow block mb-4">Private beta · Q1 cohort</span>
           <h1 className="text-4xl md:text-5xl font-semibold tracking-tight leading-[1.05]">
-            Show us closed renewals. We'll show what Receipts would have caught.
+            Become a Receipts design partner.
           </h1>
           <p className="mt-5 text-muted-foreground text-base md:text-lg leading-relaxed max-w-xl">
-            Send 5–15 anonymized closed renewals before you connect anything.
-            We'll show which churns, expansions, and forecast misses the agents
-            would have flagged — with the exact customer moments behind each call.
+            We're shipping with six CS teams this quarter. You get the
+            night-shift research desk, weekly working sessions with the
+            founders, lifetime founding pricing, and a direct line into the
+            roadmap. We get receipts on what actually works.
           </p>
 
           <ul className="mt-8 space-y-3 text-sm text-muted-foreground">
@@ -96,7 +97,7 @@ function WaitlistPage() {
           </ul>
 
           <p className="mt-10 text-xs text-muted-foreground font-mono">
-            No integration required · sample output first
+            3 of 6 slots open · Q1 2026 cohort
           </p>
         </section>
 

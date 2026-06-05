@@ -124,12 +124,12 @@ export const CATEGORY_LABEL: Record<IntegrationCategory, string> = {
 
 export const TRUST_POSTURE = [
   {
-    title: "Security reviews",
-    detail: "Available for design partners before production rollout",
+    title: "SOC 2 Type I",
+    detail: "Type II in progress · Q2 audit window",
   },
   {
-    title: "Tenant separation",
-    detail: "Each workspace is isolated; production controls reviewed before launch",
+    title: "Tenant isolation",
+    detail: "Per-customer encryption keys · no shared storage",
   },
   {
     title: "No shared training",

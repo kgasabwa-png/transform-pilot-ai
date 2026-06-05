@@ -27,7 +27,7 @@ export const PERSONAS: Record<PersonaId, Persona> = {
     hero: {
       eyebrow: "Your morning · Tue Nov 11 · 7:42a",
       title: "Three plays before lunch. Every claim cited.",
-      sub: "Your renewal agents read the customer record, stage the next action, and cite the customer moment behind every recommendation. You approve the work before anything ships.",
+      sub: "Your night-shift research desk read every call, Slack, and email on your book overnight. You walk in with a 90-second brief — not a 60-tab inbox.",
     },
     playFraming: {
       eyebrow: "Your play",
@@ -42,12 +42,12 @@ export const PERSONAS: Record<PersonaId, Persona> = {
   manager: {
     id: "manager",
     label: "CS Manager",
-    who: "The CS manager owning CSM execution and forecast inspection.",
-    promise: "See what changed across the team — before the QBR surprise.",
+    who: "The middle manager coaching 6–10 CSMs.",
+    promise: "See where the team is flying blind — before the QBR.",
     hero: {
       eyebrow: "Team rollup · 8 CSMs · 312 accounts",
-      title: "Manage the exceptions the agents found.",
-      sub: "See every account where customer evidence moved forecast, staged a rescue workflow, or exposed a CSM blind spot before it becomes a QBR surprise.",
+      title: "Coach where the gap is widest.",
+      sub: "See every account on your team where the in-CRM score and the conversation-grade score disagree by 20+. That's where coaching has the highest ROI this week.",
     },
     playFraming: {
       eyebrow: "Coaching moment",
