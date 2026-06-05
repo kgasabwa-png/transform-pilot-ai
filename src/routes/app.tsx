@@ -37,15 +37,16 @@ import {
 import { PERSONAS, PERSONA_ORDER, type PersonaId } from "@/lib/loop/personas";
 import { Logo } from "@/components/brand/Logo";
 import { IntegrationsGrid } from "@/components/integrations/IntegrationsGrid";
+import { ReceiptModal } from "@/components/loop/ReceiptModal";
 
-type AppSearch = { role: PersonaId };
+type AppSearch = { role: PersonaId; demo?: boolean };
 
 export const Route = createFileRoute("/app")({
   validateSearch: (search: Record<string, unknown>): AppSearch => {
     const r = search.role;
     const role: PersonaId =
       r === "manager" || r === "leader" || r === "csm" ? r : "csm";
-    return { role };
+    return { role, demo: search.demo === true || search.demo === "1" || search.demo === "true" };
   },
   head: () => ({
     meta: [{ title: "Receipts — night-shift desk" }],
@@ -62,29 +63,57 @@ type RightPane =
   | { kind: "integrations" }; // connector grid
 
 function WorkspaceApp() {
-  const { role } = useSearch({ from: "/app" });
+  const { role, demo } = useSearch({ from: "/app" });
   const navigate = useNavigate({ from: "/app" });
 
-  // Default = the #1 play of the day, expanded. The thing users came to
-  // see is on screen at load — no scroll, no overview, no marketing.
   const [pane, setPane] = useState<RightPane>(() => ({
     kind: "play",
     accountId: TODAYS_BRIEF[0]?.accountId ?? ACCOUNTS[0].id,
   }));
+  const [openReceipt, setOpenReceipt] = useState<Receipt | null>(null);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
+      {demo && <TryBanner />}
       <DeskTopBar
         persona={role}
-        onPersona={(p) => navigate({ search: { role: p } })}
+        onPersona={(p) => navigate({ search: (prev) => ({ ...prev, role: p }) })}
       />
 
       <div className="flex-1 grid grid-cols-[260px_1fr] min-h-0">
         <LeftRail persona={role} pane={pane} setPane={setPane} />
         <main className="overflow-y-auto bg-background">
-          <RightPane pane={pane} persona={role} setPane={setPane} />
+          <RightPane pane={pane} persona={role} setPane={setPane} onReceipt={setOpenReceipt} />
         </main>
       </div>
+
+      <ReceiptModal
+        receipt={openReceipt}
+        open={openReceipt !== null}
+        onClose={() => setOpenReceipt(null)}
+      />
+    </div>
+  );
+}
+
+// ───────────────────────── TRY BANNER ─────────────────────────
+
+function TryBanner() {
+  return (
+    <div className="bg-foreground text-background px-4 py-2 flex flex-wrap items-center justify-center gap-3 text-[11px] font-mono">
+      <span className="inline-flex items-center gap-1.5">
+        <span className="size-1.5 rounded-full bg-success animate-pulse" />
+        SAMPLE BOOK
+      </span>
+      <span className="text-background/70">
+        You're exploring Receipts as <span className="text-background font-semibold">Sarah Chen</span>, a CSM at a B2B SaaS co. 12 accounts, all interactions live, no data leaves your browser.
+      </span>
+      <Link
+        to="/waitlist"
+        className="inline-flex items-center gap-1 bg-background text-foreground px-2.5 py-0.5 rounded-full font-semibold hover:opacity-90 transition-opacity"
+      >
+        Get this on your book →
+      </Link>
     </div>
   );
 }
