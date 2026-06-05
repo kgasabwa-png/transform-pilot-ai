@@ -93,6 +93,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Fluent — The AI Transformation Execution Platform" },
+      { name: "description", content: "Fluent is an AI Transformation Execution Platform that turns business intent into structured AI strategy and artifacts." },
+      { property: "og:description", content: "Fluent is an AI Transformation Execution Platform that turns business intent into structured AI strategy and artifacts." },
+      { name: "twitter:description", content: "Fluent is an AI Transformation Execution Platform that turns business intent into structured AI strategy and artifacts." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a6f5aab4-2b72-4ed4-a4b8-1d59e43ca21b/id-preview-475d727c--3693f151-7367-490b-af46-6c5e9d7cf514.lovable.app-1780699451805.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a6f5aab4-2b72-4ed4-a4b8-1d59e43ca21b/id-preview-475d727c--3693f151-7367-490b-af46-6c5e9d7cf514.lovable.app-1780699451805.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
