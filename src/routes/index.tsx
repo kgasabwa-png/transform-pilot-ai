@@ -194,50 +194,126 @@ function formatElapsed(s: number) {
 }
 
 function Proof() {
+  // The product writes a timestamped ledger during every call. That artifact
+  // does not exist in any other CS tool, so the section is shaped like the
+  // artifact itself. The layout IS the differentiator.
+  const entries: {
+    t: string;
+    surface: string;
+    action: string;
+    detail: string;
+    weight?: "primary" | "muted";
+  }[] = [
+    { t: "00:04", surface: "Listening", action: "Call joined", detail: "Acme · Q1 renewal · 4 attendees", weight: "muted" },
+    { t: "07:12", surface: "Salesforce", action: "Stage staged", detail: "Negotiation → Verbal commit" },
+    { t: "11:48", surface: "Salesforce", action: "Field staged", detail: "Renewal risk: Medium → Low" },
+    { t: "18:30", surface: "Asana", action: "Task queued", detail: "Send pricing addendum to procurement" },
+    { t: "18:31", surface: "Asana", action: "Task queued", detail: "Loop in Solutions on SSO rollout" },
+    { t: "24:09", surface: "Gmail", action: "Draft written", detail: "Recap to champion. 312 words. Cites 3 commitments." },
+    { t: "31:55", surface: "Asana", action: "Task queued", detail: "Schedule QBR for week of Mar 17" },
+    { t: "36:20", surface: "Slack", action: "Note composed", detail: "#renewals brief. 1 paragraph. 2 asks for manager." },
+    { t: "41:02", surface: "Asana", action: "Task queued", detail: "Update mutual action plan with new milestone" },
+    { t: "42:00", surface: "Compound", action: "Call ended", detail: "Workspace ready. Waiting for one signature.", weight: "primary" },
+  ];
+
   return (
-    <section id="proof" className="border-b border-border">
+    <section id="proof" className="border-b border-border bg-background">
       <div className="max-w-[1180px] mx-auto px-6 md:px-10 py-20 md:py-28">
-        <div className="max-w-2xl mb-14">
-          <span className="eyebrow block mb-3">What changes for you</span>
-          <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight leading-tight">
-            Three things end on your last call of the day.
-          </h2>
-        </div>
-        <div className="grid md:grid-cols-3 gap-px bg-border rounded-2xl overflow-hidden border border-border">
-          <Pane
-            kicker="01"
-            head="The 7pm recap session."
-            body="The follow-up email is already in your drafts when you open Gmail. You read it. You hit send. You leave."
-          />
-          <Pane
-            kicker="02"
-            head="The Sunday CRM cleanup."
-            body="Stage changes, notes, next steps, risk flags. All staged from what was said on the call. You confirm, not type."
-          />
-          <Pane
-            kicker="03"
-            head="The Monday standup scramble."
-            body="Your manager already has the one-paragraph brief in Slack. The 1:1 starts with the question, not the catchup."
-          />
+        <div className="grid lg:grid-cols-[0.8fr_1.2fr] gap-12 lg:gap-16 items-start">
+          <div className="lg:sticky lg:top-24">
+            <span className="eyebrow block mb-4">The proof is the receipt</span>
+            <h2 className="font-display text-3xl md:text-5xl font-semibold tracking-tight leading-[1.02]">
+              42 minutes on a call.
+              <br />
+              <span className="text-muted-foreground italic">9 things on your desk.</span>
+            </h2>
+            <p className="mt-6 text-base text-muted-foreground leading-relaxed max-w-md">
+              This is the ledger Compound writes during one renewal call. Every
+              line is reversible. Every line cites the moment in the transcript
+              it came from. Nothing leaves your tools without your signature.
+            </p>
+            <div className="mt-8 grid grid-cols-3 gap-px bg-border border border-border rounded-lg overflow-hidden">
+              <Stat n="4" l="Tools touched" />
+              <Stat n="9" l="Actions staged" />
+              <Stat n="1" l="Signature left" />
+            </div>
+          </div>
+
+          <div className="border border-border rounded-2xl bg-surface overflow-hidden shadow-sm">
+            <div className="px-5 py-3 border-b border-border flex items-center justify-between bg-background">
+              <div className="flex items-center gap-2">
+                <span className="size-2 rounded-full bg-success animate-pulse" />
+                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Live ledger · Acme renewal · Mar 04
+                </span>
+              </div>
+              <span className="font-mono text-[10px] text-muted-foreground">
+                ledger.compound
+              </span>
+            </div>
+            <ol>
+              {entries.map((e, i) => (
+                <li
+                  key={i}
+                  className={`grid grid-cols-[56px_104px_1fr] gap-4 px-5 py-3.5 items-baseline border-b border-border/60 last:border-0 transition ${
+                    e.weight === "primary" ? "bg-accent/40" : "hover:bg-accent/25"
+                  }`}
+                >
+                  <span className="font-mono text-[11px] text-muted-foreground tabular-nums">
+                    {e.t}
+                  </span>
+                  <span
+                    className={`font-mono text-[10px] uppercase tracking-[0.14em] ${
+                      e.weight === "muted"
+                        ? "text-muted-foreground/60"
+                        : e.weight === "primary"
+                          ? "text-foreground"
+                          : "text-foreground/70"
+                    }`}
+                  >
+                    {e.surface}
+                  </span>
+                  <span className="text-[13px] leading-snug">
+                    <span
+                      className={`font-medium ${
+                        e.weight === "muted" ? "text-muted-foreground" : "text-foreground"
+                      }`}
+                    >
+                      {e.action}.
+                    </span>{" "}
+                    <span className="text-muted-foreground">{e.detail}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+            <div className="px-5 py-4 border-t border-border bg-background flex items-center justify-between">
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                End of call. Workspace waiting.
+              </span>
+              <span className="font-mono text-[10px] text-foreground">
+                → 1 signature
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-function Pane({ kicker, head, body }: { kicker: string; head: string; body: string }) {
+function Stat({ n, l }: { n: string; l: string }) {
   return (
-    <div className="bg-background p-8 flex flex-col">
-      <span className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground mb-5">
-        {kicker}
-      </span>
-      <h3 className="font-display text-xl font-semibold tracking-tight mb-3 leading-tight">
-        {head}
-      </h3>
-      <p className="text-sm text-muted-foreground leading-relaxed">{body}</p>
+    <div className="bg-background py-4 px-2 text-center">
+      <div className="font-display text-2xl font-semibold tracking-tight tabular-nums">
+        {n}
+      </div>
+      <div className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground mt-1">
+        {l}
+      </div>
     </div>
   );
 }
+
 
 function Why() {
   return (
