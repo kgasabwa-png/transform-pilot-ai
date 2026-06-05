@@ -141,6 +141,7 @@ function TopBar() {
         </div>
         <nav className="hidden md:flex items-center gap-6 text-xs text-muted-foreground">
           <a href="#brief" className="hover:text-foreground">Today</a>
+          <a href="#agents" className="hover:text-foreground">Agents</a>
           <a href="#portfolio" className="hover:text-foreground">Portfolio</a>
           <a href="#backtest" className="hover:text-foreground">Proof</a>
           <a href="#try" className="hover:text-foreground">Try it</a>
