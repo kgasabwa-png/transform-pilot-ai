@@ -50,7 +50,8 @@ export const Route = createFileRoute("/app")({
 type SortKey = "gap" | "renewal" | "arr";
 
 function WorkspaceApp() {
-  const { role } = useSearch({ from: "/app" });
+  const search = useSearch({ from: "/app" }) as AppSearch;
+  const role: PersonaId = search.role;
   const persona = PERSONAS[role];
   const navigate = useNavigate({ from: "/app" });
 
