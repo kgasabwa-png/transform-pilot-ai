@@ -292,18 +292,17 @@ function NavGroup({
         <button
           key={it.key}
           onClick={it.onClick}
-          className={`w-full text-left rounded-md px-2.5 py-1.5 flex items-center gap-2.5 transition-colors ${
-            it.active ? "bg-foreground text-background" : "hover:bg-foreground/5"
+          className={`relative w-full text-left rounded-md px-2.5 py-1.5 flex items-center gap-2.5 transition-colors ${
+            it.active ? "bg-primary/5 text-foreground" : "hover:bg-foreground/[0.04] text-foreground"
           }`}
         >
-          <it.icon className="size-3.5" />
+          {it.active && (
+            <span aria-hidden className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-full bg-primary" />
+          )}
+          <it.icon className={`size-3.5 ${it.active ? "text-primary" : "text-muted-foreground"}`} />
           <span className="text-sm flex-1">{it.label}</span>
           {it.count !== undefined && (
-            <span
-              className={`text-[10px] font-mono ${
-                it.active ? "text-background/70" : "text-muted-foreground"
-              }`}
-            >
+            <span className="text-[10px] font-mono text-muted-foreground">
               {it.count}
             </span>
           )}
