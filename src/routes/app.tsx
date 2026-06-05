@@ -37,15 +37,16 @@ import {
 import { PERSONAS, PERSONA_ORDER, type PersonaId } from "@/lib/loop/personas";
 import { Logo } from "@/components/brand/Logo";
 import { IntegrationsGrid } from "@/components/integrations/IntegrationsGrid";
+import { ReceiptModal } from "@/components/loop/ReceiptModal";
 
-type AppSearch = { role: PersonaId };
+type AppSearch = { role: PersonaId; demo?: boolean };
 
 export const Route = createFileRoute("/app")({
   validateSearch: (search: Record<string, unknown>): AppSearch => {
     const r = search.role;
     const role: PersonaId =
       r === "manager" || r === "leader" || r === "csm" ? r : "csm";
-    return { role };
+    return { role, demo: search.demo === true || search.demo === "1" || search.demo === "true" };
   },
   head: () => ({
     meta: [{ title: "Receipts — night-shift desk" }],
@@ -62,29 +63,57 @@ type RightPane =
   | { kind: "integrations" }; // connector grid
 
 function WorkspaceApp() {
-  const { role } = useSearch({ from: "/app" });
+  const { role, demo } = useSearch({ from: "/app" });
   const navigate = useNavigate({ from: "/app" });
 
-  // Default = the #1 play of the day, expanded. The thing users came to
-  // see is on screen at load — no scroll, no overview, no marketing.
   const [pane, setPane] = useState<RightPane>(() => ({
     kind: "play",
     accountId: TODAYS_BRIEF[0]?.accountId ?? ACCOUNTS[0].id,
   }));
+  const [openReceipt, setOpenReceipt] = useState<Receipt | null>(null);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
+      {demo && <TryBanner />}
       <DeskTopBar
         persona={role}
-        onPersona={(p) => navigate({ search: { role: p } })}
+        onPersona={(p) => navigate({ search: (prev: AppSearch) => ({ ...prev, role: p }) })}
       />
 
       <div className="flex-1 grid grid-cols-[260px_1fr] min-h-0">
         <LeftRail persona={role} pane={pane} setPane={setPane} />
         <main className="overflow-y-auto bg-background">
-          <RightPane pane={pane} persona={role} setPane={setPane} />
+          <RightPane pane={pane} persona={role} setPane={setPane} onReceipt={setOpenReceipt} />
         </main>
       </div>
+
+      <ReceiptModal
+        receipt={openReceipt}
+        open={openReceipt !== null}
+        onClose={() => setOpenReceipt(null)}
+      />
+    </div>
+  );
+}
+
+// ───────────────────────── TRY BANNER ─────────────────────────
+
+function TryBanner() {
+  return (
+    <div className="bg-foreground text-background px-4 py-2 flex flex-wrap items-center justify-center gap-3 text-[11px] font-mono">
+      <span className="inline-flex items-center gap-1.5">
+        <span className="size-1.5 rounded-full bg-success animate-pulse" />
+        SAMPLE BOOK
+      </span>
+      <span className="text-background/70">
+        You're exploring Receipts as <span className="text-background font-semibold">Sarah Chen</span>, a CSM at a B2B SaaS co. 12 accounts, all interactions live, no data leaves your browser.
+      </span>
+      <Link
+        to="/waitlist"
+        className="inline-flex items-center gap-1 bg-background text-foreground px-2.5 py-0.5 rounded-full font-semibold hover:opacity-90 transition-opacity"
+      >
+        Get this on your book →
+      </Link>
     </div>
   );
 }
@@ -318,18 +347,28 @@ function RightPane({
   pane,
   persona,
   setPane,
+  onReceipt,
 }: {
   pane: RightPane;
   persona: PersonaId;
   setPane: (p: RightPane) => void;
+  onReceipt: (r: Receipt) => void;
 }) {
   if (pane.kind === "play") {
     const account = ACCOUNTS.find((a) => a.id === pane.accountId);
     const brief = TODAYS_BRIEF.find((b) => b.accountId === pane.accountId);
     if (!account) return null;
-    return <PlayDetail account={account} brief={brief} setPane={setPane} />;
+    return (
+      <PlayDetail
+        account={account}
+        brief={brief}
+        setPane={setPane}
+        persona={persona}
+        onReceipt={onReceipt}
+      />
+    );
   }
-  if (pane.kind === "portfolio") return <WatchlistView setPane={setPane} />;
+  if (pane.kind === "portfolio") return <WatchlistView setPane={setPane} persona={persona} />;
   if (pane.kind === "feed") return <FeedView />;
   if (pane.kind === "agents") return <AgentsView persona={persona} />;
   if (pane.kind === "integrations")
@@ -347,11 +386,16 @@ function PlayDetail({
   account,
   brief,
   setPane,
+  persona,
+  onReceipt,
 }: {
   account: Account;
   brief?: BriefItem;
   setPane: (p: RightPane) => void;
+  persona: PersonaId;
+  onReceipt: (r: Receipt) => void;
 }) {
+  const framing = PERSONAS[persona].playFraming;
   const gap = account.vendorScore.value - account.receiptsScore.value;
   const urgencyChip =
     brief?.urgency === "now"
@@ -398,13 +442,14 @@ function PlayDetail({
           />
           <div className="flex items-center justify-between mb-3">
             <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
-              Today's play · before lunch
+              {framing.eyebrow} · before lunch
             </div>
             <span className="inline-flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground">
               <span className="size-1.5 rounded-full bg-primary" />
               drafted 7:42a
             </span>
           </div>
+          <p className="text-[11px] text-muted-foreground mb-2 italic">{framing.question}</p>
           <p className="text-xl md:text-2xl font-display font-semibold leading-snug tracking-tight text-foreground">
             {brief.action}
           </p>
@@ -464,7 +509,7 @@ function PlayDetail({
             .slice()
             .sort((a, b) => a.weight - b.weight)
             .map((r) => (
-              <ReceiptCard key={r.id} receipt={r} />
+              <ReceiptCard key={r.id} receipt={r} onOpen={() => onReceipt(r)} />
             ))}
         </div>
         <p className="mt-5 text-[11px] text-muted-foreground leading-relaxed max-w-2xl">
@@ -535,7 +580,7 @@ const signalLabel: Record<Receipt["signal"], string> = {
   advocacy: "Advocacy",
 };
 
-function ReceiptCard({ receipt }: { receipt: Receipt }) {
+function ReceiptCard({ receipt, onOpen }: { receipt: Receipt; onOpen: () => void }) {
   const Icon = channelIcon[receipt.channel];
   const negative = receipt.weight < 0;
   const positive = receipt.weight > 0;
@@ -545,7 +590,10 @@ function ReceiptCard({ receipt }: { receipt: Receipt }) {
     ? "border-l-success"
     : "border-l-border";
   return (
-    <div className={`border border-border border-l-4 ${accent} rounded-md p-4 bg-surface`}>
+    <button
+      onClick={onOpen}
+      className={`w-full text-left group border border-border border-l-4 ${accent} rounded-md p-4 bg-surface hover:bg-accent/40 transition-colors`}
+    >
       <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
         <div className="flex items-center gap-2 text-xs">
           <Icon className="size-3.5 text-muted-foreground" />
@@ -573,7 +621,10 @@ function ReceiptCard({ receipt }: { receipt: Receipt }) {
       <blockquote className="text-sm leading-relaxed text-foreground">
         "{receipt.quote}"
       </blockquote>
-    </div>
+      <div className="mt-2 text-[10px] font-mono text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1">
+        click to see in context →
+      </div>
+    </button>
   );
 }
 
@@ -581,9 +632,16 @@ function ReceiptCard({ receipt }: { receipt: Receipt }) {
 
 type SortKey = "gap" | "renewal" | "arr";
 
-function WatchlistView({ setPane }: { setPane: (p: RightPane) => void }) {
+function WatchlistView({
+  setPane,
+  persona,
+}: {
+  setPane: (p: RightPane) => void;
+  persona: PersonaId;
+}) {
   const [sort, setSort] = useState<SortKey>("gap");
   const [filter, setFilter] = useState<"all" | "surprises" | "red">("surprises");
+  const p = PERSONAS[persona];
 
   const accounts = useMemo(() => {
     let list = [...ACCOUNTS];
@@ -608,14 +666,27 @@ function WatchlistView({ setPane }: { setPane: (p: RightPane) => void }) {
     return list;
   }, [filter, sort]);
 
+  const totalGapArr = accounts
+    .filter((a) => Math.abs(a.vendorScore.value - a.receiptsScore.value) >= 20)
+    .reduce((s, a) => s + a.arr, 0);
+
   return (
     <div className="max-w-5xl px-8 py-8">
       <div className="mb-6">
-        <span className="eyebrow block mb-2">Watchlist</span>
+        <span className="eyebrow block mb-2">{p.label} · Watchlist</span>
         <h2 className="font-display text-2xl font-semibold tracking-tight">
-          Every account on your book — scored on what the customer actually said.
+          {p.watchlistTitle}
         </h2>
+        <p className="text-sm text-muted-foreground mt-2 leading-relaxed max-w-2xl">
+          {p.watchlistSub}
+          {persona === "leader" && (
+            <span className="block mt-2 font-mono text-foreground">
+              Total mis-scored ARR: {formatARR(totalGapArr)}
+            </span>
+          )}
+        </p>
       </div>
+
 
       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-1.5">

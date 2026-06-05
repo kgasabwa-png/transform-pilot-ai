@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WaitlistRouteImport } from './routes/waitlist'
+import { Route as TryRouteImport } from './routes/try'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 
 const WaitlistRoute = WaitlistRouteImport.update({
   id: '/waitlist',
   path: '/waitlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TryRoute = TryRouteImport.update({
+  id: '/try',
+  path: '/try',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -32,30 +38,34 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
+  '/try': typeof TryRoute
   '/waitlist': typeof WaitlistRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
+  '/try': typeof TryRoute
   '/waitlist': typeof WaitlistRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRoute
+  '/try': typeof TryRoute
   '/waitlist': typeof WaitlistRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/waitlist'
+  fullPaths: '/' | '/app' | '/try' | '/waitlist'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app' | '/waitlist'
-  id: '__root__' | '/' | '/app' | '/waitlist'
+  to: '/' | '/app' | '/try' | '/waitlist'
+  id: '__root__' | '/' | '/app' | '/try' | '/waitlist'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRoute
+  TryRoute: typeof TryRoute
   WaitlistRoute: typeof WaitlistRoute
 }
 
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/waitlist'
       fullPath: '/waitlist'
       preLoaderRoute: typeof WaitlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/try': {
+      id: '/try'
+      path: '/try'
+      fullPath: '/try'
+      preLoaderRoute: typeof TryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app': {
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRoute,
+  TryRoute: TryRoute,
   WaitlistRoute: WaitlistRoute,
 }
 export const routeTree = rootRouteImport
