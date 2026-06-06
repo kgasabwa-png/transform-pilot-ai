@@ -11,7 +11,7 @@ export const Route = createFileRoute("/app")({
     meta: [
       {
         title:
-          "Compound — the Chief of Staff for Customer Success",
+          "Ledgerline. The Chief of Staff for Customer Success.",
       },
     ],
   }),
@@ -28,7 +28,7 @@ function WorkspaceApp() {
             <Link to="/" className="flex items-center gap-2">
               <Logo size={18} />
               <span className="font-display font-semibold tracking-tight text-sm">
-                Compound
+                Ledgerline
               </span>
               <span className="hidden md:inline text-[11px] text-muted-foreground font-mono">
                 · Chief of Staff for CSMs
