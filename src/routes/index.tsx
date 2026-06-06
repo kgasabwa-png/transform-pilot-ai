@@ -6,17 +6,17 @@ import { Logo } from "@/components/brand/Logo";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Compound. The save, already shipped." },
+      { title: "Ledgerline. The save, already shipped." },
       {
         name: "description",
         content:
-          "Compound is the post-call workspace for CSMs. You finish a renewal call and your follow-ups are already drafted, queued, and waiting for one signature.",
+          "Ledgerline drafts the post-call work for every account. Every line pinned to the verbatim quote it came from. You read one screen and sign once.",
       },
-      { property: "og:title", content: "Compound. The save, already shipped." },
+      { property: "og:title", content: "Ledgerline. The save, already shipped." },
       {
         property: "og:description",
         content:
-          "Finish the call. Open your laptop. The work is done. One signature ships it.",
+          "Finish the call. Open your laptop. The work is drafted, every line pinned to the customer's exact words. One signature ships it.",
       },
     ],
   }),
@@ -42,7 +42,7 @@ function Header() {
       <div className="max-w-[1180px] mx-auto px-6 md:px-10 h-14 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 shrink-0">
           <Logo size={20} />
-          <span className="font-display font-semibold tracking-tight">Compound</span>
+          <span className="font-display font-semibold tracking-tight">Ledgerline</span>
         </Link>
         <nav className="hidden md:flex items-center gap-7 text-xs text-muted-foreground">
           <a href="#proof" className="hover:text-foreground">Proof</a>
@@ -84,12 +84,12 @@ function Hero() {
             shipped.
           </h1>
           <p className="mt-7 text-base md:text-lg text-muted-foreground leading-relaxed">
-            You finish a renewal call. You open your laptop. The follow-ups are
-            already written. The CRM is already updated. Your manager already
-            has the brief. You read for ninety seconds and sign once.
+            You finish a renewal call. The recap is drafted, the CRM is staged,
+            your manager has the brief. Every line is pinned to the exact words
+            your customer said.
           </p>
           <p className="mt-4 text-base md:text-lg text-foreground/90 leading-relaxed">
-            Six hours of after-call work, done before you close the tab.
+            You read for ninety seconds and sign once.
           </p>
 
           <div className="mt-9 flex flex-wrap items-center gap-3">
@@ -119,8 +119,6 @@ function Hero() {
   );
 }
 
-// A single living receipt of one save. No taxonomy, no playbook,
-// no five-step recipe. Just the moment the CSM walks back in.
 function AfterCallTile() {
   const [signed, setSigned] = useState(false);
   const [seconds, setSeconds] = useState(0);
@@ -148,7 +146,7 @@ function AfterCallTile() {
           While you said goodbye, this happened
         </div>
         <div className="font-display text-lg font-semibold tracking-tight mb-5 leading-snug">
-          Recap drafted. CRM updated. Manager briefed.
+          Recap drafted. CRM staged. Manager briefed.
         </div>
 
         <div className="space-y-2.5 mb-6 text-[13px]">
@@ -193,29 +191,60 @@ function formatElapsed(s: number) {
   return `${m}m ${r}s`;
 }
 
-// The product writes a timestamped ledger during every call. That artifact
-// does not exist in any other CS tool, so the section is shaped like the
-// artifact itself. The layout IS the differentiator.
+// The ledger writes one line per action during the call. The moat is that
+// every line carries the verbatim words it came from, so the receipt and
+// the proof live in the same row.
 const ENTRIES: {
   t: string;
   surface: string;
   action: string;
   detail: string;
+  quote?: string;
   weight?: "primary" | "muted";
 }[] = [
   { t: "00:04", surface: "Listening", action: "Call joined", detail: "Acme · Q1 renewal · 4 attendees", weight: "muted" },
-  { t: "07:12", surface: "Salesforce", action: "Stage staged", detail: "Negotiation → Verbal commit" },
-  { t: "11:48", surface: "Salesforce", action: "Field staged", detail: "Renewal risk: Medium → Low" },
-  { t: "18:30", surface: "Asana", action: "Task queued", detail: "Send pricing addendum to procurement" },
+  {
+    t: "07:12",
+    surface: "Salesforce",
+    action: "Stage staged",
+    detail: "Negotiation → Verbal commit",
+    quote: "we'd want to lock pricing before the board meeting on the 22nd",
+  },
+  {
+    t: "11:48",
+    surface: "Salesforce",
+    action: "Field staged",
+    detail: "Renewal risk: Medium → Low",
+    quote: "honestly the SSO rollout fixed the thing my CTO was worried about",
+  },
+  {
+    t: "18:30",
+    surface: "Asana",
+    action: "Task queued",
+    detail: "Send pricing addendum to procurement",
+    quote: "send the redlined addendum straight to Maya in procurement",
+  },
   { t: "18:31", surface: "Asana", action: "Task queued", detail: "Loop in Solutions on SSO rollout" },
-  { t: "24:09", surface: "Gmail", action: "Draft written", detail: "Recap to champion. 312 words. Cites 3 commitments." },
+  {
+    t: "24:09",
+    surface: "Gmail",
+    action: "Draft written",
+    detail: "Recap to champion. 312 words. Cites 3 commitments.",
+    quote: "put the three things we agreed to in writing so I can forward it up",
+  },
   { t: "31:55", surface: "Asana", action: "Task queued", detail: "Schedule QBR for week of Mar 17" },
-  { t: "36:20", surface: "Slack", action: "Note composed", detail: "#renewals brief. 1 paragraph. 2 asks for manager." },
+  {
+    t: "36:20",
+    surface: "Slack",
+    action: "Note composed",
+    detail: "#renewals brief. 1 paragraph. 2 asks for manager.",
+    quote: "I'll need an exec on the next call, just for the optics",
+  },
   { t: "41:02", surface: "Asana", action: "Task queued", detail: "Update mutual action plan with new milestone" },
-  { t: "42:00", surface: "Compound", action: "Call ended", detail: "Workspace ready. Waiting for one signature.", weight: "primary" },
+  { t: "42:00", surface: "Ledgerline", action: "Call ended", detail: "Workspace ready. Waiting for one signature.", weight: "primary" },
 ];
 
-const SURFACES = ["Listening", "Salesforce", "Asana", "Gmail", "Slack", "Compound"] as const;
+const SURFACES = ["Listening", "Salesforce", "Asana", "Gmail", "Slack", "Ledgerline"] as const;
 const RANGES = [
   { label: "All", min: 0, max: 60 },
   { label: "0–15 min", min: 0, max: 15 },
@@ -266,16 +295,16 @@ function Proof() {
       <div className="max-w-[1180px] mx-auto px-6 md:px-10 py-20 md:py-28">
         <div className="grid lg:grid-cols-[0.8fr_1.2fr] gap-12 lg:gap-16 items-start">
           <div className="lg:sticky lg:top-24">
-            <span className="eyebrow block mb-4">The proof is the receipt</span>
+            <span className="eyebrow block mb-4">Every line pinned to the call</span>
             <h2 className="font-display text-3xl md:text-5xl font-semibold tracking-tight leading-[1.02]">
               42 minutes on a call.
               <br />
               <span className="text-muted-foreground italic">9 things on your desk.</span>
             </h2>
             <p className="mt-6 text-base text-muted-foreground leading-relaxed max-w-md">
-              This is the ledger Compound writes during one renewal call. Every
-              line is reversible. Every line cites the moment in the transcript
-              it came from. Nothing leaves your tools without your signature.
+              This is the ledger Ledgerline writes during one renewal call. Every
+              line cites the customer's exact words, in the moment they said
+              them. Nothing leaves your tools without your signature.
             </p>
             <div className="mt-8 grid grid-cols-3 gap-px bg-border border border-border rounded-lg overflow-hidden">
               <Stat n={String(toolsTouched)} l="Tools touched" />
@@ -293,7 +322,7 @@ function Proof() {
                 </span>
               </div>
               <span className="font-mono text-[10px] text-muted-foreground">
-                ledger.compound
+                ledger.ledgerline
               </span>
             </div>
 
@@ -364,7 +393,7 @@ function Proof() {
                   >
                     {e.surface}
                   </span>
-                  <span className="text-[13px] leading-snug">
+                  <div className="text-[13px] leading-snug">
                     <span
                       className={`font-medium ${
                         e.weight === "muted" ? "text-muted-foreground" : "text-foreground"
@@ -373,7 +402,17 @@ function Proof() {
                       {e.action}.
                     </span>{" "}
                     <span className="text-muted-foreground">{e.detail}</span>
-                  </span>
+                    {e.quote && (
+                      <div className="mt-1.5 flex items-start gap-2 pl-3 border-l-2 border-success/50">
+                        <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-success/80 mt-0.5 shrink-0">
+                          Quote
+                        </span>
+                        <span className="text-[12px] italic text-foreground/80">
+                          "{e.quote}"
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </li>
               ))}
               {filtered.length === 0 && (
@@ -416,28 +455,27 @@ function Why() {
     <section id="why" className="border-b border-border bg-surface/40">
       <div className="max-w-[1180px] mx-auto px-6 md:px-10 py-20 md:py-28 grid lg:grid-cols-[0.9fr_1fr] gap-12 items-start">
         <div>
-          <span className="eyebrow block mb-3">Why this, why now</span>
+          <span className="eyebrow block mb-3">Score the work, or do the work</span>
           <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight leading-[1.05]">
-            Every CS tool tells you the customer is at risk.
+            Your dashboard scores the account.
           </h2>
           <p className="mt-4 font-display text-2xl md:text-3xl font-semibold tracking-tight text-muted-foreground leading-[1.1]">
-            None of them do the work that follows.
+            We do the work.
           </p>
         </div>
         <div className="space-y-6 text-base text-foreground/90 leading-relaxed">
           <p>
-            Your CSMs are not short on signal. They are short on time. The
-            average renewals manager spends six hours after every customer call
-            translating it back into their stack. Notes, drafts, CRM fields,
-            tasks, internal updates.
+            Health scores tell you an account is at risk. They don't write the
+            follow-up, stage the CRM, or post the internal note. That work is
+            what actually moves the renewal.
           </p>
           <p>
-            That work is the job. It is also the work that gets skipped at 7pm
-            on a Thursday, and it is the work churn lives inside of.
+            And today it depends on whether the CSM had the hours. It gets done
+            on the accounts someone reached, and skipped on the rest.
           </p>
           <p className="text-foreground font-medium">
-            Compound is what closes that loop. The proof is what you find when
-            you open your laptop.
+            Ledgerline closes that loop. The proof is what you find when you
+            open your laptop.
           </p>
         </div>
       </div>
@@ -475,8 +513,8 @@ function Partners() {
         <figure className="border border-border rounded-2xl bg-surface p-8">
           <Quote className="size-5 text-muted-foreground mb-4" />
           <blockquote className="text-base md:text-lg font-display tracking-tight leading-snug">
-            "I stopped doing the 7pm recap. It is just there when I open Gmail.
-            That is the whole pitch."
+            "I stopped doing the 7pm recap. It's just there when I open Gmail.
+            That's the whole pitch."
           </blockquote>
           <figcaption className="mt-5 text-xs text-muted-foreground">
             Illustrative partner quote. Director of CS, SaaS, $40M ARR.
@@ -493,15 +531,15 @@ function Footer() {
       <div className="max-w-[1180px] mx-auto px-6 md:px-10 py-10 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
           <Logo size={18} />
-          <span className="font-mono">Compound</span>
+          <span className="font-mono">Ledgerline</span>
         </div>
         <div className="flex items-center gap-5">
           <Link to="/waitlist" className="hover:text-foreground">Request access</Link>
           <Link to="/app" search={{ role: "csm", demo: true }} className="hover:text-foreground">
             See it after a call
           </Link>
-          <a href="mailto:founders@compound.dev" className="hover:text-foreground">
-            founders@compound.dev
+          <a href="mailto:founders@ledgerline.dev" className="hover:text-foreground">
+            founders@ledgerline.dev
           </a>
         </div>
       </div>
