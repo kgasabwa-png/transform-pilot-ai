@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WaitlistRouteImport } from './routes/waitlist'
 import { Route as TryRouteImport } from './routes/try'
+import { Route as ConsoleRouteImport } from './routes/console'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -22,6 +23,11 @@ const WaitlistRoute = WaitlistRouteImport.update({
 const TryRoute = TryRouteImport.update({
   id: '/try',
   path: '/try',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsoleRoute = ConsoleRouteImport.update({
+  id: '/console',
+  path: '/console',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -38,12 +44,14 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
+  '/console': typeof ConsoleRoute
   '/try': typeof TryRoute
   '/waitlist': typeof WaitlistRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
+  '/console': typeof ConsoleRoute
   '/try': typeof TryRoute
   '/waitlist': typeof WaitlistRoute
 }
@@ -51,20 +59,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRoute
+  '/console': typeof ConsoleRoute
   '/try': typeof TryRoute
   '/waitlist': typeof WaitlistRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/try' | '/waitlist'
+  fullPaths: '/' | '/app' | '/console' | '/try' | '/waitlist'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app' | '/try' | '/waitlist'
-  id: '__root__' | '/' | '/app' | '/try' | '/waitlist'
+  to: '/' | '/app' | '/console' | '/try' | '/waitlist'
+  id: '__root__' | '/' | '/app' | '/console' | '/try' | '/waitlist'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRoute
+  ConsoleRoute: typeof ConsoleRoute
   TryRoute: typeof TryRoute
   WaitlistRoute: typeof WaitlistRoute
 }
@@ -83,6 +93,13 @@ declare module '@tanstack/react-router' {
       path: '/try'
       fullPath: '/try'
       preLoaderRoute: typeof TryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/console': {
+      id: '/console'
+      path: '/console'
+      fullPath: '/console'
+      preLoaderRoute: typeof ConsoleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app': {
@@ -105,6 +122,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRoute,
+  ConsoleRoute: ConsoleRoute,
   TryRoute: TryRoute,
   WaitlistRoute: WaitlistRoute,
 }
