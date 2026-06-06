@@ -79,26 +79,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Fluent — The AI Transformation Execution Platform" },
+      { title: "Ledgerline. The save, already shipped." },
       {
         name: "description",
         content:
-          "Fluent turns unclear AI ambition into governance, adoption plans, use cases, roadmaps, and execution.",
+          "Ledgerline drafts the post-call work for every account. Every line pinned to the verbatim quote it came from. One signature ships it.",
       },
-      { property: "og:title", content: "Fluent — The AI Transformation Execution Platform" },
+      { property: "og:title", content: "Ledgerline. The save, already shipped." },
       {
         property: "og:description",
         content:
-          "Fluent turns unclear AI ambition into governance, adoption plans, use cases, roadmaps, and execution.",
+          "Ledgerline drafts the post-call work for every account. Every line pinned to the verbatim quote it came from. One signature ships it.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "Ledgerline" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Fluent — The AI Transformation Execution Platform" },
-      { name: "description", content: "Fluent is an AI Transformation Execution Platform that turns business intent into structured AI strategy and artifacts." },
-      { property: "og:description", content: "Fluent is an AI Transformation Execution Platform that turns business intent into structured AI strategy and artifacts." },
-      { name: "twitter:description", content: "Fluent is an AI Transformation Execution Platform that turns business intent into structured AI strategy and artifacts." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a6f5aab4-2b72-4ed4-a4b8-1d59e43ca21b/id-preview-475d727c--3693f151-7367-490b-af46-6c5e9d7cf514.lovable.app-1780699451805.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a6f5aab4-2b72-4ed4-a4b8-1d59e43ca21b/id-preview-475d727c--3693f151-7367-490b-af46-6c5e9d7cf514.lovable.app-1780699451805.png" },
+      { name: "twitter:title", content: "Ledgerline. The save, already shipped." },
+      { name: "twitter:description", content: "The post-call work, drafted. Every line pinned to the customer's exact words. One signature ships it." },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
