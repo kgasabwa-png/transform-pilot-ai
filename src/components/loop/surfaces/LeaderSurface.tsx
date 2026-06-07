@@ -274,6 +274,11 @@ export function LeaderSurface() {
           SOC 2 Type II · data residency US/EU · every row exportable
         </footer>
       </section>
+
+      <OutcomeDrilldown
+        outcomeId={activeOutcome}
+        onClose={() => setActiveOutcome(null)}
+      />
     </div>
   );
 }
