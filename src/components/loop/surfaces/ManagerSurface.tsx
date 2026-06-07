@@ -334,6 +334,8 @@ export function ManagerSurface() {
         Calibration trending up · agent matched team's bar in {TEAM_PULSE.teamAutoShipRate}% of internal actions
         <TrendingDown className="size-3 text-success rotate-180" />
       </footer>
+
+      <CoachingDrawer memberId={coachId} onClose={() => setCoachId(null)} />
     </div>
   );
 }
