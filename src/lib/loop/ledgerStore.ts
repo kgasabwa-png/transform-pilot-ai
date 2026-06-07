@@ -54,11 +54,18 @@ let state: State = {
   cosignHandled: [],
 };
 
+// Cached derived values — must be referentially stable across reads
+// for useSyncExternalStore to avoid infinite renders.
+let cachedStatusMap: Record<string, LedgerStatus> = computeStatusMap(state);
+let cachedAuditFeed: AuditEntry[] = computeAuditFeed(state);
+
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 
 function set(updater: (s: State) => State) {
   state = updater(state);
+  cachedStatusMap = computeStatusMap(state);
+  cachedAuditFeed = computeAuditFeed(state);
   emit();
 }
 
@@ -174,29 +181,30 @@ export function useCosignQueue() {
 export function useStatusMap() {
   return useSyncExternalStore(
     subscribe,
-    () => {
-      const map: Record<string, LedgerStatus> = {};
-      // rows are newest-first; first seen wins
-      for (const r of state.rows) {
-        if (!map[r.action.id]) map[r.action.id] = r.status;
-      }
-      return map;
-    },
-    () => ({}) as Record<string, LedgerStatus>,
+    () => cachedStatusMap,
+    () => cachedStatusMap,
   );
+}
+
+function computeStatusMap(s: State): Record<string, LedgerStatus> {
+  const map: Record<string, LedgerStatus> = {};
+  for (const r of s.rows) {
+    if (!map[r.action.id]) map[r.action.id] = r.status;
+  }
+  return map;
 }
 
 // ---- Composed audit log for the Leader surface ----
 export function useAuditFeed(): AuditEntry[] {
   return useSyncExternalStore(
     subscribe,
-    () => buildAuditFeed(),
-    () => AUDIT_LOG,
+    () => cachedAuditFeed,
+    () => cachedAuditFeed,
   );
 }
 
-function buildAuditFeed(): AuditEntry[] {
-  const fromLedger: AuditEntry[] = state.rows.slice(0, 6).map((r) => ({
+function computeAuditFeed(s: State): AuditEntry[] {
+  const fromLedger: AuditEntry[] = s.rows.slice(0, 6).map((r) => ({
     id: r.id,
     at: relTime(r.at),
     who: r.by ?? "Agent (auto)",
@@ -205,13 +213,13 @@ function buildAuditFeed(): AuditEntry[] {
     account: r.action.account,
     citation: r.action.source,
     status:
-      r.status === "shipped" || r.status === "approved" || r.status === "co-signed"
-        ? r.status === "co-signed"
-          ? "co-signed"
-          : "shipped"
+      r.status === "co-signed"
+        ? "co-signed"
         : r.status === "reverted"
           ? "reverted"
-          : "declined",
+          : r.status === "declined" || r.status === "awaiting-cosign"
+            ? "declined"
+            : "shipped",
   }));
   return [...fromLedger, ...AUDIT_LOG].slice(0, 8);
 }
