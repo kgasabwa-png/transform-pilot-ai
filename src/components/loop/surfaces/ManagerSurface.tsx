@@ -32,39 +32,21 @@ export function ManagerSurface() {
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8 space-y-6">
-      {/* Header */}
+      {/* Header — agent-first */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="text-[11px] font-mono uppercase tracking-[0.16em] text-muted-foreground">
             {stamp} · team rollup · {TEAM.length} CSMs · {TEAM.reduce((s, m) => s + m.book, 0)} accounts
           </div>
           <h1 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight leading-[1.1] mt-2">
-            {openCosign.length} co-signs waiting. {TEAM_PULSE.barDriftFlags} bar-drift flag.
+            I ran the team's book overnight. {openCosign.length} co-signs waiting. {TEAM_PULSE.barDriftFlags} bar-drift flag.
           </h1>
           <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-            Where your CSMs over- or under-correct the agent. Coaching opportunities surface
-            as bar-drift flags — when reverts exceed 2σ from team norm.
+            Drift & coaching is your job — the queue is mine. Below: which rep is correcting me, which deals are slipping, the coaching moment that dropped today.
           </p>
         </div>
       </div>
 
-      <WorkflowSteps
-        title="Your workflow today"
-        steps={[
-          {
-            label: "Scan the team",
-            detail: "Watch for bar-drift flags — CSMs over- or under-correcting the agent.",
-          },
-          {
-            label: "Clear co-signs",
-            detail: "Approve or decline money actions over $25k routed up from your CSMs.",
-          },
-          {
-            label: "Coach at 1:1",
-            detail: "Mark coaching moments. They land in your next 1:1 with that CSM.",
-          },
-        ]}
-      />
 
 
       {/* Pulse strip */}
