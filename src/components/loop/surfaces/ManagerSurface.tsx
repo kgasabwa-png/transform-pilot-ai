@@ -8,23 +8,25 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
+import { toast } from "sonner";
 import {
   TEAM,
   TEAM_PULSE,
   COACHING,
-  COSIGN_QUEUE,
   TEAM_SIGNALS,
 } from "@/lib/loop/teamData";
 import { AutonomyDial } from "../AutonomyDial";
 import { WorkflowSteps } from "../WorkflowSteps";
+import { CoachingDrawer } from "../CoachingDrawer";
 import { useClientStamp } from "@/lib/loop/useClientStamp";
+import { useCosignQueue, resolveCosign } from "@/lib/loop/ledgerStore";
 
 export function ManagerSurface() {
   const stamp = useClientStamp();
-  const [cosigned, setCosigned] = useState<Record<string, boolean>>({});
+  const openCosign = useCosignQueue();
   const [acknowledged, setAcknowledged] = useState<Record<string, boolean>>({});
+  const [coachId, setCoachId] = useState<string | null>(null);
 
-  const openCosign = COSIGN_QUEUE.filter((a) => !cosigned[a.id]);
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8 space-y-6">
