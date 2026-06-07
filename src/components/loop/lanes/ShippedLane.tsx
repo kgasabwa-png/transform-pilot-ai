@@ -1,9 +1,14 @@
 import { useState } from "react";
-import { Undo2 } from "lucide-react";
+import { Undo2, Coffee } from "lucide-react";
 import { toast } from "sonner";
 import { LaneShell } from "./LaneShell";
 import { revertShipped } from "@/lib/loop/ledgerStore";
+import { receiptFromAction } from "@/lib/loop/receiptAdapter";
+import { ReceiptModal } from "../ReceiptModal";
+import { EmptyState } from "../EmptyState";
 import type { LaneAction } from "@/lib/loop/consoleData";
+import type { Receipt } from "@/lib/loop/portfolio";
+
 
 
 export function ShippedLane({ items }: { items: LaneAction[] }) {
