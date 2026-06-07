@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Check, X, ExternalLink } from "lucide-react";
+import { toast } from "sonner";
 import { LaneShell } from "./LaneShell";
 import { BLAST_LABEL } from "@/lib/loop/autonomy";
+import { recordDecision } from "@/lib/loop/ledgerStore";
 import type { LaneAction } from "@/lib/loop/consoleData";
 
 export function QuickReviewLane({ items }: { items: LaneAction[] }) {
@@ -18,7 +20,18 @@ export function QuickReviewLane({ items }: { items: LaneAction[] }) {
     if (!current) return;
     setDecisions((p) => ({ ...p, [current.id]: d }));
     setIdx(0);
+    if (d === "approve") {
+      recordDecision(current, "approved");
+      toast.success("Approved & queued to ship", {
+        description: `${current.account} · ${current.headline}`,
+      });
+    } else {
+      toast("Skipped — will resurface tomorrow", {
+        description: current.account,
+      });
+    }
   };
+
 
   return (
     <LaneShell

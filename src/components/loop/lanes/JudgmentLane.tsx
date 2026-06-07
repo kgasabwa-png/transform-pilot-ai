@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { AlertTriangle, ExternalLink } from "lucide-react";
+import { toast } from "sonner";
 import { LaneShell } from "./LaneShell";
 import { BLAST_LABEL } from "@/lib/loop/autonomy";
+import { recordDecision, routeForCosign } from "@/lib/loop/ledgerStore";
 import type { LaneAction } from "@/lib/loop/consoleData";
 
 export function JudgmentLane({ items }: { items: LaneAction[] }) {
@@ -58,13 +60,32 @@ export function JudgmentLane({ items }: { items: LaneAction[] }) {
 
               <div className="flex items-center gap-2 mt-3">
                 <button
-                  onClick={() => setResolved((p) => ({ ...p, [a.id]: "approve" }))}
+                  onClick={() => {
+                    setResolved((p) => ({ ...p, [a.id]: "approve" }));
+                    if (a.blast === "money") {
+                      routeForCosign(a);
+                      toast.success("Routed to manager for co-sign", {
+                        description: `${a.account} · $${(
+                          (a.arrAtStake ?? 0) / 1000
+                        ).toFixed(0)}k ARR · switch to Manager view to release`,
+                      });
+                    } else {
+                      recordDecision(a, "approved");
+                      toast.success("Sent", {
+                        description: `${a.account} · ${a.headline}`,
+                      });
+                    }
+                  }}
                   className="bg-foreground text-background rounded-md px-3 py-1.5 text-sm font-medium hover:opacity-90"
                 >
                   {a.blast === "money" ? "Request co-sign" : "Review & send"}
                 </button>
                 <button
-                  onClick={() => setResolved((p) => ({ ...p, [a.id]: "decline" }))}
+                  onClick={() => {
+                    setResolved((p) => ({ ...p, [a.id]: "decline" }));
+                    recordDecision(a, "declined");
+                    toast(`Declined — ${a.account}`);
+                  }}
                   className="border border-border rounded-md px-3 py-1.5 text-sm font-medium hover:bg-foreground/5"
                 >
                   Decline
