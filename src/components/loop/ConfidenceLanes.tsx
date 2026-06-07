@@ -170,10 +170,10 @@ function Stat({
 }
 
 type LaneData = {
-  shipped: ReturnType<typeof forCSM>;
-  quick: ReturnType<typeof forCSM>;
-  judgment: ReturnType<typeof forCSM>;
-  signals: ReturnType<typeof forCSM>;
+  shipped: LaneAction[];
+  quick: LaneAction[];
+  judgment: LaneAction[];
+  signals: WorldSignal[];
 };
 
 const BLAST_CHIPS: { id: "all" | "internal" | "customer-facing" | "money"; label: string }[] = [
