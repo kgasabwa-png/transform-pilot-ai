@@ -95,7 +95,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:site_name", content: "Ledgerline" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Ledgerline. The save, already shipped." },
-      { name: "twitter:description", content: "The post-call work, drafted. Every line pinned to the customer's exact words. One signature ships it." },
+      { name: "twitter:description", content: "Fluent is an AI Transformation Execution Platform that turns business intent into structured AI strategy and artifacts." },
+      { name: "description", content: "Fluent is an AI Transformation Execution Platform that turns business intent into structured AI strategy and artifacts." },
+      { property: "og:description", content: "Fluent is an AI Transformation Execution Platform that turns business intent into structured AI strategy and artifacts." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ac456a3e-795a-4ff7-8187-aaf5eb382b44/id-preview-0b48c1bd--3693f151-7367-490b-af46-6c5e9d7cf514.lovable.app-1780809830233.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ac456a3e-795a-4ff7-8187-aaf5eb382b44/id-preview-0b48c1bd--3693f151-7367-490b-af46-6c5e9d7cf514.lovable.app-1780809830233.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
