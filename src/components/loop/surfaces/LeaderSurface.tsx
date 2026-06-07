@@ -76,8 +76,9 @@ export function LeaderSurface() {
 
       {/* Trend hero */}
       <section className="rounded-2xl border border-border bg-surface overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-3">
-          <div className="p-5 border-b lg:border-b-0 lg:border-r border-border">
+        <div className="grid grid-cols-1 md:grid-cols-3">
+          <div className="p-5 border-b md:border-b-0 md:border-r border-border">
+
             <div className="text-[10px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
               Auto-ship rate (8 wks)
             </div>
@@ -94,7 +95,7 @@ export function LeaderSurface() {
               The agent gets more autonomous as it learns the team's bar. Every revert is a calibration signal.
             </p>
           </div>
-          <div className="p-5 border-b lg:border-b-0 lg:border-r border-border">
+          <div className="p-5 border-b md:border-b-0 md:border-r border-border">
             <div className="text-[10px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
               Capacity returned (wk)
             </div>
