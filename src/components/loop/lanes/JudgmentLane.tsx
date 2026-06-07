@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { AlertTriangle, ExternalLink } from "lucide-react";
+import { AlertTriangle, Coffee } from "lucide-react";
 import { toast } from "sonner";
 import { LaneShell } from "./LaneShell";
 import { BLAST_LABEL } from "@/lib/loop/autonomy";
 import { recordDecision, routeForCosign } from "@/lib/loop/ledgerStore";
 import type { LaneAction } from "@/lib/loop/consoleData";
+import { EvidenceQuote } from "../EvidenceQuote";
+import { EmptyState } from "../EmptyState";
 
 export function JudgmentLane({ items }: { items: LaneAction[] }) {
   const [resolved, setResolved] = useState<Record<string, "approve" | "decline">>({});
@@ -13,12 +15,16 @@ export function JudgmentLane({ items }: { items: LaneAction[] }) {
   return (
     <LaneShell id="judgment" count={items.length}>
       {open.length === 0 ? (
-        <div className="px-5 py-8 text-center">
-          <div className="font-display text-sm font-semibold">All cleared.</div>
-          <p className="text-[12px] text-muted-foreground mt-1">
-            The hard calls are done. Next sweep in 14 min.
-          </p>
-        </div>
+        <EmptyState
+          icon={Coffee}
+          eyebrow={items.length === 0 ? "day 1" : "all cleared"}
+          title={items.length === 0 ? "No judgment calls yet" : "All cleared."}
+          body={
+            items.length === 0
+              ? "Judgment calls land here once the agent has watched your book for ~24h. Until then, the Shipped lane shows internal actions you can revert."
+              : "The hard calls are done. Next sweep in 14 min."
+          }
+        />
       ) : (
         <ul className="divide-y divide-border">
           {open.map((a) => (
@@ -44,12 +50,10 @@ export function JudgmentLane({ items }: { items: LaneAction[] }) {
                 {a.headline}
               </h3>
               <p className="text-sm text-muted-foreground mt-1.5">{a.detail}</p>
-              <blockquote className="mt-3 border-l-2 border-border pl-3 text-[12px] text-muted-foreground italic">
-                {a.evidence}
-                <div className="not-italic text-[10px] font-mono text-muted-foreground mt-1 inline-flex items-center gap-1">
-                  <ExternalLink className="size-3" /> {a.source}
-                </div>
-              </blockquote>
+              <div className="mt-3">
+                <EvidenceQuote action={a} />
+              </div>
+
 
               {a.blast === "money" && (
                 <div className="mt-3 text-[11px] font-mono text-amber-700 dark:text-amber-400 bg-amber-500/10 rounded px-2 py-1.5 inline-flex items-center gap-1.5">
