@@ -15,8 +15,9 @@ import { AgentChatDock } from "./AgentChatDock";
 import { useClientStamp } from "@/lib/loop/useClientStamp";
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { role = "csm" } = useSearch({ from: "/app" });
-  const navigate = useNavigate({ from: "/app" });
+  const search = useSearch({ strict: false }) as { role?: PersonaId };
+  const role: PersonaId = search.role ?? "csm";
+  const navigate = useNavigate();
   const stamp = useClientStamp();
   const [chatOpen, setChatOpen] = useState(false);
 
@@ -34,7 +35,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [chatOpen]);
 
   const setRole = (id: PersonaId) =>
-    navigate({ search: (prev: { role?: PersonaId; demo?: boolean }) => ({ ...prev, role: id }), replace: true });
+    navigate({ to: "/app", search: { role: id, demo: true }, replace: true });
 
   const initials = role === "csm" ? "SC" : role === "manager" ? "AM" : "VP";
   const personaName =
