@@ -311,7 +311,7 @@ function LedgerArtifact() {
   );
 }
 
-function LedgerRow({ item }: { item: ReturnType<typeof Object> extends never ? never : (typeof ledgerData)["prepared"][number] }) {
+function LedgerRow({ item }: { item: LedgerItem }) {
   const badgeStyle =
     item.badge === "agent"
       ? "bg-foreground text-background"
