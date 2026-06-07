@@ -126,21 +126,21 @@ const HEADERS: Record<
   }
 > = {
   csm: {
-    eyebrow: (who) => `${who ?? "your book"} · the console`,
+    eyebrow: (who) => `${who ?? "your book"} · tandem ran it overnight`,
     title: (shipped, quick, judgment) =>
-      `${shipped} shipped overnight. ${quick + judgment} waiting on you.`,
-    sub: "The agent worked your book while you slept. Internal stuff is done — revert anything that's off. Customer-facing and money calls are queued for you.",
+      `I shipped ${shipped} actions overnight. ${quick + judgment} are waiting on you. 3 things you should know.`,
+    sub: "Internal moves are done — revert anything off, 30-day window. Customer-facing and money calls are queued. The 3 world-signal items are the ones I'd act on before lunch.",
   },
   manager: {
     eyebrow: () => "team rollup · 4 CSMs · 312 accounts",
     title: (_s, q, j) =>
-      `${q + j} judgment calls across the team. 1 bar-drift flag.`,
-    sub: "Where your CSMs are over- or under-correcting the agent. Coaching opportunities surface as bar-drift flags — when a CSM reverts the agent more than 2× standard deviation from the team.",
+      `I ran the team's book overnight. ${q + j} judgment calls across the team. 1 bar-drift flag.`,
+    sub: "Where your CSMs are over- or under-correcting me. Coaching opportunities surface as bar-drift flags — when a CSM reverts me more than 2σ from team norm.",
   },
   leader: {
     eyebrow: () => "the number · cited",
-    title: () => "$580k ARR protected on a $4.2M book.",
-    sub: "Auto-ship rate climbing 7 pts week-over-week as the agent learns the team's bar. Zero customer-facing actions sent without human approval. Every line citable to the call.",
+    title: () => "$580k ARR protected. $640k humans missed, I caught.",
+    sub: "Auto-ship rate climbing 7 pts week-over-week as I learn the team's bar. Zero customer-facing actions sent without a human signing off. Every line citable to the call.",
   },
 };
 

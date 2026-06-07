@@ -14,6 +14,8 @@ import { Route as TryRouteImport } from './routes/try'
 import { Route as ConsoleRouteImport } from './routes/console'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as AppAccountsIdRouteImport } from './routes/app.accounts.$id'
 
 const WaitlistRoute = WaitlistRouteImport.update({
   id: '/waitlist',
@@ -40,43 +42,82 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppAccountsIdRoute = AppAccountsIdRouteImport.update({
+  id: '/accounts/$id',
+  path: '/accounts/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
+  '/app': typeof AppRouteWithChildren
   '/console': typeof ConsoleRoute
   '/try': typeof TryRoute
   '/waitlist': typeof WaitlistRoute
+  '/api/chat': typeof ApiChatRoute
+  '/app/accounts/$id': typeof AppAccountsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
+  '/app': typeof AppRouteWithChildren
   '/console': typeof ConsoleRoute
   '/try': typeof TryRoute
   '/waitlist': typeof WaitlistRoute
+  '/api/chat': typeof ApiChatRoute
+  '/app/accounts/$id': typeof AppAccountsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
+  '/app': typeof AppRouteWithChildren
   '/console': typeof ConsoleRoute
   '/try': typeof TryRoute
   '/waitlist': typeof WaitlistRoute
+  '/api/chat': typeof ApiChatRoute
+  '/app/accounts/$id': typeof AppAccountsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/console' | '/try' | '/waitlist'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/console'
+    | '/try'
+    | '/waitlist'
+    | '/api/chat'
+    | '/app/accounts/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app' | '/console' | '/try' | '/waitlist'
-  id: '__root__' | '/' | '/app' | '/console' | '/try' | '/waitlist'
+  to:
+    | '/'
+    | '/app'
+    | '/console'
+    | '/try'
+    | '/waitlist'
+    | '/api/chat'
+    | '/app/accounts/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/console'
+    | '/try'
+    | '/waitlist'
+    | '/api/chat'
+    | '/app/accounts/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AppRoute: typeof AppRoute
+  AppRoute: typeof AppRouteWithChildren
   ConsoleRoute: typeof ConsoleRoute
   TryRoute: typeof TryRoute
   WaitlistRoute: typeof WaitlistRoute
+  ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -116,26 +157,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/accounts/$id': {
+      id: '/app/accounts/$id'
+      path: '/accounts/$id'
+      fullPath: '/app/accounts/$id'
+      preLoaderRoute: typeof AppAccountsIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppAccountsIdRoute: typeof AppAccountsIdRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAccountsIdRoute: AppAccountsIdRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AppRoute: AppRoute,
+  AppRoute: AppRouteWithChildren,
   ConsoleRoute: ConsoleRoute,
   TryRoute: TryRoute,
   WaitlistRoute: WaitlistRoute,
+  ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

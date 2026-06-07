@@ -15,7 +15,7 @@ import {
 } from "@/lib/loop/teamData";
 import { useAuditFeed } from "@/lib/loop/ledgerStore";
 import { useClientStamp } from "@/lib/loop/useClientStamp";
-import { WorkflowSteps } from "../WorkflowSteps";
+
 import { OutcomeDrilldown } from "../OutcomeDrilldown";
 
 const BLAST_COLOR = {
@@ -41,37 +41,19 @@ export function LeaderSurface() {
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8 space-y-6">
-      {/* Header */}
+      {/* Header — forecast vs agent delta */}
       <div>
         <div className="text-[11px] font-mono uppercase tracking-[0.16em] text-muted-foreground">
-          {stamp} · the number · cited
+          {stamp} · forecast vs agent · cited
         </div>
         <h1 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight leading-[1.1] mt-2">
-          ${(totalArr / 1000).toFixed(0)}k ARR protected on a ${(TEAM_PULSE.bookArr / 1_000_000).toFixed(1)}M book.
+          ${(totalArr / 1000).toFixed(0)}k ARR protected. $640k humans missed, I caught.
         </h1>
         <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-          {totalShipped.toLocaleString()} closed line items across {OUTCOMES.length} outcome types this quarter. Every claim
-          pinned to the call, system event, or world signal that produced it.
+          The delta between what the CRM said and what the conversation said this quarter. {totalShipped.toLocaleString()} closed line items across {OUTCOMES.length} outcome types — every claim pinned to the call, system event, or world signal that produced it.
         </p>
       </div>
 
-      <WorkflowSteps
-        title="How to read this surface"
-        steps={[
-          {
-            label: "Check the trend",
-            detail: "Auto-ship rate, capacity returned, reverts — health of the agent-team loop.",
-          },
-          {
-            label: "Drill an outcome",
-            detail: "Click any tile to see the line items and citations behind the number.",
-          },
-          {
-            label: "Audit any action",
-            detail: "Live audit log is exportable. Every row pinned to its source.",
-          },
-        ]}
-      />
 
 
       {/* Trend hero */}
