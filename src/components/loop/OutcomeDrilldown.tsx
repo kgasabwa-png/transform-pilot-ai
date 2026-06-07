@@ -76,12 +76,10 @@ export function OutcomeDrilldown({
                   <p className="text-[12px] text-muted-foreground mt-1">
                     {a.detail}
                   </p>
-                  <blockquote className="mt-2 border-l-2 border-border pl-3 text-[11px] text-muted-foreground italic">
-                    {a.evidence}
-                    <div className="not-italic text-[10px] font-mono mt-1 inline-flex items-center gap-1">
-                      <ExternalLink className="size-3" /> {a.source}
-                    </div>
-                  </blockquote>
+                  <div className="mt-2">
+                    <EvidenceQuote action={a} compact />
+                  </div>
+
                 </article>
               ))}
             </div>
