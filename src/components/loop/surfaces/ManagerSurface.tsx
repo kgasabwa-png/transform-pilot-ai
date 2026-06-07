@@ -8,23 +8,25 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
+import { toast } from "sonner";
 import {
   TEAM,
   TEAM_PULSE,
   COACHING,
-  COSIGN_QUEUE,
   TEAM_SIGNALS,
 } from "@/lib/loop/teamData";
 import { AutonomyDial } from "../AutonomyDial";
 import { WorkflowSteps } from "../WorkflowSteps";
+import { CoachingDrawer } from "../CoachingDrawer";
 import { useClientStamp } from "@/lib/loop/useClientStamp";
+import { useCosignQueue, resolveCosign } from "@/lib/loop/ledgerStore";
 
 export function ManagerSurface() {
   const stamp = useClientStamp();
-  const [cosigned, setCosigned] = useState<Record<string, boolean>>({});
+  const openCosign = useCosignQueue();
   const [acknowledged, setAcknowledged] = useState<Record<string, boolean>>({});
+  const [coachId, setCoachId] = useState<string | null>(null);
 
-  const openCosign = COSIGN_QUEUE.filter((a) => !cosigned[a.id]);
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8 space-y-6">
@@ -100,13 +102,19 @@ export function ManagerSurface() {
           {TEAM.map((m) => {
             const flagged = Math.abs(m.barDrift) >= 2;
             return (
-              <div key={m.id} className="p-4">
+              <button
+                key={m.id}
+                onClick={() => setCoachId(m.id)}
+                className="p-4 text-left hover:bg-foreground/[0.02] transition-colors group"
+              >
                 <div className="flex items-center gap-2">
                   <div className="size-8 rounded-full bg-foreground/5 border border-border text-[11px] font-semibold flex items-center justify-center">
                     {m.initials}
                   </div>
                   <div className="min-w-0">
-                    <div className="text-sm font-medium leading-tight truncate">{m.name}</div>
+                    <div className="text-sm font-medium leading-tight truncate group-hover:underline underline-offset-4">
+                      {m.name}
+                    </div>
                     <div className="text-[10px] font-mono text-muted-foreground">
                       {m.book} accts · ${(m.arr / 1_000_000).toFixed(2)}M
                     </div>
@@ -128,10 +136,10 @@ export function ManagerSurface() {
                 {flagged && (
                   <div className="mt-2 inline-flex items-center gap-1 text-[10px] font-mono text-amber-700 dark:text-amber-400 bg-amber-500/10 rounded px-1.5 py-0.5">
                     <AlertTriangle className="size-2.5" />
-                    Bar drift · {m.barDrift > 0 ? "+" : ""}{m.barDrift.toFixed(1)}σ
+                    Bar drift · {m.barDrift > 0 ? "+" : ""}{m.barDrift.toFixed(1)}σ · open
                   </div>
                 )}
-              </div>
+              </button>
             );
           })}
         </div>
@@ -256,13 +264,21 @@ export function ManagerSurface() {
                 </blockquote>
                 <div className="flex items-center gap-2 mt-3">
                   <button
-                    onClick={() => setCosigned((p) => ({ ...p, [a.id]: true }))}
+                    onClick={() => {
+                      resolveCosign(a.id, "co-signed");
+                      toast.success("Co-signed & released", {
+                        description: `${a.account} · ${a.headline}`,
+                      });
+                    }}
                     className="bg-foreground text-background rounded-md px-3 py-1.5 text-sm font-medium hover:opacity-90"
                   >
                     Co-sign & release
                   </button>
                   <button
-                    onClick={() => setCosigned((p) => ({ ...p, [a.id]: true }))}
+                    onClick={() => {
+                      resolveCosign(a.id, "declined");
+                      toast(`Declined — ${a.account}`);
+                    }}
                     className="border border-border rounded-md px-3 py-1.5 text-sm font-medium hover:bg-foreground/5"
                   >
                     Decline
@@ -318,6 +334,8 @@ export function ManagerSurface() {
         Calibration trending up · agent matched team's bar in {TEAM_PULSE.teamAutoShipRate}% of internal actions
         <TrendingDown className="size-3 text-success rotate-180" />
       </footer>
+
+      <CoachingDrawer memberId={coachId} onClose={() => setCoachId(null)} />
     </div>
   );
 }

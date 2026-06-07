@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { Undo2 } from "lucide-react";
+import { toast } from "sonner";
 import { LaneShell } from "./LaneShell";
+import { revertShipped } from "@/lib/loop/ledgerStore";
 import type { LaneAction } from "@/lib/loop/consoleData";
+
 
 export function ShippedLane({ items }: { items: LaneAction[] }) {
   const [reverted, setReverted] = useState<Record<string, boolean>>({});
@@ -42,7 +45,21 @@ export function ShippedLane({ items }: { items: LaneAction[] }) {
                 </div>
               </div>
               <button
-                onClick={() => setReverted((p) => ({ ...p, [a.id]: !p[a.id] }))}
+                onClick={() => {
+                  const next = !reverted[a.id];
+                  setReverted((p) => ({ ...p, [a.id]: next }));
+                  if (next) {
+                    revertShipped(a.id);
+                    toast("Reverted", {
+                      description: `${a.account} · ${a.headline}`,
+                      action: {
+                        label: "Undo",
+                        onClick: () =>
+                          setReverted((p) => ({ ...p, [a.id]: false })),
+                      },
+                    });
+                  }
+                }}
                 className="shrink-0 inline-flex items-center gap-1 text-[11px] font-mono text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-foreground/5"
               >
                 <Undo2 className="size-3" />

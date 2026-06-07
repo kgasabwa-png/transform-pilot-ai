@@ -11,11 +11,12 @@ import {
   AUTO_SHIP_TREND,
   OUTCOMES,
   CUSTOMER_TRUST,
-  AUDIT_LOG,
   TEAM_PULSE,
 } from "@/lib/loop/teamData";
+import { useAuditFeed } from "@/lib/loop/ledgerStore";
 import { useClientStamp } from "@/lib/loop/useClientStamp";
 import { WorkflowSteps } from "../WorkflowSteps";
+import { OutcomeDrilldown } from "../OutcomeDrilldown";
 
 const BLAST_COLOR = {
   internal: "bg-muted text-muted-foreground",
@@ -32,6 +33,7 @@ const STATUS_COLOR = {
 
 export function LeaderSurface() {
   const stamp = useClientStamp();
+  const auditFeed = useAuditFeed();
   const [activeOutcome, setActiveOutcome] = useState<string | null>(null);
 
   const totalShipped = OUTCOMES.reduce((s, o) => s + o.shipped, 0);
@@ -238,7 +240,7 @@ export function LeaderSurface() {
           </span>
         </header>
         <ul className="divide-y divide-border">
-          {AUDIT_LOG.map((e) => (
+          {auditFeed.map((e) => (
             <li key={e.id} className="px-5 py-3 grid grid-cols-[auto_auto_1fr_auto] gap-3 items-baseline">
               <span className="text-[10px] font-mono text-muted-foreground tabular-nums w-12">
                 {e.at}
@@ -272,6 +274,11 @@ export function LeaderSurface() {
           SOC 2 Type II · data residency US/EU · every row exportable
         </footer>
       </section>
+
+      <OutcomeDrilldown
+        outcomeId={activeOutcome}
+        onClose={() => setActiveOutcome(null)}
+      />
     </div>
   );
 }
