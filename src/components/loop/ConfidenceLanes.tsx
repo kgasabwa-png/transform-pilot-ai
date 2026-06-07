@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { AutonomyDial } from "./AutonomyDial";
 import { ShippedLane } from "./lanes/ShippedLane";
@@ -94,13 +94,19 @@ export function ConfidenceLanes({ persona = "csm" as PersonaId }: { persona?: Pe
         </div>
       )}
 
-      {/* Lanes */}
-      <div className="grid gap-4">
-        <ShippedLane items={data.shipped} />
-        <QuickReviewLane items={data.quick} />
-        <JudgmentLane items={data.judgment} />
-        <WatchLane signals={data.signals} />
-      </div>
+      {/* Filter chips */}
+      <LaneFilters
+        data={data}
+      >
+        {(filtered) => (
+          <div className="grid gap-4">
+            <ShippedLane items={filtered.shipped} />
+            <QuickReviewLane items={filtered.quick} />
+            <JudgmentLane items={filtered.judgment} />
+            <WatchLane signals={filtered.signals} />
+          </div>
+        )}
+      </LaneFilters>
 
       <footer className="text-[11px] font-mono text-muted-foreground text-center pt-4">
         Every action pinned to the line it came from · 30-day revert on every row

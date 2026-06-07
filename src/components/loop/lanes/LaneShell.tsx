@@ -22,8 +22,8 @@ export function LaneShell({
 }) {
   const meta = LANE_META[id];
   return (
-    <section className="rounded-2xl border border-border bg-surface overflow-hidden">
-      <header className="px-5 py-3 border-b border-border flex items-start gap-3">
+    <section className="rounded-2xl border border-border bg-surface overflow-hidden shadow-sm">
+      <header className="px-5 py-3 border-b border-border flex items-start gap-3 bg-foreground/[0.015]">
         <span className={`size-2 rounded-full mt-1.5 shrink-0 ${ACCENT[id]}`} />
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-2 flex-wrap">
