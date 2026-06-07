@@ -16,7 +16,7 @@ import {
   TEAM_SIGNALS,
 } from "@/lib/loop/teamData";
 import { AutonomyDial } from "../AutonomyDial";
-import { WorkflowSteps } from "../WorkflowSteps";
+
 import { CoachingDrawer } from "../CoachingDrawer";
 import { EvidenceQuote } from "../EvidenceQuote";
 import { EmptyState } from "../EmptyState";

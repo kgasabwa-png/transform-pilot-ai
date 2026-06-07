@@ -15,7 +15,7 @@ import {
 } from "@/lib/loop/teamData";
 import { useAuditFeed } from "@/lib/loop/ledgerStore";
 import { useClientStamp } from "@/lib/loop/useClientStamp";
-import { WorkflowSteps } from "../WorkflowSteps";
+
 import { OutcomeDrilldown } from "../OutcomeDrilldown";
 
 const BLAST_COLOR = {
