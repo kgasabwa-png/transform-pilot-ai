@@ -11,11 +11,12 @@ import {
   AUTO_SHIP_TREND,
   OUTCOMES,
   CUSTOMER_TRUST,
-  AUDIT_LOG,
   TEAM_PULSE,
 } from "@/lib/loop/teamData";
+import { useAuditFeed } from "@/lib/loop/ledgerStore";
 import { useClientStamp } from "@/lib/loop/useClientStamp";
 import { WorkflowSteps } from "../WorkflowSteps";
+import { OutcomeDrilldown } from "../OutcomeDrilldown";
 
 const BLAST_COLOR = {
   internal: "bg-muted text-muted-foreground",
@@ -32,6 +33,7 @@ const STATUS_COLOR = {
 
 export function LeaderSurface() {
   const stamp = useClientStamp();
+  const auditFeed = useAuditFeed();
   const [activeOutcome, setActiveOutcome] = useState<string | null>(null);
 
   const totalShipped = OUTCOMES.reduce((s, o) => s + o.shipped, 0);
