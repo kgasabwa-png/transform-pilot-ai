@@ -241,16 +241,25 @@ export function LeaderSurface() {
         </header>
         <ul className="divide-y divide-border">
           {auditFeed.map((e) => (
-            <li key={e.id} className="px-5 py-3 grid grid-cols-[auto_auto_1fr_auto] gap-3 items-baseline">
-              <span className="text-[10px] font-mono text-muted-foreground tabular-nums w-12">
+            <li
+              key={e.id}
+              className="px-5 py-3 flex flex-wrap sm:grid sm:grid-cols-[auto_auto_1fr_auto] gap-x-3 gap-y-1 items-baseline"
+            >
+              <span className="text-[10px] font-mono text-muted-foreground tabular-nums w-12 shrink-0">
                 {e.at}
               </span>
               <span
-                className={`text-[9px] font-mono uppercase tracking-[0.14em] px-1.5 py-0.5 rounded ${BLAST_COLOR[e.blast]}`}
+                className={`text-[9px] font-mono uppercase tracking-[0.14em] px-1.5 py-0.5 rounded shrink-0 ${BLAST_COLOR[e.blast]}`}
               >
                 {e.blast.replace("-", " ")}
               </span>
-              <div className="min-w-0">
+              <span
+                className={`text-[10px] font-mono uppercase tracking-[0.14em] tabular-nums sm:order-last ml-auto sm:ml-0 shrink-0 ${STATUS_COLOR[e.status]}`}
+              >
+                {e.status === "shipped" && <CheckCircle2 className="inline size-3 mr-1" />}
+                {e.status}
+              </span>
+              <div className="basis-full sm:basis-auto min-w-0">
                 <div className="text-sm leading-snug">{e.action}</div>
                 <div className="text-[11px] font-mono text-muted-foreground truncate">
                   {e.account} · {e.who} ·{" "}
@@ -260,12 +269,6 @@ export function LeaderSurface() {
                   </span>
                 </div>
               </div>
-              <span
-                className={`text-[10px] font-mono uppercase tracking-[0.14em] tabular-nums ${STATUS_COLOR[e.status]}`}
-              >
-                {e.status === "shipped" && <CheckCircle2 className="inline size-3 mr-1" />}
-                {e.status}
-              </span>
             </li>
           ))}
         </ul>
