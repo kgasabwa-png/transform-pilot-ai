@@ -12,6 +12,8 @@ import {
   SIGNALS,
   forCSM,
   CURRENT_CSM,
+  type LaneAction,
+  type WorldSignal,
 } from "@/lib/loop/consoleData";
 import type { PersonaId } from "@/lib/loop/personas";
 import { useClientStamp } from "@/lib/loop/useClientStamp";
