@@ -16,6 +16,7 @@ import {
   TEAM_SIGNALS,
 } from "@/lib/loop/teamData";
 import { AutonomyDial } from "../AutonomyDial";
+import { WorkflowSteps } from "../WorkflowSteps";
 import { useClientStamp } from "@/lib/loop/useClientStamp";
 
 export function ManagerSurface() {
