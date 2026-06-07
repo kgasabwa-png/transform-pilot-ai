@@ -38,7 +38,7 @@ function PersonaWorkspace() {
   const stamp = useClientStamp();
 
   const setRole = (id: PersonaId) =>
-    navigate({ search: (prev) => ({ ...prev, role: id }), replace: true });
+    navigate({ search: (prev: AppSearch) => ({ ...prev, role: id }), replace: true });
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
