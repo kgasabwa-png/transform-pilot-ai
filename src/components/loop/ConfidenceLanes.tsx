@@ -1,6 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Sparkles } from "lucide-react";
-import { PersonaToggle } from "./PersonaToggle";
 import { AutonomyDial } from "./AutonomyDial";
 import { ShippedLane } from "./lanes/ShippedLane";
 import { QuickReviewLane } from "./lanes/QuickReviewLane";
@@ -17,9 +16,8 @@ import {
 import type { PersonaId } from "@/lib/loop/personas";
 import { useClientStamp } from "@/lib/loop/useClientStamp";
 
-export function ConfidenceLanes() {
+export function ConfidenceLanes({ persona = "csm" as PersonaId }: { persona?: PersonaId } = {}) {
   const stamp = useClientStamp();
-  const [persona, setPersona] = useState<PersonaId>("csm");
 
   const data = useMemo(() => {
     if (persona === "csm") {
@@ -56,7 +54,6 @@ export function ConfidenceLanes() {
             {header.sub}
           </p>
         </div>
-        <PersonaToggle value={persona} onChange={setPersona} />
       </div>
 
       {/* Autonomy + stake summary */}
