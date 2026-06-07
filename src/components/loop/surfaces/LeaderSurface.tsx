@@ -53,6 +53,25 @@ export function LeaderSurface() {
         </p>
       </div>
 
+      <WorkflowSteps
+        title="How to read this surface"
+        steps={[
+          {
+            label: "Check the trend",
+            detail: "Auto-ship rate, capacity returned, reverts — health of the agent-team loop.",
+          },
+          {
+            label: "Drill an outcome",
+            detail: "Click any tile to see the line items and citations behind the number.",
+          },
+          {
+            label: "Audit any action",
+            detail: "Live audit log is exportable. Every row pinned to its source.",
+          },
+        ]}
+      />
+
+
       {/* Trend hero */}
       <section className="rounded-2xl border border-border bg-surface overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-3">
