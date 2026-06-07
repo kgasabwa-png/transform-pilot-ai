@@ -146,7 +146,7 @@ function Hero() {
 
 type Tab = "prepared" | "review" | "done";
 
-const ledgerData: Record<Tab, Array<{
+type LedgerItem = {
   id: string;
   account: string;
   initials: string;
@@ -159,7 +159,10 @@ const ledgerData: Record<Tab, Array<{
   status: string;
   blast: "Internal" | "Customer" | "Money";
   time: string;
-}>> = {
+};
+
+const ledgerData: Record<Tab, LedgerItem[]> = {
+
   prepared: [
     {
       id: "0918",
