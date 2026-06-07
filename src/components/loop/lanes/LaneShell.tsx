@@ -4,7 +4,7 @@ import { LANE_META } from "@/lib/loop/autonomy";
 
 const ACCENT: Record<LaneId, string> = {
   shipped: "bg-success",
-  quick: "bg-amber-500",
+  quick: "bg-primary",
   judgment: "bg-rose-500",
   watch: "bg-sky-500",
 };
