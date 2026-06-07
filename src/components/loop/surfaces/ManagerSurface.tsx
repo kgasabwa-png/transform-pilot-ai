@@ -232,12 +232,12 @@ export function ManagerSurface() {
           </div>
         </header>
         {openCosign.length === 0 ? (
-          <div className="px-5 py-8 text-center">
-            <div className="font-display text-sm font-semibold">Queue clear.</div>
-            <p className="text-[12px] text-muted-foreground mt-1">
-              Next sweep when a CSM routes the next money action.
-            </p>
-          </div>
+          <EmptyState
+            icon={Inbox}
+            eyebrow="queue clear"
+            title="Nothing waiting on your signature"
+            body="When a CSM routes a money action over $25k, it lands here with the call quote attached. Try approving a Money item in the CSM view to see this fill up."
+          />
         ) : (
           <ul className="divide-y divide-border">
             {openCosign.map((a) => (
