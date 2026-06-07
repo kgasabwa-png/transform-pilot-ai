@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Sparkles } from "lucide-react";
 import { AutonomyDial } from "./AutonomyDial";
 import { ShippedLane } from "./lanes/ShippedLane";
