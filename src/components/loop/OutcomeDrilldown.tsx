@@ -1,7 +1,7 @@
 // Leader drill-down: click an outcome card → see the line items + citations
 // that compose the number. The "audit the number" promise made real.
 
-import { ExternalLink, X, CheckCircle2, FileText } from "lucide-react";
+import { X, CheckCircle2, FileText } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/sheet";
 import { drilldownFor } from "@/lib/loop/ledgerStore";
 import { OUTCOMES } from "@/lib/loop/teamData";
+import { EvidenceQuote } from "./EvidenceQuote";
 
 export function OutcomeDrilldown({
   outcomeId,
