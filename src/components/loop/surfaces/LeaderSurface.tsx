@@ -240,7 +240,7 @@ export function LeaderSurface() {
           </span>
         </header>
         <ul className="divide-y divide-border">
-          {AUDIT_LOG.map((e) => (
+          {auditFeed.map((e) => (
             <li key={e.id} className="px-5 py-3 grid grid-cols-[auto_auto_1fr_auto] gap-3 items-baseline">
               <span className="text-[10px] font-mono text-muted-foreground tabular-nums w-12">
                 {e.at}
