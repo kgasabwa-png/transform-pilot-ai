@@ -166,3 +166,75 @@ function Stat({
     </div>
   );
 }
+
+type LaneData = {
+  shipped: ReturnType<typeof forCSM>;
+  quick: ReturnType<typeof forCSM>;
+  judgment: ReturnType<typeof forCSM>;
+  signals: ReturnType<typeof forCSM>;
+};
+
+const BLAST_CHIPS: { id: "all" | "internal" | "customer-facing" | "money"; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "internal", label: "Internal" },
+  { id: "customer-facing", label: "Customer-facing" },
+  { id: "money", label: "Money" },
+];
+
+function LaneFilters({
+  data,
+  children,
+}: {
+  data: LaneData;
+  children: (filtered: LaneData) => React.ReactNode;
+}) {
+  const [blast, setBlast] = useState<(typeof BLAST_CHIPS)[number]["id"]>("all");
+
+  const filtered = useMemo<LaneData>(() => {
+    if (blast === "all") return data;
+    const match = (a: { blast?: string }) => a.blast === blast;
+    return {
+      shipped: data.shipped.filter(match),
+      quick: data.quick.filter(match),
+      judgment: data.judgment.filter(match),
+      signals: data.signals,
+    };
+  }, [data, blast]);
+
+  const counts = {
+    all: data.shipped.length + data.quick.length + data.judgment.length,
+    internal: [...data.shipped, ...data.quick, ...data.judgment].filter((a) => a.blast === "internal").length,
+    "customer-facing": [...data.shipped, ...data.quick, ...data.judgment].filter((a) => a.blast === "customer-facing").length,
+    money: [...data.shipped, ...data.quick, ...data.judgment].filter((a) => a.blast === "money").length,
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="text-[10px] font-mono uppercase tracking-[0.14em] text-muted-foreground mr-1">
+          Filter
+        </span>
+        {BLAST_CHIPS.map((c) => {
+          const active = blast === c.id;
+          return (
+            <button
+              key={c.id}
+              onClick={() => setBlast(c.id)}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-medium border transition-colors ${
+                active
+                  ? "bg-foreground text-background border-foreground"
+                  : "bg-surface text-muted-foreground border-border hover:text-foreground hover:border-foreground/30"
+              }`}
+            >
+              {c.label}
+              <span className={`tabular-nums font-mono text-[10px] ${active ? "opacity-70" : "opacity-60"}`}>
+                {counts[c.id]}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      {children(filtered)}
+    </div>
+  );
+}
