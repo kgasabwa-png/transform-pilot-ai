@@ -54,7 +54,6 @@ export function ConfidenceLanes({ persona = "csm" as PersonaId }: { persona?: Pe
             {header.sub}
           </p>
         </div>
-        <PersonaToggle value={persona} onChange={setPersona} />
       </div>
 
       {/* Autonomy + stake summary */}
