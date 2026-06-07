@@ -15,6 +15,7 @@ import {
   TEAM_PULSE,
 } from "@/lib/loop/teamData";
 import { useClientStamp } from "@/lib/loop/useClientStamp";
+import { WorkflowSteps } from "../WorkflowSteps";
 
 const BLAST_COLOR = {
   internal: "bg-muted text-muted-foreground",
@@ -51,6 +52,25 @@ export function LeaderSurface() {
           pinned to the call, system event, or world signal that produced it.
         </p>
       </div>
+
+      <WorkflowSteps
+        title="How to read this surface"
+        steps={[
+          {
+            label: "Check the trend",
+            detail: "Auto-ship rate, capacity returned, reverts — health of the agent-team loop.",
+          },
+          {
+            label: "Drill an outcome",
+            detail: "Click any tile to see the line items and citations behind the number.",
+          },
+          {
+            label: "Audit any action",
+            detail: "Live audit log is exportable. Every row pinned to its source.",
+          },
+        ]}
+      />
+
 
       {/* Trend hero */}
       <section className="rounded-2xl border border-border bg-surface overflow-hidden">

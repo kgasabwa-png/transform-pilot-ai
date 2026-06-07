@@ -16,6 +16,7 @@ import {
   TEAM_SIGNALS,
 } from "@/lib/loop/teamData";
 import { AutonomyDial } from "../AutonomyDial";
+import { WorkflowSteps } from "../WorkflowSteps";
 import { useClientStamp } from "@/lib/loop/useClientStamp";
 
 export function ManagerSurface() {
@@ -42,6 +43,25 @@ export function ManagerSurface() {
           </p>
         </div>
       </div>
+
+      <WorkflowSteps
+        title="Your workflow today"
+        steps={[
+          {
+            label: "Scan the team",
+            detail: "Watch for bar-drift flags — CSMs over- or under-correcting the agent.",
+          },
+          {
+            label: "Clear co-signs",
+            detail: "Approve or decline money actions over $25k routed up from your CSMs.",
+          },
+          {
+            label: "Coach at 1:1",
+            detail: "Mark coaching moments. They land in your next 1:1 with that CSM.",
+          },
+        ]}
+      />
+
 
       {/* Pulse strip */}
       <div className="flex items-center gap-3 flex-wrap">
