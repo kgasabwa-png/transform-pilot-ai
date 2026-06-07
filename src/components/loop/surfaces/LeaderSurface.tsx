@@ -76,8 +76,9 @@ export function LeaderSurface() {
 
       {/* Trend hero */}
       <section className="rounded-2xl border border-border bg-surface overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-3">
-          <div className="p-5 border-b lg:border-b-0 lg:border-r border-border">
+        <div className="grid grid-cols-1 md:grid-cols-3">
+          <div className="p-5 border-b md:border-b-0 md:border-r border-border">
+
             <div className="text-[10px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
               Auto-ship rate (8 wks)
             </div>
@@ -94,7 +95,7 @@ export function LeaderSurface() {
               The agent gets more autonomous as it learns the team's bar. Every revert is a calibration signal.
             </p>
           </div>
-          <div className="p-5 border-b lg:border-b-0 lg:border-r border-border">
+          <div className="p-5 border-b md:border-b-0 md:border-r border-border">
             <div className="text-[10px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
               Capacity returned (wk)
             </div>
@@ -241,16 +242,25 @@ export function LeaderSurface() {
         </header>
         <ul className="divide-y divide-border">
           {auditFeed.map((e) => (
-            <li key={e.id} className="px-5 py-3 grid grid-cols-[auto_auto_1fr_auto] gap-3 items-baseline">
-              <span className="text-[10px] font-mono text-muted-foreground tabular-nums w-12">
+            <li
+              key={e.id}
+              className="px-5 py-3 flex flex-wrap sm:grid sm:grid-cols-[auto_auto_1fr_auto] gap-x-3 gap-y-1 items-baseline"
+            >
+              <span className="text-[10px] font-mono text-muted-foreground tabular-nums w-12 shrink-0">
                 {e.at}
               </span>
               <span
-                className={`text-[9px] font-mono uppercase tracking-[0.14em] px-1.5 py-0.5 rounded ${BLAST_COLOR[e.blast]}`}
+                className={`text-[9px] font-mono uppercase tracking-[0.14em] px-1.5 py-0.5 rounded shrink-0 ${BLAST_COLOR[e.blast]}`}
               >
                 {e.blast.replace("-", " ")}
               </span>
-              <div className="min-w-0">
+              <span
+                className={`text-[10px] font-mono uppercase tracking-[0.14em] tabular-nums sm:order-last ml-auto sm:ml-0 shrink-0 ${STATUS_COLOR[e.status]}`}
+              >
+                {e.status === "shipped" && <CheckCircle2 className="inline size-3 mr-1" />}
+                {e.status}
+              </span>
+              <div className="basis-full sm:basis-auto min-w-0">
                 <div className="text-sm leading-snug">{e.action}</div>
                 <div className="text-[11px] font-mono text-muted-foreground truncate">
                   {e.account} · {e.who} ·{" "}
@@ -260,12 +270,6 @@ export function LeaderSurface() {
                   </span>
                 </div>
               </div>
-              <span
-                className={`text-[10px] font-mono uppercase tracking-[0.14em] tabular-nums ${STATUS_COLOR[e.status]}`}
-              >
-                {e.status === "shipped" && <CheckCircle2 className="inline size-3 mr-1" />}
-                {e.status}
-              </span>
             </li>
           ))}
         </ul>

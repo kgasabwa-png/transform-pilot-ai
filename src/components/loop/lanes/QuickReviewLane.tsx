@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { Check, X, ExternalLink } from "lucide-react";
+import { Check, X, Coffee } from "lucide-react";
 import { toast } from "sonner";
 import { LaneShell } from "./LaneShell";
 import { BLAST_LABEL } from "@/lib/loop/autonomy";
 import { recordDecision } from "@/lib/loop/ledgerStore";
 import type { LaneAction } from "@/lib/loop/consoleData";
+import { EvidenceQuote } from "../EvidenceQuote";
+import { EmptyState } from "../EmptyState";
+
 
 export function QuickReviewLane({ items }: { items: LaneAction[] }) {
   const [idx, setIdx] = useState(0);
@@ -40,12 +43,20 @@ export function QuickReviewLane({ items }: { items: LaneAction[] }) {
       badge={`${approved} approved · ${skipped} skipped`}
     >
       {!current ? (
-        <div className="px-5 py-8 text-center">
-          <div className="font-display text-sm font-semibold">Lane clear.</div>
-          <p className="text-[12px] text-muted-foreground mt-1">
-            {approved} actions queued to ship. {skipped} skipped — they'll resurface tomorrow.
-          </p>
-        </div>
+        items.length === 0 ? (
+          <EmptyState
+            icon={Coffee}
+            eyebrow="day 1"
+            title="No drafts waiting"
+            body="Customer-facing drafts will queue here once your agent has a call to draft from. Connect Gong or Zoom to start."
+          />
+        ) : (
+          <EmptyState
+            eyebrow="lane clear"
+            title="Lane clear."
+            body={`${approved} actions queued to ship. ${skipped} skipped — they'll resurface tomorrow.`}
+          />
+        )
       ) : (
         <div className="p-5">
           <div className="flex items-center gap-2 text-[11px] font-mono text-muted-foreground mb-2">
@@ -67,12 +78,10 @@ export function QuickReviewLane({ items }: { items: LaneAction[] }) {
             {current.headline}
           </h3>
           <p className="text-sm text-muted-foreground mt-1.5">{current.detail}</p>
-          <blockquote className="mt-3 border-l-2 border-border pl-3 text-[12px] text-muted-foreground italic">
-            {current.evidence}
-            <div className="not-italic text-[10px] font-mono text-muted-foreground mt-1 inline-flex items-center gap-1">
-              <ExternalLink className="size-3" /> {current.source}
-            </div>
-          </blockquote>
+          <div className="mt-3">
+            <EvidenceQuote action={current} />
+          </div>
+
 
           <div className="flex items-center gap-2 mt-4">
             <button

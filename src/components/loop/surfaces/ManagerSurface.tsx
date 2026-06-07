@@ -2,11 +2,11 @@ import { useState } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
-  ExternalLink,
   Sparkles,
   TrendingDown,
   TrendingUp,
   Users,
+  Inbox,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -18,6 +18,8 @@ import {
 import { AutonomyDial } from "../AutonomyDial";
 import { WorkflowSteps } from "../WorkflowSteps";
 import { CoachingDrawer } from "../CoachingDrawer";
+import { EvidenceQuote } from "../EvidenceQuote";
+import { EmptyState } from "../EmptyState";
 import { useClientStamp } from "@/lib/loop/useClientStamp";
 import { useCosignQueue, resolveCosign } from "@/lib/loop/ledgerStore";
 
@@ -98,14 +100,14 @@ export function ManagerSurface() {
             calibration · book size · open work
           </span>
         </header>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-x divide-border [&>*]:border-b [&>*]:border-border sm:[&>*]:border-b-0">
+        <div className="grid grid-cols-1 min-[520px]:grid-cols-2 lg:grid-cols-4 lg:divide-x divide-border">
           {TEAM.map((m) => {
             const flagged = Math.abs(m.barDrift) >= 2;
             return (
               <button
                 key={m.id}
                 onClick={() => setCoachId(m.id)}
-                className="p-4 text-left hover:bg-foreground/[0.02] transition-colors group"
+                className="p-4 text-left hover:bg-foreground/[0.02] transition-colors group border-b border-border last:border-b-0 min-[520px]:[&:nth-child(odd)]:border-r min-[520px]:[&:nth-last-child(-n+2)]:border-b-0 lg:[&:nth-child(odd)]:border-r-0 lg:border-b-0"
               >
                 <div className="flex items-center gap-2">
                   <div className="size-8 rounded-full bg-foreground/5 border border-border text-[11px] font-semibold flex items-center justify-center">
@@ -230,12 +232,12 @@ export function ManagerSurface() {
           </div>
         </header>
         {openCosign.length === 0 ? (
-          <div className="px-5 py-8 text-center">
-            <div className="font-display text-sm font-semibold">Queue clear.</div>
-            <p className="text-[12px] text-muted-foreground mt-1">
-              Next sweep when a CSM routes the next money action.
-            </p>
-          </div>
+          <EmptyState
+            icon={Inbox}
+            eyebrow="queue clear"
+            title="Nothing waiting on your signature"
+            body="When a CSM routes a money action over $25k, it lands here with the call quote attached. Try approving a Money item in the CSM view to see this fill up."
+          />
         ) : (
           <ul className="divide-y divide-border">
             {openCosign.map((a) => (
@@ -256,12 +258,10 @@ export function ManagerSurface() {
                   {a.headline}
                 </h3>
                 <p className="text-sm text-muted-foreground mt-1">{a.detail}</p>
-                <blockquote className="mt-2 border-l-2 border-border pl-3 text-[12px] text-muted-foreground italic">
-                  {a.evidence}
-                  <div className="not-italic text-[10px] font-mono text-muted-foreground mt-1 inline-flex items-center gap-1">
-                    <ExternalLink className="size-3" /> {a.source}
-                  </div>
-                </blockquote>
+                <div className="mt-2">
+                  <EvidenceQuote action={a} />
+                </div>
+
                 <div className="flex items-center gap-2 mt-3">
                   <button
                     onClick={() => {
