@@ -1,22 +1,32 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { ArrowUpRight, Quote } from "lucide-react";
+import { useState } from "react";
+import {
+  ArrowUpRight,
+  ArrowRight,
+  Check,
+  Shield,
+  Zap,
+  Eye,
+  Sparkles,
+  Lock,
+  CircleDot,
+} from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Ledgerline. The save, already shipped." },
+      { title: "Ledgerline — The outcome ledger for customer success" },
       {
         name: "description",
         content:
-          "Ledgerline drafts the post-call work for every account. Every line pinned to the verbatim quote it came from. You read one screen and sign once.",
+          "Every save, expansion, onboarding milestone and escalation — shipped with a receipt. Agents close the line items. Humans approve the money moments.",
       },
-      { property: "og:title", content: "Ledgerline. The save, already shipped." },
+      { property: "og:title", content: "Ledgerline — The outcome ledger for customer success" },
       {
         property: "og:description",
         content:
-          "Finish the call. Open your laptop. The work is drafted, every line pinned to the customer's exact words. One signature ships it.",
+          "Agents close the line items. Humans approve the money moments. Every outcome cited, timestamped, revertible.",
       },
     ],
   }),
@@ -25,43 +35,47 @@ export const Route = createFileRoute("/")({
 
 function LandingPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground antialiased">
       <Header />
       <Hero />
-      <Proof />
-      <Why />
-      <Partners />
+      <LogoStrip />
+      <HowItWorks />
+      <BlastRadius />
+      <OutcomesBento />
+      <Security />
+      <CTA />
       <Footer />
     </div>
   );
 }
 
+/* ------------------------------ Header ------------------------------ */
+
 function Header() {
   return (
-    <header className="border-b border-border sticky top-0 z-40 bg-background/85 backdrop-blur">
-      <div className="max-w-[1180px] mx-auto px-6 md:px-10 h-14 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 shrink-0">
-          <Logo size={20} />
-          <span className="font-display font-semibold tracking-tight">Ledgerline</span>
+    <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-md">
+      <div className="max-w-[1200px] mx-auto px-6 md:px-10 h-14 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2 shrink-0 text-foreground">
+          <Logo size={22} />
+          <span className="font-display font-semibold tracking-tight text-[15px]">Ledgerline</span>
         </Link>
-        <nav className="hidden md:flex items-center gap-7 text-xs text-muted-foreground">
-          <a href="#proof" className="hover:text-foreground">Proof</a>
-          <a href="#why" className="hover:text-foreground">Why now</a>
-          <a href="#partners" className="hover:text-foreground">Partners</a>
+        <nav className="hidden md:flex items-center gap-8 text-[13px] text-muted-foreground">
+          <a href="#how" className="hover:text-foreground transition-colors">How it works</a>
+          <a href="#autonomy" className="hover:text-foreground transition-colors">Autonomy</a>
+          <a href="#outcomes" className="hover:text-foreground transition-colors">Outcomes</a>
+          <a href="#security" className="hover:text-foreground transition-colors">Security</a>
+          <Link to="/console" className="hover:text-foreground transition-colors">Console</Link>
         </nav>
         <div className="flex items-center gap-2">
-          <Link
-            to="/waitlist"
-            className="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5"
-          >
-            Request access
+          <Link to="/console" className="hidden sm:inline-flex text-[13px] text-muted-foreground hover:text-foreground px-3 py-1.5">
+            Sign in
           </Link>
           <Link
-            to="/app"
-            search={{ role: "csm", demo: true }}
-            className="inline-flex items-center gap-1.5 text-xs font-medium bg-foreground text-background px-3.5 py-1.5 rounded-full hover:opacity-90"
+            to="/try"
+            className="inline-flex items-center gap-1 bg-foreground text-background text-[13px] font-medium px-3.5 py-1.5 rounded-md hover:opacity-90 transition-opacity"
           >
-            See it after a call <ArrowUpRight className="size-3" />
+            Book a demo
+            <ArrowUpRight size={13} />
           </Link>
         </div>
       </div>
@@ -69,480 +83,686 @@ function Header() {
   );
 }
 
+/* ------------------------------ Hero ------------------------------ */
+
 function Hero() {
   return (
-    <section className="border-b border-border">
-      <div className="max-w-[1180px] mx-auto px-6 md:px-10 pt-20 pb-20 md:pt-28 md:pb-28 grid lg:grid-cols-[1.1fr_0.9fr] gap-14 items-center">
-        <div className="max-w-xl">
-          <div className="inline-flex items-center gap-2 mb-7 text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground border border-border rounded-full px-3 py-1">
-            <span className="size-1.5 rounded-full bg-success animate-pulse" />
-            For CSMs carrying a renewal book
-          </div>
-          <h1 className="font-display text-5xl md:text-[68px] font-semibold tracking-tight leading-[1.0]">
-            The save,{" "}
-            <span className="italic text-muted-foreground">already</span>{" "}
-            shipped.
-          </h1>
-          <p className="mt-7 text-base md:text-lg text-muted-foreground leading-relaxed">
-            You finish a renewal call. The recap is drafted, the CRM is staged,
-            your manager has the brief. Every line is pinned to the exact words
-            your customer said.
-          </p>
-          <p className="mt-4 text-base md:text-lg text-foreground/90 leading-relaxed">
-            You read for ninety seconds and sign once.
-          </p>
-
-          <div className="mt-9 flex flex-wrap items-center gap-3">
-            <Link
-              to="/app"
-              search={{ role: "csm", demo: true }}
-              className="inline-flex items-center gap-2 text-sm font-medium bg-foreground text-background px-5 py-3 rounded-full hover:opacity-90"
-            >
-              Walk into the workspace <ArrowUpRight className="size-4" />
-            </Link>
-            <Link
-              to="/waitlist"
-              className="inline-flex items-center gap-2 text-sm font-medium border border-border px-5 py-3 rounded-full hover:bg-accent/40"
-            >
-              Talk to the founders
-            </Link>
-          </div>
-
-          <p className="mt-7 text-[11px] font-mono text-muted-foreground">
-            Read-only by default. You sign every outbound. Your data stays yours.
-          </p>
-        </div>
-
-        <AfterCallTile />
-      </div>
-    </section>
-  );
-}
-
-function AfterCallTile() {
-  const [signed, setSigned] = useState(false);
-  const [seconds, setSeconds] = useState(0);
-
-  useEffect(() => {
-    const t = setInterval(() => setSeconds((s) => s + 1), 1000);
-    return () => clearInterval(t);
-  }, []);
-
-  return (
-    <div className="border border-border rounded-2xl bg-surface shadow-sm overflow-hidden">
-      <div className="px-5 py-3 border-b border-border flex items-center justify-between bg-background">
-        <div className="flex items-center gap-2">
-          <span className="size-2 rounded-full bg-success" />
-          <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
-            Call ended {formatElapsed(seconds)} ago
-          </span>
-        </div>
-        <span className="text-[10px] font-mono text-muted-foreground">
-          Acme · Q1 renewal
-        </span>
-      </div>
-      <div className="p-6">
-        <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground mb-2">
-          While you said goodbye, this happened
-        </div>
-        <div className="font-display text-lg font-semibold tracking-tight mb-5 leading-snug">
-          Recap drafted. CRM staged. Manager briefed.
-        </div>
-
-        <div className="space-y-2.5 mb-6 text-[13px]">
-          <Row label="Recap email to champion" status="Drafted in your outbox" />
-          <Row label="Salesforce: opportunity stage" status="Staged" />
-          <Row label="Follow-up tasks" status="4 queued in Asana" />
-          <Row label="Internal Slack note" status="Ready for #renewals" />
-        </div>
-
-        <button
-          onClick={() => setSigned(true)}
-          disabled={signed}
-          className={`w-full inline-flex items-center justify-center gap-2 text-sm font-semibold px-4 py-3 rounded-lg transition ${
-            signed
-              ? "bg-success/15 text-success border border-success/30"
-              : "bg-foreground text-background hover:opacity-90"
-          }`}
-        >
-          {signed ? "Signed. Shipped." : "Sign once. Ship it all."}
-        </button>
-        <p className="text-[11px] text-muted-foreground text-center mt-3">
-          One signature. Four tools updated. You go home.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function Row({ label, status }: { label: string; status: string }) {
-  return (
-    <div className="flex items-center justify-between gap-3 py-2 border-b border-border/60 last:border-0">
-      <span className="text-foreground/90">{label}</span>
-      <span className="text-[11px] font-mono text-muted-foreground">{status}</span>
-    </div>
-  );
-}
-
-function formatElapsed(s: number) {
-  const m = Math.floor(s / 60);
-  const r = s % 60;
-  if (m === 0) return `${r}s`;
-  return `${m}m ${r}s`;
-}
-
-// The ledger writes one line per action during the call. The moat is that
-// every line carries the verbatim words it came from, so the receipt and
-// the proof live in the same row.
-const ENTRIES: {
-  t: string;
-  surface: string;
-  action: string;
-  detail: string;
-  quote?: string;
-  weight?: "primary" | "muted";
-}[] = [
-  { t: "00:04", surface: "Listening", action: "Call joined", detail: "Acme · Q1 renewal · 4 attendees", weight: "muted" },
-  {
-    t: "07:12",
-    surface: "Salesforce",
-    action: "Stage staged",
-    detail: "Negotiation → Verbal commit",
-    quote: "we'd want to lock pricing before the board meeting on the 22nd",
-  },
-  {
-    t: "11:48",
-    surface: "Salesforce",
-    action: "Field staged",
-    detail: "Renewal risk: Medium → Low",
-    quote: "honestly the SSO rollout fixed the thing my CTO was worried about",
-  },
-  {
-    t: "18:30",
-    surface: "Asana",
-    action: "Task queued",
-    detail: "Send pricing addendum to procurement",
-    quote: "send the redlined addendum straight to Maya in procurement",
-  },
-  { t: "18:31", surface: "Asana", action: "Task queued", detail: "Loop in Solutions on SSO rollout" },
-  {
-    t: "24:09",
-    surface: "Gmail",
-    action: "Draft written",
-    detail: "Recap to champion. 312 words. Cites 3 commitments.",
-    quote: "put the three things we agreed to in writing so I can forward it up",
-  },
-  { t: "31:55", surface: "Asana", action: "Task queued", detail: "Schedule QBR for week of Mar 17" },
-  {
-    t: "36:20",
-    surface: "Slack",
-    action: "Note composed",
-    detail: "#renewals brief. 1 paragraph. 2 asks for manager.",
-    quote: "I'll need an exec on the next call, just for the optics",
-  },
-  { t: "41:02", surface: "Asana", action: "Task queued", detail: "Update mutual action plan with new milestone" },
-  { t: "42:00", surface: "Ledgerline", action: "Call ended", detail: "Workspace ready. Waiting for one signature.", weight: "primary" },
-];
-
-const SURFACES = ["Listening", "Salesforce", "Asana", "Gmail", "Slack", "Ledgerline"] as const;
-const RANGES = [
-  { label: "All", min: 0, max: 60 },
-  { label: "0–15 min", min: 0, max: 15 },
-  { label: "15–30 min", min: 15, max: 30 },
-  { label: "30–45 min", min: 30, max: 45 },
-] as const;
-
-function parseMinutes(t: string) {
-  const [m, s] = t.split(":").map(Number);
-  return m + s / 60;
-}
-
-function Proof() {
-  const [activeSurfaces, setActiveSurfaces] = useState<Set<string>>(
-    new Set(SURFACES)
-  );
-  const [rangeIdx, setRangeIdx] = useState(0);
-
-  const range = RANGES[rangeIdx];
-
-  const filtered = useMemo(() => {
-    return ENTRIES.filter((e) => {
-      const inRange =
-        parseMinutes(e.t) >= range.min && parseMinutes(e.t) < range.max;
-      return activeSurfaces.has(e.surface) && inRange;
-    });
-  }, [activeSurfaces, range]);
-
-  const toolsTouched = useMemo(
-    () => new Set(filtered.map((e) => e.surface)).size,
-    [filtered]
-  );
-
-  function toggleSurface(name: string) {
-    setActiveSurfaces((prev) => {
-      const next = new Set(prev);
-      if (next.has(name)) {
-        next.delete(name);
-      } else {
-        next.add(name);
-      }
-      return next;
-    });
-  }
-
-  return (
-    <section id="proof" className="border-b border-border bg-background">
-      <div className="max-w-[1180px] mx-auto px-6 md:px-10 py-20 md:py-28">
-        <div className="grid lg:grid-cols-[0.8fr_1.2fr] gap-12 lg:gap-16 items-start">
-          <div className="lg:sticky lg:top-24">
-            <span className="eyebrow block mb-4">Every line pinned to the call</span>
-            <h2 className="font-display text-3xl md:text-5xl font-semibold tracking-tight leading-[1.02]">
-              42 minutes on a call.
-              <br />
-              <span className="text-muted-foreground italic">9 things on your desk.</span>
-            </h2>
-            <p className="mt-6 text-base text-muted-foreground leading-relaxed max-w-md">
-              This is the ledger Ledgerline writes during one renewal call. Every
-              line cites the customer's exact words, in the moment they said
-              them. Nothing leaves your tools without your signature.
-            </p>
-            <div className="mt-8 grid grid-cols-3 gap-px bg-border border border-border rounded-lg overflow-hidden">
-              <Stat n={String(toolsTouched)} l="Tools touched" />
-              <Stat n={String(filtered.length)} l="Actions staged" />
-              <Stat n="1" l="Signature left" />
-            </div>
-          </div>
-
-          <div className="border border-border rounded-2xl bg-surface overflow-hidden shadow-sm">
-            <div className="px-5 py-3 border-b border-border flex items-center justify-between bg-background">
-              <div className="flex items-center gap-2">
-                <span className="size-2 rounded-full bg-success animate-pulse" />
-                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                  Live ledger · Acme renewal · Mar 04
-                </span>
-              </div>
-              <span className="font-mono text-[10px] text-muted-foreground">
-                ledger.ledgerline
-              </span>
-            </div>
-
-            <div className="px-5 py-3 border-b border-border bg-background/60">
-              <div className="flex flex-wrap items-center gap-2 mb-2.5">
-                <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground mr-1">
-                  Tool
-                </span>
-                {SURFACES.map((s) => {
-                  const on = activeSurfaces.has(s);
-                  return (
-                    <button
-                      key={s}
-                      onClick={() => toggleSurface(s)}
-                      className={`text-[10px] font-mono uppercase tracking-[0.12em] px-2.5 py-1 rounded-full border transition cursor-pointer ${
-                        on
-                          ? "bg-foreground text-background border-foreground"
-                          : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground mr-1">
-                  Window
-                </span>
-                {RANGES.map((r, i) => {
-                  const on = i === rangeIdx;
-                  return (
-                    <button
-                      key={r.label}
-                      onClick={() => setRangeIdx(i)}
-                      className={`text-[10px] font-mono uppercase tracking-[0.12em] px-2.5 py-1 rounded-full border transition cursor-pointer ${
-                        on
-                          ? "bg-foreground text-background border-foreground"
-                          : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
-                      }`}
-                    >
-                      {r.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <ol>
-              {filtered.map((e, i) => (
-                <li
-                  key={i}
-                  className={`grid grid-cols-[56px_104px_1fr] gap-4 px-5 py-3.5 items-baseline border-b border-border/60 last:border-0 transition ${
-                    e.weight === "primary" ? "bg-accent/40" : "hover:bg-accent/25"
-                  }`}
-                >
-                  <span className="font-mono text-[11px] text-muted-foreground tabular-nums">
-                    {e.t}
-                  </span>
-                  <span
-                    className={`font-mono text-[10px] uppercase tracking-[0.14em] ${
-                      e.weight === "muted"
-                        ? "text-muted-foreground/60"
-                        : e.weight === "primary"
-                          ? "text-foreground"
-                          : "text-foreground/70"
-                    }`}
-                  >
-                    {e.surface}
-                  </span>
-                  <div className="text-[13px] leading-snug">
-                    <span
-                      className={`font-medium ${
-                        e.weight === "muted" ? "text-muted-foreground" : "text-foreground"
-                      }`}
-                    >
-                      {e.action}.
-                    </span>{" "}
-                    <span className="text-muted-foreground">{e.detail}</span>
-                    {e.quote && (
-                      <div className="mt-1.5 flex items-start gap-2 pl-3 border-l-2 border-success/50">
-                        <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-success/80 mt-0.5 shrink-0">
-                          Quote
-                        </span>
-                        <span className="text-[12px] italic text-foreground/80">
-                          "{e.quote}"
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </li>
-              ))}
-              {filtered.length === 0 && (
-                <li className="px-5 py-8 text-center text-[13px] text-muted-foreground">
-                  No entries match the selected filters.
-                </li>
-              )}
-            </ol>
-            <div className="px-5 py-4 border-t border-border bg-background flex items-center justify-between">
-              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                End of call. Workspace waiting.
-              </span>
-              <span className="font-mono text-[10px] text-foreground">
-                → 1 signature
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Stat({ n, l }: { n: string; l: string }) {
-  return (
-    <div className="bg-background py-4 px-2 text-center">
-      <div className="font-display text-2xl font-semibold tracking-tight tabular-nums">
-        {n}
-      </div>
-      <div className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground mt-1">
-        {l}
-      </div>
-    </div>
-  );
-}
-
-
-function Why() {
-  return (
-    <section id="why" className="border-b border-border bg-surface/40">
-      <div className="max-w-[1180px] mx-auto px-6 md:px-10 py-20 md:py-28 grid lg:grid-cols-[0.9fr_1fr] gap-12 items-start">
-        <div>
-          <span className="eyebrow block mb-3">Score the work, or do the work</span>
-          <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight leading-[1.05]">
-            Your dashboard scores the account.
-          </h2>
-          <p className="mt-4 font-display text-2xl md:text-3xl font-semibold tracking-tight text-muted-foreground leading-[1.1]">
-            We do the work.
-          </p>
-        </div>
-        <div className="space-y-6 text-base text-foreground/90 leading-relaxed">
-          <p>
-            Health scores tell you an account is at risk. They don't write the
-            follow-up, stage the CRM, or post the internal note. That work is
-            what actually moves the renewal.
-          </p>
-          <p>
-            And today it depends on whether the CSM had the hours. It gets done
-            on the accounts someone reached, and skipped on the rest.
-          </p>
-          <p className="text-foreground font-medium">
-            Ledgerline closes that loop. The proof is what you find when you
-            open your laptop.
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Partners() {
-  return (
-    <section id="partners" className="border-b border-border">
-      <div className="max-w-[1180px] mx-auto px-6 md:px-10 py-20 md:py-28 grid lg:grid-cols-[1fr_0.8fr] gap-14 items-start">
-        <div className="max-w-xl">
-          <span className="eyebrow block mb-3">Design partners</span>
-          <h2 className="font-display text-3xl md:text-4xl font-semibold tracking-tight leading-[1.05]">
-            Six CS teams. One quarter. Founder in the room.
-          </h2>
-          <p className="mt-5 text-base text-muted-foreground leading-relaxed">
-            Weekly working sessions with the founders. Concierge setup on your
-            actual stack. Founding pricing locked for life. We pick six teams
-            and stop.
-          </p>
-          <div className="mt-7 flex flex-wrap items-center gap-3">
-            <Link
-              to="/waitlist"
-              className="inline-flex items-center gap-2 text-sm font-medium bg-foreground text-background px-5 py-3 rounded-full hover:opacity-90"
-            >
-              Request access <ArrowUpRight className="size-4" />
-            </Link>
-            <span className="text-[11px] font-mono text-muted-foreground">
-              3 of 6 slots open
+    <section className="relative overflow-hidden">
+      <div className="max-w-[1200px] mx-auto px-6 md:px-10 pt-16 md:pt-24 pb-16 md:pb-24 grid md:grid-cols-12 gap-12 items-center">
+        <div className="md:col-span-6">
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-accent border border-border mb-7">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-60 animate-ping" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
+            </span>
+            <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-foreground">
+              Outcome ledger · live
             </span>
           </div>
+
+          <h1 className="font-display text-[44px] md:text-[60px] leading-[1.02] tracking-[-0.025em] font-semibold text-foreground">
+            The outcome ledger
+            <br />
+            <span className="text-primary">for customer success.</span>
+          </h1>
+
+          <p className="mt-6 text-[17px] leading-[1.55] text-muted-foreground max-w-[520px]">
+            Every save, expansion, onboarding milestone and escalation — shipped with a receipt.
+            Agents close the line items. Humans approve the money moments.
+          </p>
+
+          <div className="mt-9 flex flex-col sm:flex-row gap-3">
+            <Link
+              to="/try"
+              className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-medium px-5 py-3.5 rounded-xl shadow-[0_8px_24px_-8px_oklch(0.68_0.19_38/0.55)] hover:translate-y-[-1px] transition-all"
+            >
+              Run a signal on your workspace
+              <ArrowRight size={16} />
+            </Link>
+            <Link
+              to="/console"
+              className="inline-flex items-center justify-center gap-2 bg-surface border border-border text-foreground font-medium px-5 py-3.5 rounded-xl hover:bg-accent transition-colors"
+            >
+              See the live ledger
+            </Link>
+          </div>
+
+          <div className="mt-8 flex items-center gap-5 text-[12px] text-muted-foreground">
+            <span className="flex items-center gap-1.5"><Check size={13} className="text-primary" /> SOC 2 in progress</span>
+            <span className="flex items-center gap-1.5"><Check size={13} className="text-primary" /> 14-day pilot</span>
+            <span className="flex items-center gap-1.5"><Check size={13} className="text-primary" /> No data leaves your cloud</span>
+          </div>
         </div>
 
-        <figure className="border border-border rounded-2xl bg-surface p-8">
-          <Quote className="size-5 text-muted-foreground mb-4" />
-          <blockquote className="text-base md:text-lg font-display tracking-tight leading-snug">
-            "I stopped doing the 7pm recap. It's just there when I open Gmail.
-            That's the whole pitch."
-          </blockquote>
-          <figcaption className="mt-5 text-xs text-muted-foreground">
-            Illustrative partner quote. Director of CS, SaaS, $40M ARR.
-          </figcaption>
-        </figure>
+        <div className="md:col-span-6">
+          <LedgerArtifact />
+        </div>
       </div>
     </section>
   );
 }
+
+/* ------------------------------ Ledger Artifact ------------------------------ */
+
+type Tab = "prepared" | "review" | "done";
+
+const ledgerData: Record<Tab, Array<{
+  id: string;
+  account: string;
+  initials: string;
+  swatch: string;
+  outcome: string;
+  type: "Renewal" | "Expansion" | "Onboarding" | "Escalation" | "Hygiene";
+  body: string;
+  amount?: string;
+  badge: "agent" | "review" | "done";
+  status: string;
+  blast: "Internal" | "Customer" | "Money";
+  time: string;
+}>> = {
+  prepared: [
+    {
+      id: "0918",
+      account: "Veridian Bank",
+      initials: "V",
+      swatch: "bg-emerald-50 text-emerald-700",
+      outcome: "Expansion signal",
+      type: "Expansion",
+      body: "Usage +38% in Q3. 14 net-new seats detected. Brief drafted for AE handoff.",
+      amount: "+$220,000",
+      badge: "review",
+      status: "Awaiting CSM",
+      blast: "Money",
+      time: "9:36 AM",
+    },
+    {
+      id: "0917",
+      account: "Northwind Labs",
+      initials: "N",
+      swatch: "bg-indigo-50 text-indigo-700",
+      outcome: "Champion changed",
+      type: "Renewal",
+      body: "Maya Chen moved to Atlassian (LinkedIn). Renewal in 47 days — playbook ready.",
+      badge: "review",
+      status: "Awaiting CSM",
+      blast: "Customer",
+      time: "9:14 AM",
+    },
+  ],
+  review: [
+    {
+      id: "0916",
+      account: "Lumen Health",
+      initials: "L",
+      swatch: "bg-rose-50 text-rose-700",
+      outcome: "QBR brief",
+      type: "Renewal",
+      body: "Pulls last 3 calls, 11 tickets, adoption delta, exec change. One page.",
+      badge: "review",
+      status: "Open in console",
+      blast: "Customer",
+      time: "8:51 AM",
+    },
+  ],
+  done: [
+    {
+      id: "0915",
+      account: "Crestline",
+      initials: "C",
+      swatch: "bg-sky-50 text-sky-700",
+      outcome: "Hubspot fields synced",
+      type: "Hygiene",
+      body: "Renewal date, MAP stage, and champion field updated across 12 accounts.",
+      badge: "agent",
+      status: "Shipped",
+      blast: "Internal",
+      time: "8:42 AM",
+    },
+    {
+      id: "0914",
+      account: "Atlas Freight",
+      initials: "A",
+      swatch: "bg-amber-50 text-amber-700",
+      outcome: "Onboarding nudge",
+      type: "Onboarding",
+      body: "Stage 3 milestone reached — congrats email sent to admin, AE looped.",
+      badge: "agent",
+      status: "Shipped",
+      blast: "Customer",
+      time: "8:30 AM",
+    },
+  ],
+};
+
+function LedgerArtifact() {
+  const [tab, setTab] = useState<Tab>("prepared");
+  const counts = {
+    prepared: ledgerData.prepared.length,
+    review: ledgerData.review.length,
+    done: ledgerData.done.length,
+  };
+
+  return (
+    <div className="relative">
+      <div
+        aria-hidden
+        className="absolute -inset-6 -z-10 rounded-[2rem] bg-gradient-to-br from-accent/60 via-transparent to-primary/10 blur-2xl"
+      />
+      <div className="bg-surface border border-border rounded-2xl shadow-[0_30px_80px_-30px_rgba(0,0,0,0.25)] overflow-hidden">
+        {/* Header */}
+        <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="text-primary">
+              <Logo size={18} />
+            </div>
+            <span className="font-display font-semibold text-[13px] tracking-tight">Ledgerline · Console</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-success" />
+            LIVE
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="px-4 flex gap-5 border-b border-border text-[11px] font-mono uppercase tracking-[0.16em]">
+          {(["prepared", "review", "done"] as Tab[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`py-3 -mb-px border-b-2 transition-colors ${
+                tab === t
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t}
+              <span className="ml-1.5 text-[10px] opacity-70">{counts[t]}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Items */}
+        <div className="p-3 space-y-2.5 bg-[oklch(0.985_0_0)] min-h-[260px]">
+          {ledgerData[tab].map((item) => (
+            <LedgerRow key={item.id} item={item} />
+          ))}
+        </div>
+
+        {/* Footer stats */}
+        <div className="p-3 grid grid-cols-3 gap-2 bg-surface border-t border-border">
+          <Stat label="ARR actioned" value="$280k" tone="default" />
+          <Stat label="Hours returned" value="42.5" tone="primary" />
+          <Stat label="Auto-shipped" value="94%" tone="default" />
+        </div>
+      </div>
+
+      {/* Floating receipt */}
+      <div className="hidden md:flex absolute -bottom-6 -left-6 bg-foreground text-background rounded-xl px-3.5 py-2.5 gap-3 shadow-xl items-center">
+        <CircleDot size={14} className="text-primary" />
+        <div className="text-[11px] leading-tight">
+          <div className="font-mono text-[9px] uppercase tracking-widest opacity-60">Receipt #0915</div>
+          <div className="font-medium">Hubspot · 12 fields synced</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LedgerRow({ item }: { item: ReturnType<typeof Object> extends never ? never : (typeof ledgerData)["prepared"][number] }) {
+  const badgeStyle =
+    item.badge === "agent"
+      ? "bg-foreground text-background"
+      : item.badge === "review"
+      ? "bg-primary/10 text-primary border border-primary/30"
+      : "bg-accent text-foreground";
+  const blastChip =
+    item.blast === "Internal"
+      ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+      : item.blast === "Customer"
+      ? "bg-amber-50 text-amber-700 border-amber-100"
+      : "bg-rose-50 text-rose-700 border-rose-100";
+
+  return (
+    <div className="bg-surface rounded-xl border border-border p-3 hover:shadow-sm transition-shadow">
+      <div className="flex justify-between items-start mb-2">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className={`h-7 w-7 rounded-lg flex items-center justify-center text-[11px] font-semibold ${item.swatch}`}>
+            {item.initials}
+          </div>
+          <div className="min-w-0">
+            <div className="text-[12px] font-semibold text-foreground truncate">{item.account}</div>
+            <div className="text-[10px] text-muted-foreground flex items-center gap-1.5">
+              <span>{item.outcome}</span>
+              <span className="opacity-40">·</span>
+              <span className="font-mono">#{item.id}</span>
+            </div>
+          </div>
+        </div>
+        {item.amount && (
+          <div className="font-mono text-[12px] font-semibold text-success shrink-0">{item.amount}</div>
+        )}
+      </div>
+      <p className="text-[11.5px] text-muted-foreground leading-[1.45] mb-2.5">{item.body}</p>
+      <div className="flex items-center justify-between pt-2.5 border-t border-dashed border-border">
+        <div className="flex items-center gap-1.5">
+          <span className={`text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded border ${blastChip}`}>
+            {item.blast}
+          </span>
+          <span className="text-[10px] text-muted-foreground">{item.time}</span>
+        </div>
+        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-md ${badgeStyle}`}>
+          {item.status}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function Stat({ label, value, tone }: { label: string; value: string; tone: "default" | "primary" }) {
+  return (
+    <div className="px-2 py-1.5">
+      <div className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground mb-0.5">{label}</div>
+      <div className={`text-[16px] font-mono font-semibold ${tone === "primary" ? "text-primary" : "text-foreground"}`}>
+        {value}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------ Logo Strip ------------------------------ */
+
+function LogoStrip() {
+  const names = ["Reads from", "Salesforce", "HubSpot", "Gong", "Zendesk", "Snowflake", "Slack", "Jira"];
+  return (
+    <section className="border-y border-border bg-accent/30">
+      <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-6 flex flex-wrap items-center gap-x-10 gap-y-3 text-[12px]">
+        {names.map((n, i) => (
+          <span
+            key={n}
+            className={
+              i === 0
+                ? "font-mono uppercase tracking-[0.18em] text-[10px] text-muted-foreground"
+                : "font-display font-medium text-foreground/70 hover:text-foreground transition-colors"
+            }
+          >
+            {n}
+          </span>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------ How it works ------------------------------ */
+
+function HowItWorks() {
+  const steps = [
+    {
+      icon: Eye,
+      title: "Read",
+      eyebrow: "01 · Signals",
+      body: "Calls, tickets, CRM, product usage, plus the world layer: LinkedIn, funding, layoffs, M&A.",
+      list: ["Gong / Chorus transcripts", "Salesforce + HubSpot", "Zendesk + Intercom", "Snowflake usage", "LinkedIn champion tracking"],
+    },
+    {
+      icon: Sparkles,
+      title: "Decide",
+      eyebrow: "02 · Judgment",
+      body: "Every action gets a blast radius and a confidence score. The two together decide who ships.",
+      list: ["Internal · Customer · Money", "Confidence tier per action", "Drafts cite verbatim source", "Reversible by default"],
+    },
+    {
+      icon: Zap,
+      title: "Act",
+      eyebrow: "03 · Receipts",
+      body: "Updates flow to your stack with a receipt. Quick-review batches for medium-confidence work.",
+      list: ["Sync to CRM + CS platform", "Draft Slack / email follow-ups", "QBR briefs ready to send", "1-click revert window"],
+    },
+  ];
+
+  return (
+    <section id="how" className="py-24 md:py-32">
+      <div className="max-w-[1200px] mx-auto px-6 md:px-10">
+        <SectionHeading
+          eyebrow="How it works"
+          title="Read. Decide. Act. With a receipt every time."
+          sub="Ledgerline is one loop with three jobs. The product is what closes line items between your meetings."
+        />
+
+        <div className="grid md:grid-cols-3 gap-5 mt-14">
+          {steps.map((s) => (
+            <div key={s.title} className="bg-surface border border-border rounded-2xl p-7 hover:border-foreground/15 transition-colors">
+              <div className="flex items-center justify-between mb-5">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                  <s.icon size={18} />
+                </div>
+                <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground">{s.eyebrow}</span>
+              </div>
+              <h3 className="font-display text-[22px] font-semibold tracking-tight mb-2">{s.title}</h3>
+              <p className="text-[14px] text-muted-foreground leading-relaxed mb-5">{s.body}</p>
+              <ul className="space-y-1.5">
+                {s.list.map((l) => (
+                  <li key={l} className="text-[12.5px] text-foreground/80 flex items-start gap-2">
+                    <Check size={13} className="text-primary mt-[3px] shrink-0" />
+                    <span>{l}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------ Blast Radius / Autonomy ------------------------------ */
+
+function BlastRadius() {
+  const lanes = [
+    {
+      name: "Internal",
+      color: "emerald",
+      headline: "Auto-ship",
+      sub: "Hygiene, CRM fields, internal briefs",
+      examples: ["MAP stage updates", "Renewal date sync", "Champion field edits", "Health score recompute"],
+      autonomy: "Agent ships at >90 confidence",
+    },
+    {
+      name: "Customer-facing",
+      color: "amber",
+      headline: "Quick review",
+      sub: "Anything a customer sees",
+      examples: ["Follow-up emails", "QBR briefs", "Onboarding nudges", "Re-engagement sequences"],
+      autonomy: "CSM approves in batch",
+    },
+    {
+      name: "Money",
+      color: "rose",
+      headline: "Co-sign",
+      sub: "Anything that moves ARR",
+      examples: ["Renewal concessions", "Expansion proposals", "Pricing changes", "Contract redlines"],
+      autonomy: "Always human + receipt",
+    },
+  ];
+
+  return (
+    <section id="autonomy" className="py-24 md:py-32 bg-[oklch(0.978_0_0)] border-y border-border">
+      <div className="max-w-[1200px] mx-auto px-6 md:px-10">
+        <SectionHeading
+          eyebrow="The autonomy rule"
+          title="Autonomous on the inside. Human on the outside."
+          sub="Blast radius decides what can auto-ship. Confidence decides what does. You set the dial; we never cross it."
+        />
+
+        <div className="grid md:grid-cols-3 gap-4 mt-14">
+          {lanes.map((l, i) => (
+            <div
+              key={l.name}
+              className={`relative bg-surface border rounded-2xl p-7 ${
+                i === 0 ? "border-emerald-200" : i === 1 ? "border-amber-200" : "border-rose-200"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-5">
+                <span
+                  className={`text-[10px] font-mono uppercase tracking-[0.16em] px-2 py-0.5 rounded border ${
+                    i === 0
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                      : i === 1
+                      ? "bg-amber-50 text-amber-700 border-amber-200"
+                      : "bg-rose-50 text-rose-700 border-rose-200"
+                  }`}
+                >
+                  {l.name}
+                </span>
+                <span className="text-[10px] font-mono text-muted-foreground">{l.autonomy}</span>
+              </div>
+              <h3 className="font-display text-[26px] font-semibold tracking-tight">{l.headline}</h3>
+              <p className="text-[13px] text-muted-foreground mb-5">{l.sub}</p>
+              <div className="space-y-2 pt-4 border-t border-dashed border-border">
+                {l.examples.map((e) => (
+                  <div key={e} className="text-[12.5px] text-foreground/80 flex items-center justify-between">
+                    <span>{e}</span>
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        i === 0 ? "bg-emerald-500" : i === 1 ? "bg-amber-500" : "bg-rose-500"
+                      }`}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-10 flex items-center justify-center">
+          <Link
+            to="/console"
+            className="inline-flex items-center gap-2 text-[13px] text-foreground border-b border-foreground/30 pb-0.5 hover:border-foreground transition-colors"
+          >
+            See it running in the console
+            <ArrowUpRight size={14} />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------ Outcomes Bento ------------------------------ */
+
+function OutcomesBento() {
+  return (
+    <section id="outcomes" className="py-24 md:py-32">
+      <div className="max-w-[1200px] mx-auto px-6 md:px-10">
+        <SectionHeading
+          eyebrow="Outcomes we close"
+          title="Five outcome types. One ledger."
+          sub="Every line item has a signal that triggered it, the work that closed it, and a receipt you can revert."
+        />
+
+        <div className="grid md:grid-cols-6 gap-4 mt-14 auto-rows-[200px]">
+          <BentoCard
+            className="md:col-span-3 md:row-span-2"
+            tag="Renewal"
+            title="Defend the number 90 days out."
+            body="QBR briefs, champion tracking, save plays, exec asks — surfaced the moment risk crosses the line."
+            metric="$8.2M ARR defended across pilots"
+            featured
+          />
+          <BentoCard
+            className="md:col-span-3"
+            tag="Expansion"
+            title="Surface the buy signal."
+            body="Usage spikes, new teams, hiring waves — drafted as an AE-ready brief."
+            metric="2.1× expansion attach"
+          />
+          <BentoCard
+            className="md:col-span-3"
+            tag="Onboarding"
+            title="Time-to-value, accounted."
+            body="Milestone nudges with the receipts that prove they happened."
+            metric="−38% time to first value"
+          />
+          <BentoCard
+            className="md:col-span-2"
+            tag="Escalation"
+            title="Catch heat early."
+            body="Calls + tickets + sentiment, paged before NPS does."
+          />
+          <BentoCard
+            className="md:col-span-2"
+            tag="Hygiene"
+            title="The CRM, true."
+            body="Fields stay updated. No more Friday reviews."
+          />
+          <BentoCard
+            className="md:col-span-2"
+            tag="World layer"
+            title="Outside signals, inside the loop."
+            body="LinkedIn, funding, M&A, layoffs — correlated with the account."
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BentoCard({
+  className = "",
+  tag,
+  title,
+  body,
+  metric,
+  featured,
+}: {
+  className?: string;
+  tag: string;
+  title: string;
+  body: string;
+  metric?: string;
+  featured?: boolean;
+}) {
+  return (
+    <div
+      className={`group relative bg-surface border border-border rounded-2xl p-6 flex flex-col justify-between overflow-hidden hover:border-foreground/15 transition-colors ${className} ${
+        featured ? "bg-gradient-to-br from-accent to-surface" : ""
+      }`}
+    >
+      <div>
+        <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-primary">{tag}</span>
+        <h3 className={`font-display font-semibold tracking-tight mt-3 ${featured ? "text-[28px] leading-[1.1]" : "text-[18px] leading-[1.2]"}`}>
+          {title}
+        </h3>
+        <p className={`text-muted-foreground mt-2 ${featured ? "text-[14px]" : "text-[13px]"} leading-relaxed`}>{body}</p>
+      </div>
+      {metric && (
+        <div className="mt-4 pt-4 border-t border-dashed border-border">
+          <span className="text-[12px] font-mono text-foreground">{metric}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------ Security ------------------------------ */
+
+function Security() {
+  const items = [
+    { icon: Shield, title: "SOC 2 Type II in progress", body: "Independent audit underway. Penetration test report on request." },
+    { icon: Lock, title: "Your data, your cloud", body: "Bring your own keys. Customer data never leaves your storage layer." },
+    { icon: Eye, title: "Receipt for every change", body: "Every write is signed, cited to a source, and revertible inside the window." },
+    { icon: CircleDot, title: "Role-aware autonomy", body: "Admins set what auto-ships per persona, per outcome type, per blast radius." },
+  ];
+  return (
+    <section id="security" className="py-24 md:py-32 bg-foreground text-background">
+      <div className="max-w-[1200px] mx-auto px-6 md:px-10">
+        <div className="grid md:grid-cols-12 gap-12 items-start">
+          <div className="md:col-span-5">
+            <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-primary">Security & control</span>
+            <h2 className="font-display text-[40px] md:text-[48px] leading-[1.05] tracking-[-0.025em] font-semibold mt-4">
+              Built for teams that get audited.
+            </h2>
+            <p className="text-[15px] text-background/65 mt-5 leading-relaxed max-w-md">
+              Ledgerline assumes you have a security review, a compliance officer, and a CFO who reads the contract. Everything is signed, cited, and reversible.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <a href="#" className="inline-flex items-center gap-2 bg-background/10 hover:bg-background/15 border border-background/10 px-4 py-2.5 rounded-lg text-[13px] transition-colors">
+                Security brief (PDF)
+                <ArrowUpRight size={13} />
+              </a>
+              <a href="#" className="inline-flex items-center gap-2 border border-background/15 px-4 py-2.5 rounded-lg text-[13px] hover:bg-background/5 transition-colors">
+                Integrations
+                <ArrowUpRight size={13} />
+              </a>
+            </div>
+          </div>
+          <div className="md:col-span-7 grid sm:grid-cols-2 gap-3">
+            {items.map((i) => (
+              <div key={i.title} className="bg-background/5 border border-background/10 rounded-xl p-5">
+                <div className="h-9 w-9 rounded-lg bg-primary/15 text-primary flex items-center justify-center mb-4">
+                  <i.icon size={16} />
+                </div>
+                <h3 className="text-[14px] font-semibold mb-1.5">{i.title}</h3>
+                <p className="text-[12.5px] text-background/60 leading-relaxed">{i.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------ CTA ------------------------------ */
+
+function CTA() {
+  return (
+    <section className="py-24 md:py-32">
+      <div className="max-w-[1100px] mx-auto px-6 md:px-10">
+        <div className="bg-gradient-to-br from-accent via-surface to-accent border border-border rounded-3xl p-10 md:p-16 text-center">
+          <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-primary">14-day pilot</span>
+          <h2 className="font-display text-[40px] md:text-[56px] leading-[1.02] tracking-[-0.025em] font-semibold mt-3 max-w-3xl mx-auto">
+            Wire one signal. Watch one outcome close.
+          </h2>
+          <p className="mt-5 text-[16px] text-muted-foreground max-w-xl mx-auto">
+            We sit between your calls and your CRM for two weeks. You decide what auto-ships. No procurement until you've seen the receipts.
+          </p>
+          <div className="mt-9 flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              to="/try"
+              className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-medium px-6 py-3.5 rounded-xl shadow-[0_8px_24px_-8px_oklch(0.68_0.19_38/0.55)] hover:translate-y-[-1px] transition-all"
+            >
+              Start a pilot
+              <ArrowRight size={16} />
+            </Link>
+            <Link
+              to="/console"
+              className="inline-flex items-center justify-center gap-2 bg-surface border border-border text-foreground font-medium px-6 py-3.5 rounded-xl hover:bg-accent transition-colors"
+            >
+              Tour the console
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------ Footer ------------------------------ */
 
 function Footer() {
   return (
-    <footer>
-      <div className="max-w-[1180px] mx-auto px-6 md:px-10 py-10 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
-        <div className="flex items-center gap-2">
+    <footer className="border-t border-border py-10">
+      <div className="max-w-[1200px] mx-auto px-6 md:px-10 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between text-[12px] text-muted-foreground">
+        <div className="flex items-center gap-2 text-foreground">
           <Logo size={18} />
-          <span className="font-mono">Ledgerline</span>
+          <span className="font-display font-semibold tracking-tight">Ledgerline</span>
+          <span className="text-muted-foreground font-normal ml-2">© {new Date().getFullYear()}</span>
         </div>
-        <div className="flex items-center gap-5">
-          <Link to="/waitlist" className="hover:text-foreground">Request access</Link>
-          <Link to="/app" search={{ role: "csm", demo: true }} className="hover:text-foreground">
-            See it after a call
-          </Link>
-          <a href="mailto:founders@ledgerline.dev" className="hover:text-foreground">
-            founders@ledgerline.dev
-          </a>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <a href="#how" className="hover:text-foreground">How it works</a>
+          <a href="#autonomy" className="hover:text-foreground">Autonomy</a>
+          <a href="#outcomes" className="hover:text-foreground">Outcomes</a>
+          <a href="#security" className="hover:text-foreground">Security</a>
+          <Link to="/console" className="hover:text-foreground">Console</Link>
+          <a href="mailto:hello@ledgerline.app" className="hover:text-foreground">hello@ledgerline.app</a>
         </div>
       </div>
     </footer>
+  );
+}
+
+/* ------------------------------ Shared ------------------------------ */
+
+function SectionHeading({ eyebrow, title, sub }: { eyebrow: string; title: string; sub: string }) {
+  return (
+    <div className="max-w-2xl">
+      <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-primary">{eyebrow}</span>
+      <h2 className="font-display text-[36px] md:text-[44px] leading-[1.05] tracking-[-0.025em] font-semibold mt-3">
+        {title}
+      </h2>
+      <p className="mt-4 text-[16px] text-muted-foreground leading-relaxed">{sub}</p>
+    </div>
   );
 }
