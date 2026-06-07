@@ -86,13 +86,13 @@ export function QuickReviewLane({ items }: { items: LaneAction[] }) {
           <div className="flex items-center gap-2 mt-4">
             <button
               onClick={() => decide("approve")}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 bg-foreground text-background rounded-md px-3 py-2 text-sm font-medium hover:opacity-90"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 bg-primary text-primary-foreground rounded-full px-3 py-2 text-sm font-medium hover:opacity-90 shadow-sm"
             >
               <Check className="size-4" /> Approve
             </button>
             <button
               onClick={() => decide("skip")}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 border border-border rounded-md px-3 py-2 text-sm font-medium hover:bg-foreground/5"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 border border-border rounded-full px-3 py-2 text-sm font-medium hover:bg-foreground/5"
             >
               <X className="size-4" /> Skip
             </button>

@@ -62,7 +62,7 @@ export function JudgmentLane({ items }: { items: LaneAction[] }) {
                 </div>
               )}
 
-              <div className="flex items-center gap-2 mt-3">
+              <div className="flex items-center gap-2 mt-3 flex-wrap">
                 <button
                   onClick={() => {
                     setResolved((p) => ({ ...p, [a.id]: "approve" }));
@@ -80,7 +80,7 @@ export function JudgmentLane({ items }: { items: LaneAction[] }) {
                       });
                     }
                   }}
-                  className="bg-foreground text-background rounded-md px-3 py-1.5 text-sm font-medium hover:opacity-90"
+                  className="bg-primary text-primary-foreground rounded-full px-4 py-1.5 text-sm font-medium hover:opacity-90 shadow-sm"
                 >
                   {a.blast === "money" ? "Request co-sign" : "Review & send"}
                 </button>
@@ -90,7 +90,7 @@ export function JudgmentLane({ items }: { items: LaneAction[] }) {
                     recordDecision(a, "declined");
                     toast(`Declined — ${a.account}`);
                   }}
-                  className="border border-border rounded-md px-3 py-1.5 text-sm font-medium hover:bg-foreground/5"
+                  className="border border-border rounded-full px-4 py-1.5 text-sm font-medium hover:bg-foreground/5"
                 >
                   Decline
                 </button>
