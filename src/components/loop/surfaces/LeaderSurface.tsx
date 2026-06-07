@@ -15,6 +15,7 @@ import {
   TEAM_PULSE,
 } from "@/lib/loop/teamData";
 import { useClientStamp } from "@/lib/loop/useClientStamp";
+import { WorkflowSteps } from "../WorkflowSteps";
 
 const BLAST_COLOR = {
   internal: "bg-muted text-muted-foreground",
