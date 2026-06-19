@@ -94,7 +94,7 @@ function Landing() {
         <div className="mx-auto grid max-w-5xl items-center gap-10 px-6 py-20 md:grid-cols-[1.1fr,1fr]">
           <div>
             <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Friday recap</p>
-            <h3 className="mt-3 text-[28px] font-semibold tracking-tight md:text-[34px]">A reliability score people screenshot.</h3>
+            <h3 className="mt-3 text-[28px] font-semibold tracking-tight md:text-[34px]">A reliability score people screenshot</h3>
             <p className="mt-4 max-w-md text-[15px] leading-relaxed text-muted-foreground">
               Every Friday, Nyvlo tells you how many promises you made, how many you kept, and how many would have slipped without it.
             </p>
