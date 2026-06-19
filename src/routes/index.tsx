@@ -120,9 +120,9 @@ function Landing() {
       {/* PRIVACY */}
       <section id="privacy" className="mx-auto max-w-4xl px-6 py-20 text-center">
         <ShieldCheck className="mx-auto h-7 w-7 text-primary" strokeWidth={1.5} />
-        <h2 className="mt-4 text-[28px] font-semibold tracking-tight md:text-[34px]">Yours. Only yours.</h2>
+        <h2 className="mt-4 text-[28px] font-semibold tracking-tight md:text-[34px]">Yours, only yours</h2>
         <p className="mx-auto mt-4 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-          Nyvlo only remembers what you save or connect. No silent browsing capture. No employer dashboard. Pause anytime. Delete everything in one click.
+          Nyvlo only remembers what you save or connect. No silent browsing capture, no employer dashboard. Pause anytime. Delete everything in one click.
         </p>
       </section>
 
