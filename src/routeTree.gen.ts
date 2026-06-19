@@ -32,6 +32,7 @@ import { Route as AuthenticatedAppMemoryRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAppLinkRouteImport } from './routes/_authenticated/app.link'
 import { Route as AuthenticatedAppCommandRouteImport } from './routes/_authenticated/app.command'
 import { Route as AuthenticatedAppCaptureRouteImport } from './routes/_authenticated/app.capture'
+import { Route as AuthenticatedAdminWaitlistRouteImport } from './routes/_authenticated/admin.waitlist'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
 import { Route as AuthenticatedAdminOpsRouteImport } from './routes/_authenticated/admin.ops'
 import { Route as AuthenticatedAdminIngestionRouteImport } from './routes/_authenticated/admin.ingestion'
@@ -172,6 +173,12 @@ const AuthenticatedAppCaptureRoute = AuthenticatedAppCaptureRouteImport.update({
   path: '/capture',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAdminWaitlistRoute =
+  AuthenticatedAdminWaitlistRouteImport.update({
+    id: '/waitlist',
+    path: '/waitlist',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -321,6 +328,7 @@ export interface FileRoutesByFullPath {
   '/admin/ingestion': typeof AuthenticatedAdminIngestionRoute
   '/admin/ops': typeof AuthenticatedAdminOpsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/admin/waitlist': typeof AuthenticatedAdminWaitlistRoute
   '/app/capture': typeof AuthenticatedAppCaptureRoute
   '/app/command': typeof AuthenticatedAppCommandRoute
   '/app/link': typeof AuthenticatedAppLinkRoute
@@ -366,6 +374,7 @@ export interface FileRoutesByTo {
   '/admin/ingestion': typeof AuthenticatedAdminIngestionRoute
   '/admin/ops': typeof AuthenticatedAdminOpsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/admin/waitlist': typeof AuthenticatedAdminWaitlistRoute
   '/app/capture': typeof AuthenticatedAppCaptureRoute
   '/app/command': typeof AuthenticatedAppCommandRoute
   '/app/link': typeof AuthenticatedAppLinkRoute
@@ -415,6 +424,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/ingestion': typeof AuthenticatedAdminIngestionRoute
   '/_authenticated/admin/ops': typeof AuthenticatedAdminOpsRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/_authenticated/admin/waitlist': typeof AuthenticatedAdminWaitlistRoute
   '/_authenticated/app/capture': typeof AuthenticatedAppCaptureRoute
   '/_authenticated/app/command': typeof AuthenticatedAppCommandRoute
   '/_authenticated/app/link': typeof AuthenticatedAppLinkRoute
@@ -464,6 +474,7 @@ export interface FileRouteTypes {
     | '/admin/ingestion'
     | '/admin/ops'
     | '/admin/users'
+    | '/admin/waitlist'
     | '/app/capture'
     | '/app/command'
     | '/app/link'
@@ -509,6 +520,7 @@ export interface FileRouteTypes {
     | '/admin/ingestion'
     | '/admin/ops'
     | '/admin/users'
+    | '/admin/waitlist'
     | '/app/capture'
     | '/app/command'
     | '/app/link'
@@ -557,6 +569,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/ingestion'
     | '/_authenticated/admin/ops'
     | '/_authenticated/admin/users'
+    | '/_authenticated/admin/waitlist'
     | '/_authenticated/app/capture'
     | '/_authenticated/app/command'
     | '/_authenticated/app/link'
@@ -784,6 +797,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppCaptureRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/admin/waitlist': {
+      id: '/_authenticated/admin/waitlist'
+      path: '/waitlist'
+      fullPath: '/admin/waitlist'
+      preLoaderRoute: typeof AuthenticatedAdminWaitlistRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/users': {
       id: '/_authenticated/admin/users'
       path: '/users'
@@ -953,6 +973,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminIngestionRoute: typeof AuthenticatedAdminIngestionRoute
   AuthenticatedAdminOpsRoute: typeof AuthenticatedAdminOpsRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
+  AuthenticatedAdminWaitlistRoute: typeof AuthenticatedAdminWaitlistRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
@@ -961,6 +982,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminIngestionRoute: AuthenticatedAdminIngestionRoute,
   AuthenticatedAdminOpsRoute: AuthenticatedAdminOpsRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
+  AuthenticatedAdminWaitlistRoute: AuthenticatedAdminWaitlistRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
 
