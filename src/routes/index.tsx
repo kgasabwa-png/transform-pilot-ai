@@ -5,10 +5,10 @@ import { ArrowRight, Calendar, ShieldCheck, Sparkles, Mail, FileText, StickyNote
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Nyvlo — The AI that catches what you forgot" },
-      { name: "description", content: "Nyvlo finds the follow-ups, promises, and loose ends slipping through your week. Install the Chrome extension and never drop the ball again." },
-      { property: "og:title", content: "Nyvlo — The AI that catches what you forgot" },
-      { property: "og:description", content: "Nyvlo finds the follow-ups, promises, and loose ends slipping through your week." },
+      { title: "Nyvlo · Catch what you forgot before anyone notices" },
+      { name: "description", content: "Nyvlo quietly tracks the follow-ups, promises, and loose ends slipping through your week, then drafts the reply for you. Free during beta." },
+      { property: "og:title", content: "Nyvlo · Catch what you forgot before anyone notices" },
+      { property: "og:description", content: "The follow-ups, promises, and loose ends slipping through your week, surfaced before they cost you." },
     ],
   }),
   component: Landing,
@@ -44,10 +44,10 @@ function Landing() {
               Now in private beta
             </div>
             <h1 className="text-balance text-[44px] font-semibold leading-[1.05] tracking-[-0.02em] md:text-[68px]">
-              The AI that catches<br className="hidden md:block" /> what you forgot.
+              Catch what you forgot<br className="hidden md:block" /> before anyone notices
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-[16px] leading-relaxed text-muted-foreground md:text-[17px]">
-              Nyvlo finds the follow-ups, promises, and loose ends slipping through your week — and drafts the reply for you.
+              Nyvlo quietly tracks the follow-ups, promises, and loose ends slipping through your week, then drafts the reply for you.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link to="/auth" className="inline-flex items-center gap-2 rounded-md bg-foreground px-4 py-2.5 text-[14px] font-medium text-background hover:opacity-90">
@@ -72,10 +72,10 @@ function Landing() {
         <div className="mx-auto max-w-5xl px-6 py-20">
           <p className="text-center text-[11px] uppercase tracking-[0.18em] text-muted-foreground">The Nyvlo moment</p>
           <h2 className="mx-auto mt-3 max-w-2xl text-center text-[30px] font-semibold leading-tight tracking-tight md:text-[40px]">
-            "Oh shit — I told Sarah I'd send that two days ago."
+            "Oh shit, I told Sarah I'd send that two days ago."
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-center text-[15px] leading-relaxed text-muted-foreground">
-            Everyone has felt this. Nyvlo is the moment <em className="not-italic text-foreground">before</em> it — when something quietly nudges you with the promise you made, the person waiting, and the draft already written.
+            Everyone has felt this. Nyvlo is the moment <em className="not-italic text-foreground">before</em> it, when something quietly nudges you with the promise you made, the person waiting, and the draft already written.
           </p>
         </div>
       </section>
@@ -83,9 +83,9 @@ function Landing() {
       {/* HOW IT WORKS */}
       <section id="how" className="mx-auto max-w-6xl px-6 py-20">
         <div className="grid gap-10 md:grid-cols-3">
-          <Feature icon={Calendar} title="Connects to your calendar" body="Nyvlo reads meeting titles, times and attendees. It uses these to ground every commitment in real context." />
-          <Feature icon={StickyNote} title="Remember this, anywhere" body="One click on any page, email or doc. Nyvlo captures the moment — a promise, an ask, a doc to send." />
-          <Feature icon={Sparkles} title="Catches what slipped" body="An overdue follow-up, an unanswered email, a doc you said you'd send. Drafts ready, one tap to ship." />
+          <Feature icon={Calendar} title="Grounded in your calendar" body="Nyvlo reads meeting titles, times, and attendees, then grounds every commitment in real context." />
+          <Feature icon={StickyNote} title="Remember this, anywhere" body="One click on any page, email, or doc captures the moment: a promise, an ask, a file to send." />
+          <Feature icon={Sparkles} title="Catches what slipped" body="Overdue follow-ups, unanswered emails, the doc you said you'd send. Drafts ready, one tap to ship." />
         </div>
       </section>
 
@@ -94,7 +94,7 @@ function Landing() {
         <div className="mx-auto grid max-w-5xl items-center gap-10 px-6 py-20 md:grid-cols-[1.1fr,1fr]">
           <div>
             <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Friday recap</p>
-            <h3 className="mt-3 text-[28px] font-semibold tracking-tight md:text-[34px]">A reliability score people screenshot.</h3>
+            <h3 className="mt-3 text-[28px] font-semibold tracking-tight md:text-[34px]">A reliability score people screenshot</h3>
             <p className="mt-4 max-w-md text-[15px] leading-relaxed text-muted-foreground">
               Every Friday, Nyvlo tells you how many promises you made, how many you kept, and how many would have slipped without it.
             </p>
@@ -120,17 +120,17 @@ function Landing() {
       {/* PRIVACY */}
       <section id="privacy" className="mx-auto max-w-4xl px-6 py-20 text-center">
         <ShieldCheck className="mx-auto h-7 w-7 text-primary" strokeWidth={1.5} />
-        <h2 className="mt-4 text-[28px] font-semibold tracking-tight md:text-[34px]">Yours. Only yours.</h2>
+        <h2 className="mt-4 text-[28px] font-semibold tracking-tight md:text-[34px]">Yours, only yours</h2>
         <p className="mx-auto mt-4 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-          Nyvlo only remembers what you save or connect. No silent browsing capture. No employer dashboard. Pause anytime. Delete everything in one click.
+          Nyvlo only remembers what you save or connect. No silent browsing capture, no employer dashboard. Pause anytime. Delete everything in one click.
         </p>
       </section>
 
       {/* INSTALL / CTA */}
       <section id="install" className="border-t border-border">
         <div className="mx-auto max-w-3xl px-6 py-20 text-center">
-          <h2 className="text-[34px] font-semibold tracking-tight md:text-[44px]">Never drop the ball again.</h2>
-          <p className="mx-auto mt-4 max-w-md text-[15px] text-muted-foreground">Sign up. Connect Google. You're set in under a minute.</p>
+          <h2 className="text-[34px] font-semibold tracking-tight md:text-[44px]">Never drop the ball again</h2>
+          <p className="mx-auto mt-4 max-w-md text-[15px] text-muted-foreground">Sign up, connect Google, and you're set in under a minute.</p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
             <Link to="/auth" className="inline-flex items-center gap-2 rounded-md bg-foreground px-4 py-2.5 text-[14px] font-medium text-background hover:opacity-90">
               Get started free <ArrowRight className="h-4 w-4" />
