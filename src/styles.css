@@ -2,13 +2,6 @@
 @source "../src";
 @import "tw-animate-css";
 
-@import "@fontsource/sora/400.css";
-@import "@fontsource/sora/600.css";
-@import "@fontsource/sora/700.css";
-@import "@fontsource/manrope/400.css";
-@import "@fontsource/manrope/500.css";
-@import "@fontsource/manrope/600.css";
-
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -37,8 +30,8 @@
   --color-surface: var(--surface);
   --color-ink: var(--ink);
 
-  --font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
 
   --radius-sm: 0.5rem;
@@ -51,51 +44,51 @@
 }
 
 :root {
-  --radius: 0.5rem;
+  --radius: 0.75rem;
 
-  /* Paper & Ink — warm off-white, near-black ink, single ember accent */
-  --background: oklch(0.972 0.006 85);          /* #f7f5f0 */
-  --foreground: oklch(0.205 0 0);               /* #1a1a1a */
-  --surface: oklch(0.91 0.012 80);              /* #e8e4dd */
-  --ink: oklch(0.205 0 0);
+  /* Calm light canvas — Linear / Granola / Raycast register */
+  --background: oklch(0.992 0.002 95);          /* #FBFBFA */
+  --foreground: oklch(0.18 0.01 270);           /* near-black ink */
+  --surface: oklch(1 0 0);
+  --ink: oklch(0.18 0.01 270);
 
-  --card: oklch(0.972 0.006 85);
-  --card-foreground: oklch(0.205 0 0);
-  --popover: oklch(0.985 0.004 85);
-  --popover-foreground: oklch(0.205 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.01 270);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.01 270);
 
-  /* Ember accent #ff5a1f */
-  --primary: oklch(0.68 0.21 38);
-  --primary-foreground: oklch(0.985 0.004 85);
+  /* Deep indigo accent */
+  --primary: oklch(0.5 0.22 280);               /* ~ #4F46E5 */
+  --primary-foreground: oklch(0.99 0 0);
 
-  --secondary: oklch(0.91 0.012 80);            /* #e8e4dd */
-  --secondary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.965 0.005 270);
+  --secondary-foreground: oklch(0.22 0.015 270);
 
-  --muted: oklch(0.91 0.012 80);
-  --muted-foreground: oklch(0.45 0.008 80);
+  --muted: oklch(0.965 0.005 270);
+  --muted-foreground: oklch(0.5 0.012 270);
 
-  --accent: oklch(0.91 0.012 80);
-  --accent-foreground: oklch(0.205 0 0);
+  --accent: oklch(0.96 0.02 280);
+  --accent-foreground: oklch(0.32 0.15 280);
 
   --destructive: oklch(0.62 0.22 25);
-  --destructive-foreground: oklch(0.985 0.004 85);
+  --destructive-foreground: oklch(0.99 0 0);
 
-  --border: oklch(0.205 0 0 / 8%);
-  --input: oklch(0.205 0 0 / 12%);
-  --ring: oklch(0.68 0.21 38 / 40%);
+  --border: oklch(0.18 0.01 270 / 8%);
+  --input: oklch(0.18 0.01 270 / 12%);
+  --ring: oklch(0.5 0.22 280 / 40%);
 
   --success: oklch(0.7 0.15 155);
   --warning: oklch(0.78 0.15 75);
   --danger: oklch(0.62 0.22 25);
 
-  --sidebar-background: oklch(0.972 0.006 85);
-  --sidebar-foreground: oklch(0.205 0 0);
-  --sidebar-primary: oklch(0.68 0.21 38);
-  --sidebar-primary-foreground: oklch(0.985 0.004 85);
-  --sidebar-accent: oklch(0.91 0.012 80);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.205 0 0 / 8%);
-  --sidebar-ring: oklch(0.68 0.21 38 / 40%);
+  --sidebar-background: oklch(0.985 0.003 95);
+  --sidebar-foreground: oklch(0.18 0.01 270);
+  --sidebar-primary: oklch(0.5 0.22 280);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.965 0.005 270);
+  --sidebar-accent-foreground: oklch(0.22 0.015 270);
+  --sidebar-border: oklch(0.18 0.01 270 / 8%);
+  --sidebar-ring: oklch(0.5 0.22 280 / 40%);
 }
 
 * {
@@ -117,14 +110,14 @@ body {
 }
 
 ::selection {
-  background: oklch(0.68 0.21 38 / 22%);
+  background: oklch(0.5 0.22 280 / 18%);
   color: var(--foreground);
 }
 
 /* subtle dotted texture, very faint */
 .nyvlo-grain {
   background-image:
-    radial-gradient(oklch(0.205 0 0 / 5%) 1px, transparent 1px);
+    radial-gradient(oklch(0.18 0.01 270 / 4%) 1px, transparent 1px);
   background-size: 22px 22px;
 }
 
