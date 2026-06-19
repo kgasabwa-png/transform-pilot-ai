@@ -57,10 +57,9 @@ export const inviteWaitlistBatch = createServerFn({ method: "POST" })
       return { sent: 0, failed: 0, total: targets.length, dryRun: true, emails: targets.map((r) => r.email) };
     }
 
-    const origin =
-      (process.env.PUBLIC_SITE_URL as string | undefined) ||
-      (process.env.VITE_PUBLIC_SITE_URL as string | undefined) ||
-      "https://nyvloai.com";
+    const req = getRequest();
+    const origin = req ? new URL(req.url).origin : (process.env.PUBLIC_SITE_URL ?? "https://nyvloai.com");
+    const bearer = req?.headers.get("authorization") ?? "";
     const signupUrl = `${origin}/auth?next=${encodeURIComponent("/pricing")}`;
 
     let sent = 0;
