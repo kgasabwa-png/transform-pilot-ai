@@ -124,9 +124,12 @@ ${screenContext || "(no screen activity)"}`;
       due_at: p.due_at || null,
       status: "open" as const,
       channel: "capture",
-      owed_to: p.owner === "self" ? "me" : p.owner === "other" ? "other" : null,
+      owed_to: p.owed_to_name || (p.owner === "self" ? "me" : p.owner === "other" ? "other" : null),
       confidence: typeof p.confidence === "number" ? p.confidence : null,
+      draft_reply: p.draft_reply || null,
+      evidence_snippet: p.evidence_snippet || null,
     }));
+
 
   if (rows.length) {
     await supabase.from("promises").insert(rows as any);
