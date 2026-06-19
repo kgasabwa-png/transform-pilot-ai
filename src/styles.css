@@ -59,9 +59,9 @@
   --popover:            oklch(0.20 0.014 260);
   --popover-foreground: oklch(0.97 0.005 250);
 
-  /* Ion blue accent */
-  --ion:        oklch(0.75 0.16 245);           /* ~ #60a5fa */
-  --ion-soft:   oklch(0.66 0.18 250);           /* ~ #3b82f6 */
+  /* Coral accent (token name kept as --ion for compatibility) */
+  --ion:        oklch(0.74 0.17 30);            /* ~ #ff8a73 */
+  --ion-soft:   oklch(0.66 0.20 25);            /* ~ #ff6b5b */
   --primary:              var(--ion);
   --primary-foreground:   oklch(0.14 0.012 260);
 
