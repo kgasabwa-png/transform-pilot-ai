@@ -174,12 +174,13 @@ export function Shell({ children, title, subtitle }: { children: ReactNode; titl
 }
 
 export function NyvloMark({ className = "", size = "md" }: { className?: string; size?: "sm" | "md" | "lg" }) {
-  const dims = size === "sm" ? "h-8" : size === "lg" ? "h-14" : "h-11";
+  const text = size === "sm" ? "text-[15px]" : size === "lg" ? "text-[22px]" : "text-[18px]";
+  const dot = size === "sm" ? "h-1.5 w-1.5" : size === "lg" ? "h-2 w-2" : "h-[7px] w-[7px]";
   return (
-    <img
-      src="/__l5e/assets-v1/6211f021-75b1-484a-8d96-f59fda81e71b/nyvlo-logo-transparent.png"
-      alt="Nyvlo"
-      className={[dims, "w-auto shrink-0", className].join(" ")}
-    />
+    <span className={["inline-flex items-baseline gap-1.5 font-semibold tracking-[-0.04em] text-foreground", text, className].join(" ")}>
+      <span>nyvlo</span>
+      <span className={["inline-block translate-y-[-1px] rounded-full bg-primary", dot].join(" ")} aria-hidden />
+    </span>
   );
 }
+
