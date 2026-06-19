@@ -57,7 +57,7 @@ export function Shell({ children, title, subtitle }: { children: ReactNode; titl
             <img
               src="/__l5e/assets-v1/6211f021-75b1-484a-8d96-f59fda81e71b/nyvlo-logo-transparent.png"
               alt="Nyvlo"
-              className="h-6 w-auto"
+              className="h-9 w-auto"
             />
           </Link>
 
