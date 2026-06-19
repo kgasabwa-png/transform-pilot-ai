@@ -9,37 +9,25 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WaitlistRouteImport } from './routes/waitlist'
-import { Route as TryRouteImport } from './routes/try'
-import { Route as ConsoleRouteImport } from './routes/console'
-import { Route as AppRouteImport } from './routes/app'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppIndexRouteImport } from './routes/app.index'
-import { Route as AppSettingsRouteImport } from './routes/app.settings'
-import { Route as AppPromisesRouteImport } from './routes/app.promises'
-import { Route as AppMemoryRouteImport } from './routes/app.memory'
-import { Route as AppCommandRouteImport } from './routes/app.command'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
-import { Route as AppAccountsIdRouteImport } from './routes/app.accounts.$id'
+import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
+import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
+import { Route as AuthenticatedAppSettingsRouteImport } from './routes/_authenticated/app.settings'
+import { Route as AuthenticatedAppPromisesRouteImport } from './routes/_authenticated/app.promises'
+import { Route as AuthenticatedAppMemoryRouteImport } from './routes/_authenticated/app.memory'
+import { Route as AuthenticatedAppCommandRouteImport } from './routes/_authenticated/app.command'
+import { Route as ApiOauthGoogleCallbackRouteImport } from './routes/api/oauth.google.callback'
 
-const WaitlistRoute = WaitlistRouteImport.update({
-  id: '/waitlist',
-  path: '/waitlist',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TryRoute = TryRouteImport.update({
-  id: '/try',
-  path: '/try',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConsoleRoute = ConsoleRouteImport.update({
-  id: '/console',
-  path: '/console',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AppRoute = AppRouteImport.update({
-  id: '/app',
-  path: '/app',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -47,165 +35,147 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppIndexRoute = AppIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppSettingsRoute = AppSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPromisesRoute = AppPromisesRouteImport.update({
-  id: '/promises',
-  path: '/promises',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppMemoryRoute = AppMemoryRouteImport.update({
-  id: '/memory',
-  path: '/memory',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCommandRoute = AppCommandRouteImport.update({
-  id: '/command',
-  path: '/command',
-  getParentRoute: () => AppRoute,
-} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppAccountsIdRoute = AppAccountsIdRouteImport.update({
-  id: '/accounts/$id',
-  path: '/accounts/$id',
-  getParentRoute: () => AppRoute,
+const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppSettingsRoute =
+  AuthenticatedAppSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppPromisesRoute =
+  AuthenticatedAppPromisesRouteImport.update({
+    id: '/promises',
+    path: '/promises',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppMemoryRoute = AuthenticatedAppMemoryRouteImport.update({
+  id: '/memory',
+  path: '/memory',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppCommandRoute = AuthenticatedAppCommandRouteImport.update({
+  id: '/command',
+  path: '/command',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const ApiOauthGoogleCallbackRoute = ApiOauthGoogleCallbackRouteImport.update({
+  id: '/api/oauth/google/callback',
+  path: '/api/oauth/google/callback',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/app': typeof AppRouteWithChildren
-  '/console': typeof ConsoleRoute
-  '/try': typeof TryRoute
-  '/waitlist': typeof WaitlistRoute
+  '/auth': typeof AuthRoute
+  '/app': typeof AuthenticatedAppRouteWithChildren
   '/api/chat': typeof ApiChatRoute
-  '/app/command': typeof AppCommandRoute
-  '/app/memory': typeof AppMemoryRoute
-  '/app/promises': typeof AppPromisesRoute
-  '/app/settings': typeof AppSettingsRoute
-  '/app/': typeof AppIndexRoute
-  '/app/accounts/$id': typeof AppAccountsIdRoute
+  '/app/command': typeof AuthenticatedAppCommandRoute
+  '/app/memory': typeof AuthenticatedAppMemoryRoute
+  '/app/promises': typeof AuthenticatedAppPromisesRoute
+  '/app/settings': typeof AuthenticatedAppSettingsRoute
+  '/app/': typeof AuthenticatedAppIndexRoute
+  '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/console': typeof ConsoleRoute
-  '/try': typeof TryRoute
-  '/waitlist': typeof WaitlistRoute
+  '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
-  '/app/command': typeof AppCommandRoute
-  '/app/memory': typeof AppMemoryRoute
-  '/app/promises': typeof AppPromisesRoute
-  '/app/settings': typeof AppSettingsRoute
-  '/app': typeof AppIndexRoute
-  '/app/accounts/$id': typeof AppAccountsIdRoute
+  '/app/command': typeof AuthenticatedAppCommandRoute
+  '/app/memory': typeof AuthenticatedAppMemoryRoute
+  '/app/promises': typeof AuthenticatedAppPromisesRoute
+  '/app/settings': typeof AuthenticatedAppSettingsRoute
+  '/app': typeof AuthenticatedAppIndexRoute
+  '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/app': typeof AppRouteWithChildren
-  '/console': typeof ConsoleRoute
-  '/try': typeof TryRoute
-  '/waitlist': typeof WaitlistRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/api/chat': typeof ApiChatRoute
-  '/app/command': typeof AppCommandRoute
-  '/app/memory': typeof AppMemoryRoute
-  '/app/promises': typeof AppPromisesRoute
-  '/app/settings': typeof AppSettingsRoute
-  '/app/': typeof AppIndexRoute
-  '/app/accounts/$id': typeof AppAccountsIdRoute
+  '/_authenticated/app/command': typeof AuthenticatedAppCommandRoute
+  '/_authenticated/app/memory': typeof AuthenticatedAppMemoryRoute
+  '/_authenticated/app/promises': typeof AuthenticatedAppPromisesRoute
+  '/_authenticated/app/settings': typeof AuthenticatedAppSettingsRoute
+  '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
+  '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/app'
-    | '/console'
-    | '/try'
-    | '/waitlist'
     | '/api/chat'
     | '/app/command'
     | '/app/memory'
     | '/app/promises'
     | '/app/settings'
     | '/app/'
-    | '/app/accounts/$id'
+    | '/api/oauth/google/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/console'
-    | '/try'
-    | '/waitlist'
+    | '/auth'
     | '/api/chat'
     | '/app/command'
     | '/app/memory'
     | '/app/promises'
     | '/app/settings'
     | '/app'
-    | '/app/accounts/$id'
+    | '/api/oauth/google/callback'
   id:
     | '__root__'
     | '/'
-    | '/app'
-    | '/console'
-    | '/try'
-    | '/waitlist'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/app'
     | '/api/chat'
-    | '/app/command'
-    | '/app/memory'
-    | '/app/promises'
-    | '/app/settings'
-    | '/app/'
-    | '/app/accounts/$id'
+    | '/_authenticated/app/command'
+    | '/_authenticated/app/memory'
+    | '/_authenticated/app/promises'
+    | '/_authenticated/app/settings'
+    | '/_authenticated/app/'
+    | '/api/oauth/google/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AppRoute: typeof AppRouteWithChildren
-  ConsoleRoute: typeof ConsoleRoute
-  TryRoute: typeof TryRoute
-  WaitlistRoute: typeof WaitlistRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiOauthGoogleCallbackRoute: typeof ApiOauthGoogleCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/waitlist': {
-      id: '/waitlist'
-      path: '/waitlist'
-      fullPath: '/waitlist'
-      preLoaderRoute: typeof WaitlistRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/try': {
-      id: '/try'
-      path: '/try'
-      fullPath: '/try'
-      preLoaderRoute: typeof TryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/console': {
-      id: '/console'
-      path: '/console'
-      fullPath: '/console'
-      preLoaderRoute: typeof ConsoleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app': {
-      id: '/app'
-      path: '/app'
-      fullPath: '/app'
-      preLoaderRoute: typeof AppRouteImport
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -215,41 +185,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/app/': {
-      id: '/app/'
-      path: '/'
-      fullPath: '/app/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/settings': {
-      id: '/app/settings'
-      path: '/settings'
-      fullPath: '/app/settings'
-      preLoaderRoute: typeof AppSettingsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/promises': {
-      id: '/app/promises'
-      path: '/promises'
-      fullPath: '/app/promises'
-      preLoaderRoute: typeof AppPromisesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/memory': {
-      id: '/app/memory'
-      path: '/memory'
-      fullPath: '/app/memory'
-      preLoaderRoute: typeof AppMemoryRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/command': {
-      id: '/app/command'
-      path: '/command'
-      fullPath: '/app/command'
-      preLoaderRoute: typeof AppCommandRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -257,43 +192,94 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/app/accounts/$id': {
-      id: '/app/accounts/$id'
-      path: '/accounts/$id'
-      fullPath: '/app/accounts/$id'
-      preLoaderRoute: typeof AppAccountsIdRouteImport
-      parentRoute: typeof AppRoute
+    '/_authenticated/app': {
+      id: '/_authenticated/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AuthenticatedAppRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/app/': {
+      id: '/_authenticated/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AuthenticatedAppIndexRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/settings': {
+      id: '/_authenticated/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AuthenticatedAppSettingsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/promises': {
+      id: '/_authenticated/app/promises'
+      path: '/promises'
+      fullPath: '/app/promises'
+      preLoaderRoute: typeof AuthenticatedAppPromisesRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/memory': {
+      id: '/_authenticated/app/memory'
+      path: '/memory'
+      fullPath: '/app/memory'
+      preLoaderRoute: typeof AuthenticatedAppMemoryRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/command': {
+      id: '/_authenticated/app/command'
+      path: '/command'
+      fullPath: '/app/command'
+      preLoaderRoute: typeof AuthenticatedAppCommandRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/api/oauth/google/callback': {
+      id: '/api/oauth/google/callback'
+      path: '/api/oauth/google/callback'
+      fullPath: '/api/oauth/google/callback'
+      preLoaderRoute: typeof ApiOauthGoogleCallbackRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
 
-interface AppRouteChildren {
-  AppCommandRoute: typeof AppCommandRoute
-  AppMemoryRoute: typeof AppMemoryRoute
-  AppPromisesRoute: typeof AppPromisesRoute
-  AppSettingsRoute: typeof AppSettingsRoute
-  AppIndexRoute: typeof AppIndexRoute
-  AppAccountsIdRoute: typeof AppAccountsIdRoute
+interface AuthenticatedAppRouteChildren {
+  AuthenticatedAppCommandRoute: typeof AuthenticatedAppCommandRoute
+  AuthenticatedAppMemoryRoute: typeof AuthenticatedAppMemoryRoute
+  AuthenticatedAppPromisesRoute: typeof AuthenticatedAppPromisesRoute
+  AuthenticatedAppSettingsRoute: typeof AuthenticatedAppSettingsRoute
+  AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
 }
 
-const AppRouteChildren: AppRouteChildren = {
-  AppCommandRoute: AppCommandRoute,
-  AppMemoryRoute: AppMemoryRoute,
-  AppPromisesRoute: AppPromisesRoute,
-  AppSettingsRoute: AppSettingsRoute,
-  AppIndexRoute: AppIndexRoute,
-  AppAccountsIdRoute: AppAccountsIdRoute,
+const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
+  AuthenticatedAppCommandRoute: AuthenticatedAppCommandRoute,
+  AuthenticatedAppMemoryRoute: AuthenticatedAppMemoryRoute,
+  AuthenticatedAppPromisesRoute: AuthenticatedAppPromisesRoute,
+  AuthenticatedAppSettingsRoute: AuthenticatedAppSettingsRoute,
+  AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
 }
 
-const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+const AuthenticatedAppRouteWithChildren =
+  AuthenticatedAppRoute._addFileChildren(AuthenticatedAppRouteChildren)
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AppRoute: AppRouteWithChildren,
-  ConsoleRoute: ConsoleRoute,
-  TryRoute: TryRoute,
-  WaitlistRoute: WaitlistRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiOauthGoogleCallbackRoute: ApiOauthGoogleCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

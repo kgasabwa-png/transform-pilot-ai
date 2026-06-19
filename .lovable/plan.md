@@ -1,124 +1,117 @@
-# Ledgerline /console revamp — autonomy, signals, personas
 
-Goal: turn `/console` from a generic stat dashboard into the renewal early-warning system YC-grade reviewers will recognize as a company, not a feature. Three concurrent moves: a real autonomy model, a "world layer" of external signals, and persona-aware views.
+# Nyvlo MVP — Real Product Build
 
----
+Goal: a logged-in user connects Google Calendar + Gmail, and Nyvlo automatically surfaces forgotten promises, drafts replies, tracks reliability, and sends an end-of-day recap. Everything below replaces the current seeded demo.
 
-## 1. Autonomy: blast-radius decides what CAN auto, confidence decides what DOES
+## What ships
 
-Two-axis model on every drafted action.
+1. **Auth** — Email/password + Google sign-in (Lovable-managed). Per-user data with RLS.
+2. **Connect Google Calendar + Gmail** — per-user OAuth (Test mode, no Google verification needed for ≤100 testers). Read-only scopes.
+3. **Ingestion** — pull last 30 days of calendar events + sent Gmail messages on first connect; incremental sync after.
+4. **AI extraction loop** — Gemini reads each event/email and extracts structured commitments: who, what, when promised, due date, source, confidence.
+5. **Persistence** — `promises`, `memory_items`, `connections`, `agent_runs`, `reliability_snapshots`, `profiles` tables with RLS.
+6. **Surfaces wired to real data** — Today, Promises, Memory, Command Center, Settings all read from DB.
+7. **Drafted replies** — AI generates an email draft per promise (copy-to-clipboard for v1; "Send via Gmail" later).
+8. **Reliability Score** — computed from kept vs. missed promises.
+9. **Nightly agent (pg_cron)** — re-syncs sources, ages stale promises, recomputes score, generates end-of-day recap.
+10. **Command Center chat** — RAG over the user's promises + memory items, streaming.
 
-**Blast radius** (set by action type, not editable per-action):
-- `internal` — CRM field updates, internal Slack notes, CSM tasks, manager alerts → eligible for auto
-- `customer-facing` — emails, calendar invites to customers, recap docs shared with champion → always human approval
-- `money` — discount offers, renewal-quote changes, contract edits → always human approval + manager co-sign over a $ threshold
+Out of scope for v1: Chrome extension, Slack/Notion/Linear, sending email through Gmail, billing.
 
-**Confidence** (assigned by the agent, 0–100):
-- `>90` "high" — ships automatically if blast radius is `internal`. Logged with 1-click revert.
-- `60–90` "medium" — batched into a Quick Review (swipe approve/skip, ~90s for 20 items).
-- `<60` "low" — individual card with full evidence, "the agent isn't sure, here's why."
-
-Rule: an action only auto-ships when BOTH `internal` AND `high`. Everything else queues for the right review lane. This is the pitch line: **"Autonomous on the inside. Human on the outside. The agent gets more autonomous as it learns your bar."**
-
-Reverts feed back into confidence calibration (already hinted at by the existing override toast — make it the headline mechanic).
-
----
-
-## 2. The world layer — external signals
-
-Add a third signal source alongside calls and CRM. Each signal becomes a Watch item that the agent can promote into an action when paired with internal evidence.
-
-Signals to wire (server-side only, never from the browser):
-- **LinkedIn champion/buyer changes** — title changes, "former," new role at competitor. Source: Firecrawl scrape of public LinkedIn profile URLs the user adds per account (no LinkedIn API auth required for public pages).
-- **Acquisitions / funding / layoffs** — Firecrawl `search` with `tbs: 'qdr:w'` over customer company names, filtered to news domains. Summarized via Lovable AI Gateway.
-- **Hiring signals** — job posts mentioning competitor products (optional v1.1).
-
-Storage: a `world_signals` table keyed by `account_id`, with `kind`, `headline`, `source_url`, `detected_at`, `severity`, `raw_json`. Read-only from the client via a server fn.
-
-UI: signals appear in a new "Watch" lane (see §3). When a signal correlates with an existing call-derived risk, the agent bundles them into a single Motion ("Champion left + procurement pushback on the 4/18 call → exec-to-exec by Friday").
-
-Pitch upgrade: **"Three signal layers — the call (what they said), the system (what they did), the world (what's happening to them). Pinned together, with citations."**
-
----
-
-## 3. Review UX: confidence lanes, persona-aware
-
-Replace the current `/console` body with three lanes. Lane content varies by persona (toggle wired in this pass).
+## Architecture
 
 ```text
-┌─────────────────────────────────────────────────┐
-│  [ CSM ]  [ Manager ]  [ Leader ]      autonomy │ ← persona toggle + dial summary
-├─────────────────────────────────────────────────┤
-│  SHIPPED WHILE YOU SLEPT   (high-conf, internal)│
-│  • 14 CRM updates · 6 Slack notes · 3 tasks     │
-│  • each row: action · account · revert (30d)    │
-├─────────────────────────────────────────────────┤
-│  QUICK REVIEW                       (medium)    │
-│  swipe deck · approve / skip / open             │
-│  "20 items, ~90 seconds"                        │
-├─────────────────────────────────────────────────┤
-│  NEEDS YOUR JUDGMENT                (low + $$)  │
-│  full cards: evidence, why not sure, options    │
-├─────────────────────────────────────────────────┤
-│  WATCH                          (world signals) │
-│  not actions yet — promotable to motions        │
-└─────────────────────────────────────────────────┘
+Browser (TanStack)
+  ├─ /auth                  → Lovable Cloud auth (Google + email)
+  ├─ /app/* (gated)         → reads via createServerFn → Supabase (RLS as user)
+  └─ /app/command           → useChat → /api/chat (RAG over user's data)
+
+Server (TanStack)
+  ├─ createServerFn handlers  app-internal reads/writes
+  ├─ /api/chat                streaming Command Center
+  ├─ /api/oauth/google/start  per-user Google OAuth (Calendar+Gmail scopes)
+  ├─ /api/oauth/google/callback  exchange code → store refresh_token (encrypted) in connections
+  └─ /api/public/cron/*       pg_cron-triggered: sync, recap, score
+
+AI: Lovable AI Gateway, model google/gemini-3-flash-preview
 ```
 
-**Persona variations** (use existing `src/lib/loop/personas.ts`):
-- **CSM view** — lanes show only the CSM's book. Header reads "3 saves waiting on you." No org-wide $ stats. Watch lane shows per-account signals.
-- **Manager view** — adds a team strip on top ("4 CSMs · 12 saves shipped · 2 escalations"). Lanes aggregate across the team. Override toast surfaces "your team corrected the agent 8× this week — bar drift?"
-- **Leader view** — the current `/console` framing belongs here ($ARR protected, capacity returned, coverage). Confidence-lane summary collapses to a single audit log; the headline is the trend graph ("87% → 94% auto-ship rate this quarter").
+## Database (one migration)
 
----
+- `profiles` (id=auth.uid, full_name, email, timezone)
+- `connections` (user_id, provider='google', access_token, refresh_token, expiry, scopes, email)
+- `sources` (user_id, kind='calendar_event'|'gmail_message', external_id unique per user, raw jsonb, occurred_at, processed_at)
+- `promises` (user_id, summary, owed_to, channel, source_id, due_at, status='open'|'kept'|'missed'|'dismissed', confidence, draft_reply, created_at, last_nudged_at)
+- `memory_items` (user_id, source_id, title, snippet, occurred_at, kind)
+- `agent_runs` (user_id, kind='sync'|'extract'|'recap', started_at, finished_at, stats jsonb, error)
+- `reliability_snapshots` (user_id, date, score, kept, missed, open)
 
-## 4. Concrete file changes
+All tables: `GRANT` to authenticated + service_role, RLS enabled, policies scoped to `auth.uid() = user_id`. Refresh tokens accessed only via service-role server fns.
 
-### New
-- `src/lib/loop/autonomy.ts` — types for `BlastRadius`, `Confidence`, helper `canAutoShip(action)`.
-- `src/lib/loop/worldSignals.ts` — client-safe types + sample data shaping.
-- `src/lib/loop/worldSignals.functions.ts` — `createServerFn` wrappers: `listWorldSignals(accountId?)`, `refreshWorldSignals()` (calls Firecrawl + AI Gateway server-side).
-- `src/lib/loop/worldSignals.server.ts` — Firecrawl + AI Gateway logic, reads `FIRECRAWL_API_KEY` / `LOVABLE_API_KEY` from `process.env` inside the handler.
-- `src/components/loop/ConfidenceLanes.tsx` — the three-lane shell.
-- `src/components/loop/lanes/ShippedLane.tsx` — auto-shipped log + revert.
-- `src/components/loop/lanes/QuickReviewLane.tsx` — swipe deck for medium confidence.
-- `src/components/loop/lanes/JudgmentLane.tsx` — full evidence cards for low / money.
-- `src/components/loop/lanes/WatchLane.tsx` — world signals, promote-to-motion button.
-- `src/components/loop/PersonaToggle.tsx` — CSM / Manager / Leader segmented control.
-- `src/components/loop/AutonomyDial.tsx` — compact summary chip in the header ("Auto-ship rate: 87% · 2 reverts this week").
-- DB migration: `world_signals` table with proper grants + RLS (auth required, scoped by `org_id`).
+## OAuth (per-user Google) — the honest constraint
 
-### Modified
-- `src/lib/loop/actions.ts` / `src/lib/loop/motions.ts` — add `blastRadius` and `confidence` fields to sample data; categorize existing actions correctly.
-- `src/routes/console.tsx` (or wherever `/console` lives) — replace body with `<PersonaToggle />` + `<ConfidenceLanes />`. Keep current Leader-style stats but only render them under the Leader persona.
-- `src/lib/loop/personas.ts` — extend to drive lane visibility/labels per persona.
+We register a Google Cloud OAuth client (Web app) with scopes:
+`openid email profile`, `calendar.readonly`, `gmail.readonly`.
 
-### Untouched this pass
-- `/` landing page (separate pass)
-- `SaveRoom` / `ApprovalQueue` (will be folded into the new lanes in a follow-up; left intact so nothing breaks during this revamp)
-- Brand, typography, color tokens
+- App in **Testing** status → works immediately, no Google review, but capped at 100 test users (you add their emails as testers). Perfect for demo + early beta.
+- Going to Production later requires Google's OAuth verification (security assessment for Gmail scopes, 2–6 weeks).
+- We store `client_id` + `client_secret` as Lovable secrets; UI in Settings shows "Connect Google" button → `/api/oauth/google/start` → consent → callback stores tokens.
 
----
+## Sync + extraction pipeline
 
-## 5. Connectors / secrets needed
+On connect, and then on nightly cron:
 
-- **Firecrawl** connector — for LinkedIn public profiles + news search. Server-side only; injects `FIRECRAWL_API_KEY`. Will request linking when build mode starts.
-- **Lovable AI Gateway** — already provisioned (`LOVABLE_API_KEY`). Used to summarize raw scrape/search results into structured `WorldSignal` rows.
-- No LinkedIn OAuth connector (public-page scraping only, avoids per-user auth complexity in v1).
+1. **Sync**: pull new Calendar events (`updatedMin`) and sent Gmail messages (`q=in:sent newer_than:30d`) → upsert `sources`.
+2. **Extract** (batched, ~20 items/run): for each unprocessed source, Gemini returns structured JSON: `{ promises: [{summary, owed_to, due_at, confidence, draft_reply}], memory: {title, snippet} }`. Use AI SDK `Output.object` + Zod schema.
+3. **Persist** promises + memory_items. Mark source `processed_at`.
+4. **Age**: promises with `due_at < now() - 24h` and still `open` → flagged "forgotten" in UI.
+5. **Recap** (nightly): generate an end-of-day summary per user → store as a memory_item; later surface via email/push.
+6. **Score**: `reliability = kept / (kept + missed)`, snapshotted daily.
 
----
+## Surfaces (wired to real data)
 
-## 6. What this buys, in one sentence per audience
+- **Today** — open promises due today, today's meetings with AI prep, stat tiles from `reliability_snapshots`.
+- **Promises** — filterable list from `promises`, expandable to show `draft_reply` + source quote.
+- **Memory** — `memory_items` timeline, searchable.
+- **Command Center** — streaming chat. Server fetches top-N relevant promises + memory items by keyword/recency (simple v1, not vector), injects into prompt, streams answer.
+- **Settings** — Connect Google (status, last sync, disconnect), timezone, sign out.
 
-- **YC reviewer:** "Three signal layers, graduated autonomy, every action revertible and cited — that's a company, not a Gainsight feature."
-- **VP of CS (buyer):** "I can see the auto-ship rate climb week over week. My team stops doing post-call admin. Renewals stop surprising me."
-- **CSM (user):** "I open Monday morning, swipe through 20 things in 90 seconds, then spend real time on the 3 saves that need me."
+## Cron (pg_cron → /api/public/cron/*)
 
----
+- `*/15 * * * *` — incremental sync for users connected in last 24h or with stale `last_synced_at`.
+- `0 23 * * *` (user tz approximated server-side) — end-of-day recap + reliability snapshot.
 
-## 7. Out of scope for this plan (call out so we don't sneak it in)
+Endpoints require `apikey` header (Supabase anon). Bodies empty.
 
-- Rewriting the `/` landing hero (separate pass — already discussed)
-- Real LinkedIn OAuth / Sales Navigator integration (v2)
-- Manager co-sign workflow on money actions (stub the gate now, build the second-approver flow next pass)
-- Replacing the existing `SaveRoom` route (deprecate after lanes prove out)
+## What you need to do (the only manual step)
+
+Create a Google Cloud OAuth client and give me 3 things via the secret prompt:
+- `GOOGLE_OAUTH_CLIENT_ID`
+- `GOOGLE_OAUTH_CLIENT_SECRET`
+- (I'll auto-fill the redirect URI for you to paste back into Google Cloud)
+
+I'll provide step-by-step instructions when we get there.
+
+## Build order (so you can demo at each checkpoint)
+
+1. Migration: tables + RLS + GRANTs.
+2. Auth: Google + email/password, `_authenticated` gate, profile auto-create trigger.
+3. Settings page + OAuth flow + connection storage.
+4. Sync server fns + initial backfill on connect.
+5. AI extraction server fn + wire into sync.
+6. Today / Promises / Memory pages on real data.
+7. Command Center streaming chat with RAG.
+8. pg_cron jobs + recap + reliability score.
+9. Landing page CTA → `/auth`.
+
+## Technical notes
+
+- AI SDK with `createLovableAiGatewayProvider` (already exists in `src/lib/ai-gateway.server.ts`).
+- `requireSupabaseAuth` middleware on all app-internal server fns.
+- Refresh-token handling: server fn `getGoogleAccessToken(userId)` refreshes if expired, updates row.
+- Gmail body parsing: use `messages.get?format=metadata` for the list, `format=full` for ones we extract from (cheaper).
+- Calendar: `events.list?singleEvents=true&orderBy=startTime`.
+- Lovable AI model: `google/gemini-3-flash-preview` everywhere.
+- Public landing remains SSR; `/app/*` lives under `_authenticated/`.
+
+Approve and I'll start with the migration.
