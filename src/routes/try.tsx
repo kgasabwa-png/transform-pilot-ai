@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { ArrowRight, Sparkles, Inbox, Clock, BookMarked, Check, X, ChevronDown, Mail, CalendarDays, StickyNote, PlayCircle } from "lucide-react";
+import { NyvloMark } from "@/components/nyvlo/Shell";
 
 export const Route = createFileRoute("/try")({
   head: () => ({
