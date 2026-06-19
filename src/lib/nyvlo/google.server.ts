@@ -309,31 +309,8 @@ export async function syncAndExtractForUser(userId: string) {
       }
     }
 
-    // Gmail sent
-    const messages = await fetchGmailSent(accessToken);
-    for (const m of messages) {
-      const { data: upserted } = await admin
-        .from("sources")
-        .upsert(
-          {
-            user_id: userId,
-            kind: "gmail_message",
-            external_id: m.id,
-            subject: m.subject,
-            participants: [m.to],
-            body: m.body || m.snippet,
-            raw: m as never,
-            occurred_at: m.date,
-          },
-          { onConflict: "user_id,kind,external_id", ignoreDuplicates: false },
-        )
-        .select("id, processed_at, subject, participants, body, occurred_at, kind")
-        .maybeSingle();
-      stats.gmail++;
-      if (upserted && !upserted.processed_at) {
-        await runExtractAndPersist(admin, userId, upserted, stats);
-      }
-    }
+    // Gmail sync intentionally disabled for MVP (pending Google verification).
+
 
     await admin
       .from("connections")
