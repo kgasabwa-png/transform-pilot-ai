@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
-import { Check, Loader2 } from "lucide-react";
-import { NyvloMark } from "@/components/nyvlo/Shell";
+import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -80,28 +79,32 @@ function AuthPage() {
     <div className="grid min-h-dvh bg-background md:grid-cols-2">
       <div className="hidden flex-col justify-between border-r border-border bg-secondary p-12 md:flex">
         <Link to="/" className="flex items-center gap-2">
-          <NyvloMark size="lg" />
+          <img
+            src="/__l5e/assets-v1/6211f021-75b1-484a-8d96-f59fda81e71b/nyvlo-logo-transparent.png"
+            alt="Nyvlo"
+            className="h-10 w-auto"
+          />
         </Link>
         <div className="max-w-md space-y-6">
           <h2 className="text-3xl font-semibold tracking-tight">
-            Nyvlo is what you forgot
+            The AI that catches what you forgot.
           </h2>
           <p className="text-sm text-muted-foreground">
-            Connect your calendar and inbox so Nyvlo can surface promises, follow-ups,
-            and loose ends before they become problems
+            Connect your calendar and inbox. Nyvlo silently surfaces the promises, follow-ups,
+            and loose ends slipping through your week — before they become problems.
           </p>
           <ul className="space-y-3 text-sm">
             <li className="flex items-start gap-2">
-              <Check className="mt-0.5 h-4 w-4 text-primary" strokeWidth={1.75} />
-              <span>Reads your Calendar and sent Gmail with read-only access</span>
+              <span className="mt-1.5 h-1 w-1 rounded-full bg-foreground" />
+              <span>Reads your Calendar & sent Gmail (read-only).</span>
             </li>
             <li className="flex items-start gap-2">
-              <Check className="mt-0.5 h-4 w-4 text-primary" strokeWidth={1.75} />
-              <span>Drafts the follow-up so you only press send</span>
+              <span className="mt-1.5 h-1 w-1 rounded-full bg-foreground" />
+              <span>Drafts the follow-up so you only press send.</span>
             </li>
             <li className="flex items-start gap-2">
-              <Check className="mt-0.5 h-4 w-4 text-primary" strokeWidth={1.75} />
-              <span>Tracks your reliability score over time</span>
+              <span className="mt-1.5 h-1 w-1 rounded-full bg-foreground" />
+              <span>Tracks your reliability score over time.</span>
             </li>
           </ul>
         </div>

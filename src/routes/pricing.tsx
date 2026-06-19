@@ -9,8 +9,8 @@ import { Check, X } from "lucide-react";
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "Pricing | Nyvlo | Free then $18/mo for unlimited" },
-      { name: "description", content: "Free forever for 10 captures a month with Pro for unlimited capture and desktop app" },
+      { title: "Pricing · Nyvlo — Free, then $18/mo for unlimited" },
+      { name: "description", content: "Free forever for 10 captures a month. Pro is $18/mo or $144/yr ($12/mo) for unlimited capture, desktop app, and unlimited memory." },
     ],
   }),
   component: Pricing,
@@ -75,9 +75,9 @@ function Pricing() {
       </header>
       <main className="mx-auto max-w-5xl px-6 py-16">
         <div className="text-center">
-          <h1 className="text-[48px] font-semibold tracking-tight">Simple pricing</h1>
+          <h1 className="text-[48px] font-semibold tracking-tight">Simple pricing.</h1>
           <p className="mx-auto mt-4 max-w-xl text-[16px] text-muted-foreground">
-            Free during private beta with Pro for unlimited capture and the desktop app
+            Free during private beta. Upgrade to Pro for unlimited capture and the desktop app.
           </p>
           <div className="mx-auto mt-8 inline-flex items-center rounded-full border border-border bg-card/60 p-1 text-[13px]">
             <button
@@ -87,7 +87,7 @@ function Pricing() {
             <button
               onClick={() => setCadence("yearly")}
               className={`rounded-full px-4 py-1.5 ${cadence === "yearly" ? "bg-foreground text-background" : "text-muted-foreground"}`}
-            >Yearly / save 33%</button>
+            >Yearly · save 33%</button>
           </div>
           <p className="mt-3 text-[12px] text-muted-foreground">
             On the waitlist? Use code <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-foreground">EARLY50</span> for 50% off your first 3 months.
@@ -97,7 +97,7 @@ function Pricing() {
         <div className="mt-14 grid gap-6 md:grid-cols-2">
           <div className="rounded-2xl border border-border bg-card/60 p-7">
             <h2 className="text-[20px] font-semibold">Free</h2>
-            <p className="mt-1 text-[13.5px] text-muted-foreground">Try Nyvlo and use it for light weeks</p>
+            <p className="mt-1 text-[13.5px] text-muted-foreground">Try Nyvlo and use it for light weeks.</p>
             <div className="mt-5 flex items-baseline gap-1.5">
               <span className="text-[42px] font-semibold tracking-tight">$0</span>
               <span className="text-[13px] text-muted-foreground">forever</span>
@@ -119,7 +119,7 @@ function Pricing() {
               <h2 className="text-[20px] font-semibold">Pro</h2>
               <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">Most popular</span>
             </div>
-            <p className="mt-1 text-[13.5px] text-muted-foreground">For founders, operators, and anyone with a packed week</p>
+            <p className="mt-1 text-[13.5px] text-muted-foreground">For founders, operators, and anyone with a packed week.</p>
             <div className="mt-5 flex items-baseline gap-1.5">
               <span className="text-[42px] font-semibold tracking-tight">{proPrice}</span>
               <span className="text-[13px] text-muted-foreground">{proCadence}</span>
