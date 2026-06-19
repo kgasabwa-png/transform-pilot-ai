@@ -88,7 +88,7 @@ function SettingsPage() {
         <Section title="Connections">
           <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-3 last:border-b-0">
             <div>
-              <div className="text-[13.5px] font-medium">Google (Calendar + Gmail)</div>
+              <div className="text-[13.5px] font-medium">Google Calendar</div>
               <div className="mt-0.5 text-[11.5px] text-muted-foreground">
                 {connection
                   ? `${connection.google_email ?? "Connected"}${connection.last_synced_at ? ` · synced ${formatDistanceToNow(new Date(connection.last_synced_at), { addSuffix: true })}` : " · never synced"}`
