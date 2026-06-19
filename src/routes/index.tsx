@@ -19,8 +19,11 @@ function Landing() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <Link to="/" className="flex items-center gap-2">
-          <NyvloMark />
-          <span className="text-[15px] font-semibold tracking-tight">Nyvlo</span>
+          <img
+            src="/__l5e/assets-v1/6211f021-75b1-484a-8d96-f59fda81e71b/nyvlo-logo-transparent.png"
+            alt="Nyvlo"
+            className="h-7 w-auto"
+          />
         </Link>
         <nav className="hidden items-center gap-7 text-[13.5px] text-muted-foreground md:flex">
           <a href="#how" className="hover:text-foreground">How it works</a>
