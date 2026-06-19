@@ -35,7 +35,7 @@ export const getCaptureSession = createServerFn({ method: "GET" })
           .order("sequence", { ascending: true }),
         context.supabase
           .from("promises")
-          .select("id, text, status, due_at, metadata, created_at")
+          .select("id, summary, status, due_at, owed_to, confidence, created_at")
           .eq("capture_session_id", data.sessionId)
           .order("created_at", { ascending: true }),
       ]);
