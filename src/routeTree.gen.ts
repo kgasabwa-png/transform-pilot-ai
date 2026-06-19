@@ -9,9 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WaitlistRouteImport } from './routes/waitlist'
-import { Route as TryRouteImport } from './routes/try'
-import { Route as ConsoleRouteImport } from './routes/console'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
@@ -20,23 +17,7 @@ import { Route as AppPromisesRouteImport } from './routes/app.promises'
 import { Route as AppMemoryRouteImport } from './routes/app.memory'
 import { Route as AppCommandRouteImport } from './routes/app.command'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
-import { Route as AppAccountsIdRouteImport } from './routes/app.accounts.$id'
 
-const WaitlistRoute = WaitlistRouteImport.update({
-  id: '/waitlist',
-  path: '/waitlist',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TryRoute = TryRouteImport.update({
-  id: '/try',
-  path: '/try',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConsoleRoute = ConsoleRouteImport.update({
-  id: '/console',
-  path: '/console',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AppRoute = AppRouteImport.update({
   id: '/app',
   path: '/app',
@@ -77,130 +58,77 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppAccountsIdRoute = AppAccountsIdRouteImport.update({
-  id: '/accounts/$id',
-  path: '/accounts/$id',
-  getParentRoute: () => AppRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
-  '/console': typeof ConsoleRoute
-  '/try': typeof TryRoute
-  '/waitlist': typeof WaitlistRoute
   '/api/chat': typeof ApiChatRoute
   '/app/command': typeof AppCommandRoute
   '/app/memory': typeof AppMemoryRoute
   '/app/promises': typeof AppPromisesRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/': typeof AppIndexRoute
-  '/app/accounts/$id': typeof AppAccountsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/console': typeof ConsoleRoute
-  '/try': typeof TryRoute
-  '/waitlist': typeof WaitlistRoute
   '/api/chat': typeof ApiChatRoute
   '/app/command': typeof AppCommandRoute
   '/app/memory': typeof AppMemoryRoute
   '/app/promises': typeof AppPromisesRoute
   '/app/settings': typeof AppSettingsRoute
   '/app': typeof AppIndexRoute
-  '/app/accounts/$id': typeof AppAccountsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
-  '/console': typeof ConsoleRoute
-  '/try': typeof TryRoute
-  '/waitlist': typeof WaitlistRoute
   '/api/chat': typeof ApiChatRoute
   '/app/command': typeof AppCommandRoute
   '/app/memory': typeof AppMemoryRoute
   '/app/promises': typeof AppPromisesRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/': typeof AppIndexRoute
-  '/app/accounts/$id': typeof AppAccountsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/app'
-    | '/console'
-    | '/try'
-    | '/waitlist'
     | '/api/chat'
     | '/app/command'
     | '/app/memory'
     | '/app/promises'
     | '/app/settings'
     | '/app/'
-    | '/app/accounts/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/console'
-    | '/try'
-    | '/waitlist'
     | '/api/chat'
     | '/app/command'
     | '/app/memory'
     | '/app/promises'
     | '/app/settings'
     | '/app'
-    | '/app/accounts/$id'
   id:
     | '__root__'
     | '/'
     | '/app'
-    | '/console'
-    | '/try'
-    | '/waitlist'
     | '/api/chat'
     | '/app/command'
     | '/app/memory'
     | '/app/promises'
     | '/app/settings'
     | '/app/'
-    | '/app/accounts/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
-  ConsoleRoute: typeof ConsoleRoute
-  TryRoute: typeof TryRoute
-  WaitlistRoute: typeof WaitlistRoute
   ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/waitlist': {
-      id: '/waitlist'
-      path: '/waitlist'
-      fullPath: '/waitlist'
-      preLoaderRoute: typeof WaitlistRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/try': {
-      id: '/try'
-      path: '/try'
-      fullPath: '/try'
-      preLoaderRoute: typeof TryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/console': {
-      id: '/console'
-      path: '/console'
-      fullPath: '/console'
-      preLoaderRoute: typeof ConsoleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/app': {
       id: '/app'
       path: '/app'
@@ -257,13 +185,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/app/accounts/$id': {
-      id: '/app/accounts/$id'
-      path: '/accounts/$id'
-      fullPath: '/app/accounts/$id'
-      preLoaderRoute: typeof AppAccountsIdRouteImport
-      parentRoute: typeof AppRoute
-    }
   }
 }
 
@@ -273,7 +194,6 @@ interface AppRouteChildren {
   AppPromisesRoute: typeof AppPromisesRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
-  AppAccountsIdRoute: typeof AppAccountsIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -282,7 +202,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppPromisesRoute: AppPromisesRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
-  AppAccountsIdRoute: AppAccountsIdRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -290,11 +209,18 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
-  ConsoleRoute: ConsoleRoute,
-  TryRoute: TryRoute,
-  WaitlistRoute: WaitlistRoute,
   ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
