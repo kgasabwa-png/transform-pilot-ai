@@ -1,7 +1,0 @@
-# Build output
-node_modules/
-release/
-bin/
-
-# Swift sidecar build artifacts
-sidecar/.build/

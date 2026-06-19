@@ -5,15 +5,12 @@
   "main": "main.cjs",
   "scripts": {
     "start": "electron .",
-    "build:sidecar": "bash scripts/build-sidecar.sh",
-    "dist:mac": "bash scripts/package-and-notarize.sh",
     "package:mac": "electron-packager . Nyvlo --platform=darwin --arch=universal --out=release --overwrite --icon=icon.icns",
     "package:win": "electron-packager . Nyvlo --platform=win32 --arch=x64 --out=release --overwrite",
     "package:linux": "electron-packager . Nyvlo --platform=linux --arch=x64 --out=release --overwrite"
   },
   "devDependencies": {
     "electron": "^33.0.0",
-    "@electron/packager": "^18.3.0",
-    "@electron/osx-sign": "^1.3.1"
+    "@electron/packager": "^18.3.0"
   }
 }
