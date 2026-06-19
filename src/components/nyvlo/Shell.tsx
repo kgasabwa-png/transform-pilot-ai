@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import { Inbox, Clock, Sparkles, Settings, Command, Search, BookMarked, LogOut } from "lucide-react";
 import { CommandPalette } from "./CommandPalette";
+import { NotificationBell } from "./NotificationBell";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getProfile } from "@/lib/nyvlo/profile.functions";
@@ -129,12 +130,15 @@ export function Shell({ children, title, subtitle }: { children: ReactNode; titl
                   <p className="mt-0.5 text-[13.5px] text-muted-foreground">{subtitle}</p>
                 ) : null}
               </div>
-              <button
-                onClick={() => setPaletteOpen(true)}
-                className="hidden items-center gap-2 rounded-md border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:bg-accent md:inline-flex"
-              >
-                <Command className="h-3.5 w-3.5" /> Ask Nyvlo
-              </button>
+              <div className="flex items-center gap-2">
+                <NotificationBell />
+                <button
+                  onClick={() => setPaletteOpen(true)}
+                  className="hidden items-center gap-2 rounded-md border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:bg-accent md:inline-flex"
+                >
+                  <Command className="h-3.5 w-3.5" /> Ask Nyvlo
+                </button>
+              </div>
             </div>
           </header>
 
