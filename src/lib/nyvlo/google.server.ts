@@ -325,7 +325,7 @@ async function runExtractAndPersist(
       const { error } = await admin.from("memory_items").insert({
         user_id: userId,
         source_id: src.id,
-        kind: src.kind === "calendar_event" ? "meeting" : "email",
+        kind: src.kind === "calendar_event" ? "meeting" : src.kind === "web_capture" ? "web" : "email",
         title: result.memory.title,
         snippet: result.memory.snippet,
         occurred_at: src.occurred_at ?? new Date().toISOString(),
