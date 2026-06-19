@@ -77,8 +77,7 @@ export const inviteWaitlistBatch = createServerFn({ method: "POST" })
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Forward the admin bearer so the send route accepts the request.
-          Authorization: `Bearer ${context.claims?.access_token ?? ""}`,
+          Authorization: bearer,
         },
         body: JSON.stringify({
           templateName: "waitlist-invite",
