@@ -105,6 +105,7 @@ export type Database = {
           id: string
           label: string | null
           metadata: Json
+          notes_md: string | null
           source: string
           started_at: string
           status: string
@@ -120,6 +121,7 @@ export type Database = {
           id?: string
           label?: string | null
           metadata?: Json
+          notes_md?: string | null
           source?: string
           started_at?: string
           status?: string
@@ -135,6 +137,7 @@ export type Database = {
           id?: string
           label?: string | null
           metadata?: Json
+          notes_md?: string | null
           source?: string
           started_at?: string
           status?: string
