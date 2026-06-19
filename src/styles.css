@@ -33,7 +33,7 @@
   --color-ion-soft: var(--ion-soft);
 
   --font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-display: "Sora", "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Geist", "Manrope", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
   --radius-sm: 0.5rem;
@@ -125,7 +125,7 @@ body {
 
 /* ---------- Atmospheric utilities ---------- */
 
-.font-display { font-family: var(--font-display); letter-spacing: -0.02em; }
+.font-display { font-family: var(--font-display); letter-spacing: -0.045em; font-weight: 900; }
 
 /* Faint star/dot field */
 .nyvlo-grain {

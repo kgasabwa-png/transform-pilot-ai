@@ -184,16 +184,15 @@ export function NyvloMark({
   animated?: boolean;
   withWordmark?: boolean;
 }) {
-  const px = size === "sm" ? 24 : size === "lg" ? 44 : size === "xl" ? 88 : 32;
+  const px = size === "sm" ? 22 : size === "lg" ? 40 : size === "xl" ? 84 : 30;
   const wordSize =
     size === "sm" ? "text-[15px]" :
     size === "lg" ? "text-[22px]" :
-    size === "xl" ? "text-[40px]" :
+    size === "xl" ? "text-[44px]" :
     "text-[18px]";
-  // 12-petal radial bloom — AI-native mark.
-  // Each petal = a vector of attention always pointed at you;
-  // the solid core = the memory it's holding.
-  const petals = Array.from({ length: 12 }, (_, i) => i * 30);
+  // y+v stacked-chevron monogram: two interlocking V-strokes share a
+  // diamond intersection. Reads as "y" (top) over "v" (bottom).
+  const stroke = size === "sm" ? 14 : 12;
   return (
     <span className={["inline-flex items-center gap-2.5 shrink-0", className].join(" ")}>
       <svg
@@ -203,48 +202,36 @@ export function NyvloMark({
         fill="none"
         aria-label="Nyvlo"
         role="img"
-        className="shrink-0"
-        style={{ filter: "drop-shadow(0 0 18px oklch(0.70 0.20 28 / 55%))" }}
+        className={["shrink-0", animated ? "nyvlo-pulse" : ""].join(" ")}
+        style={{ filter: "drop-shadow(0 0 12px oklch(0.70 0.20 28 / 45%))" }}
       >
-        <defs>
-          <radialGradient id="nyvlo-petal" cx="50%" cy="0%" r="100%">
-            <stop offset="0%" stopColor="oklch(0.92 0.10 35)" />
-            <stop offset="55%" stopColor="oklch(0.72 0.20 28)" />
-            <stop offset="100%" stopColor="oklch(0.50 0.20 22)" stopOpacity="0.85" />
-          </radialGradient>
-          <radialGradient id="nyvlo-core-bloom" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="60%" stopColor="oklch(0.82 0.18 30)" />
-            <stop offset="100%" stopColor="oklch(0.55 0.20 24)" />
-          </radialGradient>
-        </defs>
-
-        {/* Bloom: 12 radial petals */}
-        <g
-          className={animated ? "nyvlo-orbit-slow" : ""}
-          style={{ transformOrigin: "50px 50px" }}
-        >
-          {petals.map((deg) => (
-            <path
-              key={deg}
-              d="M50 50 C53 38 53 26 50 10 C47 26 47 38 50 50 Z"
-              fill="url(#nyvlo-petal)"
-              transform={`rotate(${deg} 50 50)`}
-            />
-          ))}
-        </g>
-
-        {/* Solid core — the memory */}
-        <circle cx="50" cy="50" r="11" fill="oklch(0.70 0.20 28)" opacity="0.28" />
-        <circle cx="50" cy="50" r="7" fill="url(#nyvlo-core-bloom)" />
-        <ellipse cx="48" cy="48" rx="1.8" ry="1.1" fill="#ffffff" opacity="0.9" />
+        {/* Diamond intersection — soft coral wash where the two V's overlap */}
+        <path d="M50 35 L62 55 L50 75 L38 55 Z" fill="oklch(0.70 0.20 28)" fillOpacity="0.22" />
+        {/* Top chevron — the 'y' */}
+        <path
+          d="M20 15 L50 65 L80 15"
+          stroke="oklch(0.72 0.20 28)"
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity="0.92"
+        />
+        {/* Bottom chevron — the 'v' */}
+        <path
+          d="M20 35 L50 85 L80 35"
+          stroke="oklch(0.72 0.20 28)"
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
       {withWordmark && (
-        <span className={`font-display ${wordSize} font-semibold tracking-[-0.03em] text-foreground`}>
-          Nyvlo
+        <span className={`font-display ${wordSize} text-foreground lowercase`}>
+          nyvlo
         </span>
       )}
     </span>
   );
 }
+
 
