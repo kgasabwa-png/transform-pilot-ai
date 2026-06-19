@@ -75,7 +75,7 @@ function Landing() {
               </div>
             </div>
 
-            <div id="demo" className="mx-auto mt-14 max-w-6xl md:mt-18">
+            <div id="demo" className="mx-auto mt-14 max-w-6xl md:mt-[4.5rem]">
               <ProductDemo />
             </div>
           </div>
@@ -285,7 +285,7 @@ function DemoRow({ item }: { item: { icon: LucideIcon; title: string; source: st
   return (
     <div className="group grid gap-3 rounded-lg border border-border bg-background px-3 py-3 transition-colors hover:bg-secondary/40 sm:grid-cols-[auto,1fr,auto] sm:items-center">
       <div className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-card text-muted-foreground">
-        <Icon className="h-4.5 w-4.5" strokeWidth={1.75} />
+        <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
       </div>
       <div className="min-w-0">
         <div className="truncate text-[14.5px] font-medium leading-tight text-foreground">{item.title}</div>
