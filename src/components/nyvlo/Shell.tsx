@@ -201,14 +201,25 @@ export function NyvloMark({
         role="img"
         className={["shrink-0", animated ? "nyvlo-spark-pulse" : ""].join(" ")}
       >
-        {/* y+v monogram: a heavy coral chevron converging to one point,
-            with a nested negative-space 'v' inside the 'y', plus a short
-            descender tick — asymmetric, single bold gesture. */}
+        {/* nyvlo mark: one continuous ink gesture — the 'y' and 'v' written
+            in a single breath. Left arm dips lower than the right (asymmetry
+            = life), curls through the valley, lifts to the right, and the
+            descender trails off-axis like ink leaving the page. */}
         <path
-          d="M12 16 L50 72 L88 16 L70 16 L50 46 L30 16 Z"
-          fill="oklch(0.70 0.21 28)"
+          d="M16 18 C 28 38, 40 60, 50 64 C 60 60, 72 38, 84 18"
+          stroke="oklch(0.70 0.21 28)"
+          strokeWidth="13"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
         />
-        <rect x="46" y="78" width="8" height="14" rx="2" fill="oklch(0.70 0.21 28)" />
+        <path
+          d="M50 64 C 50 78, 46 86, 38 92"
+          stroke="oklch(0.70 0.21 28)"
+          strokeWidth="11"
+          strokeLinecap="round"
+          fill="none"
+        />
       </svg>
 
       {withWordmark && (
