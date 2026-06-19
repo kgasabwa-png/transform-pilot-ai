@@ -39,7 +39,7 @@ const DEMO: DemoPromise[] = [
     due_at: inHours(-3),
     confidence: 0.94,
     evidence_snippet: "I'll have the updated forecast over to you by Thursday EOD.",
-    draft_reply: "Hi Priya — sending the Q3 forecast now. Two callouts: pipeline is up 14% QoQ, and the EU segment is the swing factor. Happy to walk through tomorrow.",
+    draft_reply: "Hi Priya. Sending the Q3 forecast now. Two callouts: pipeline is up 14% QoQ, and the EU segment is the swing factor. Happy to walk through tomorrow.",
   },
   {
     id: "2",
@@ -49,7 +49,7 @@ const DEMO: DemoPromise[] = [
     due_at: inHours(6),
     confidence: 0.88,
     evidence_snippet: "Let me revise the SOW and circle back later today.",
-    draft_reply: "Hey Marcus — revised SOW attached. Tightened scope on Phase 2 and pulled in the milestone dates we discussed.",
+    draft_reply: "Hey Marcus. Revised SOW attached. Tightened scope on Phase 2 and pulled in the milestone dates we discussed.",
   },
   {
     id: "3",
