@@ -67,9 +67,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "Nyvlo finds the follow-ups, promises, and loose ends slipping through your week." },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "Nyvlo" },
+      { property: "og:image", content: "https://transform-pilot-ai.lovable.app/nyvlo-og.jpg" },
+      { property: "og:image:width", content: "1216" },
+      { property: "og:image:height", content: "640" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Nyvlo — The AI that catches what you forgot" },
       { name: "twitter:description", content: "Catch the follow-ups and promises slipping through your week." },
+      { name: "twitter:image", content: "https://transform-pilot-ai.lovable.app/nyvlo-og.jpg" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

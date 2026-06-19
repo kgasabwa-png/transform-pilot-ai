@@ -31,7 +31,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
     const t = text.trim();
     if (!t) return;
     // Hand off to Command Center with the question pre-filled
-    navigate({ to: "/app/command", search: { q: t } as never });
+    navigate({ to: "/app/command", search: { q: t } });
     onClose();
   };
 
@@ -48,7 +48,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
             className="flex-1 bg-transparent text-[15px] outline-none placeholder:text-muted-foreground"
           />
           <kbd className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">esc</kbd>
-          <button type="button" onClick={onClose} className="ml-1 rounded p-1 text-muted-foreground hover:bg-muted"><X className="h-3.5 w-3.5" /></button>
+          <button type="button" onClick={onClose} aria-label="Close command palette" className="ml-1 rounded p-1 text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><X className="h-3.5 w-3.5" /></button>
         </form>
 
         <div className="max-h-[55vh] overflow-y-auto px-4 py-4">

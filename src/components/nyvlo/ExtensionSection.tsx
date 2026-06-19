@@ -61,16 +61,10 @@ export function ExtensionSection() {
     toast.success("Token copied");
   };
 
-  const downloadExtension = async () => {
+  const handleDownload = async (url: string, filename: string) => {
     try {
-      const res = await fetch("/nyvlo-extension.zip");
-      if (!res.ok) throw new Error(`Download failed (${res.status})`);
-      const blob = await res.blob();
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "nyvlo-extension.zip";
-      a.click();
-      URL.revokeObjectURL(a.href);
+      const { downloadFile } = await import("@/lib/download");
+      await downloadFile(url, filename);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Download failed");
     }
@@ -83,8 +77,9 @@ export function ExtensionSection() {
           Browser extension
         </span>
         <button
-          onClick={downloadExtension}
-          className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[11px] hover:bg-muted"
+          onClick={() => handleDownload("/nyvlo-extension.zip", "nyvlo-extension.zip")}
+          aria-label="Download browser extension"
+          className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[11px] hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Download className="h-3 w-3" /> Download
         </button>
@@ -108,21 +103,9 @@ export function ExtensionSection() {
           </div>
         </div>
         <button
-          onClick={async () => {
-            try {
-              const res = await fetch("/nyvlo-desktop.zip");
-              if (!res.ok) throw new Error(`Download failed (${res.status})`);
-              const blob = await res.blob();
-              const a = document.createElement("a");
-              a.href = URL.createObjectURL(blob);
-              a.download = "nyvlo-desktop.zip";
-              a.click();
-              URL.revokeObjectURL(a.href);
-            } catch (e) {
-              toast.error(e instanceof Error ? e.message : "Download failed");
-            }
-          }}
-          className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[11px] hover:bg-muted"
+          onClick={() => handleDownload("/nyvlo-desktop.zip", "nyvlo-desktop.zip")}
+          aria-label="Download desktop app source"
+          className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[11px] hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Download className="h-3 w-3" /> Source
         </button>

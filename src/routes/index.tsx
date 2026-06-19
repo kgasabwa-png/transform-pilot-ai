@@ -150,9 +150,8 @@ function Landing() {
             <span>© 2026 Nyvlo</span>
           </div>
           <div className="flex items-center gap-5">
-            <a href="#" className="hover:text-foreground">Privacy</a>
-            <a href="#" className="hover:text-foreground">Terms</a>
-            <a href="#" className="hover:text-foreground">Contact</a>
+            <span className="text-muted-foreground/70">Privacy · coming soon</span>
+            <a href="mailto:hello@nyvlo.app" className="hover:text-foreground">Contact</a>
           </div>
         </div>
       </footer>
@@ -192,7 +191,7 @@ function PreviewCard() {
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-[0_30px_80px_-30px_rgba(15,15,30,0.18)]">
       <div className="flex items-center justify-between border-b border-border bg-secondary/40 px-4 py-2.5">
         <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
-          <NyvloMark className="!h-4 !w-4 !rounded-[5px]" />
+          <NyvloMark size="sm" />
           Nyvlo · Today
         </div>
         <div className="font-mono text-[11px] text-muted-foreground">⌘J ask anything</div>
@@ -200,8 +199,8 @@ function PreviewCard() {
       <div className="px-5 py-5">
         <div className="mb-3 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">Things needing attention</div>
         <div className="flex flex-col gap-2">
-          {rows.map((r, i) => (
-            <div key={i} className="flex items-center gap-3 rounded-lg border border-border bg-background px-3.5 py-3">
+          {rows.map((r) => (
+            <div key={r.title} className="flex items-center gap-3 rounded-lg border border-border bg-background px-3.5 py-3">
               <span className={`h-2 w-2 rounded-full ${r.dot}`} />
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[14px] font-medium">{r.title}</div>
