@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { ArrowRight, Sparkles, Inbox, Clock, BookMarked, Check, X, ChevronDown, Mail, CalendarDays, StickyNote, PlayCircle } from "lucide-react";
+import { NyvloMark } from "@/components/nyvlo/Shell";
 
 export const Route = createFileRoute("/try")({
   head: () => ({
@@ -107,11 +108,7 @@ function TryPage() {
         {/* Sidebar */}
         <aside className="sticky top-[42px] hidden h-[calc(100dvh-42px)] w-[244px] shrink-0 flex-col border-r border-border/80 bg-secondary px-4 py-6 md:flex">
           <Link to="/" className="mb-7 flex items-center gap-2 px-2">
-            <img
-              src="/__l5e/assets-v1/6211f021-75b1-484a-8d96-f59fda81e71b/nyvlo-logo-transparent.png"
-              alt="Nyvlo"
-              className="h-14 w-auto shrink-0"
-            />
+            <NyvloMark size="lg" />
           </Link>
           <nav className="flex flex-col gap-0.5">
             <DemoNav icon={Sparkles} label="Today" active />
