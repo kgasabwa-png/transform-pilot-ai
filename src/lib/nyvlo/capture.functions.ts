@@ -38,9 +38,10 @@ export const getCaptureSession = createServerFn({ method: "GET" })
       await Promise.all([
         context.supabase
           .from("capture_sessions")
-          .select("*")
+          .select("id, label, source, status, started_at, ended_at, duration_seconds, summary, notes_md")
           .eq("id", data.sessionId)
           .maybeSingle(),
+
         context.supabase
           .from("audio_chunks")
           .select("id, sequence, started_at, speaker, transcript, status, error")
