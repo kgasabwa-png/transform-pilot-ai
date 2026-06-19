@@ -6,10 +6,10 @@ import { NyvloMark } from "@/components/nyvlo/Shell";
 export const Route = createFileRoute("/try")({
   head: () => ({
     meta: [
-      { title: "Try Nyvlo · Live demo" },
-      { name: "description", content: "Explore a fully populated Nyvlo workspace — no signup required." },
-      { property: "og:title", content: "Try Nyvlo · Live demo" },
-      { property: "og:description", content: "Explore a fully populated Nyvlo workspace — no signup required." },
+      { title: "Try Nyvlo | Live demo" },
+      { name: "description", content: "Explore a fully populated Nyvlo workspace with no signup required" },
+      { property: "og:title", content: "Try Nyvlo | Live demo" },
+      { property: "og:description", content: "Explore a fully populated Nyvlo workspace with no signup required" },
     ],
   }),
   component: TryPage,
@@ -67,7 +67,7 @@ const DEMO: DemoPromise[] = [
     channel: "email",
     due_at: inHours(48),
     confidence: 0.76,
-    evidence_snippet: "Happy to make the intro — let me ping them this week.",
+    evidence_snippet: "Happy to make the intro. Let me ping them this week.",
   },
   {
     id: "5",
@@ -92,8 +92,8 @@ function TryPage() {
         <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 py-2.5 text-[12.5px]">
           <div className="flex items-center gap-2">
             <PlayCircle className="h-4 w-4" />
-            <span className="font-medium">You're in the live demo.</span>
-            <span className="hidden text-background/70 sm:inline">Sample data, no account needed.</span>
+            <span className="font-medium">You are in the live demo</span>
+            <span className="hidden text-background/70 sm:inline">Sample data, no account needed</span>
           </div>
           <Link
             to="/auth"
@@ -117,21 +117,21 @@ function TryPage() {
             <DemoNav icon={BookMarked} label="Command Center" />
           </nav>
           <div className="mt-auto rounded-lg border border-border bg-background/40 p-3 text-[12px] text-muted-foreground">
-            This sidebar is interactive in the real app.
+            This sidebar is interactive in the real app
           </div>
         </aside>
 
         {/* Main */}
         <main className="min-w-0 flex-1 px-5 py-8 md:px-10 md:py-12">
           <header className="mb-8">
-            <h1 className="text-[28px] font-semibold tracking-tight">Hi Alex.</h1>
-            <p className="mt-1 text-[14px] text-muted-foreground">Here's what Nyvlo caught for you.</p>
+            <h1 className="text-[28px] font-semibold tracking-tight">Hi Alex</h1>
+            <p className="mt-1 text-[14px] text-muted-foreground">Here is what Nyvlo caught for you</p>
           </header>
 
           <section className="mb-8 grid gap-4 md:grid-cols-3">
             <StatTile label="Needs attention" value={String(attention.length)} hint="overdue + today" />
             <StatTile label="Open promises" value={String(stats.open)} hint="across the inbox" />
-            <StatTile label="Reliability" value={`${Math.round(stats.reliability * 100)}%`} hint={`${stats.kept} kept · ${stats.missed} missed`} />
+              <StatTile label="Reliability" value={`${Math.round(stats.reliability * 100)}%`} hint={`${stats.kept} kept  ${stats.missed} missed`} />
           </section>
 
           <section className="mb-10">
@@ -153,7 +153,7 @@ function TryPage() {
               <div>
                 <div className="text-[15px] font-medium">Ready to try with your real inbox?</div>
                 <p className="mt-1 text-[13px] text-muted-foreground">
-                  Connect Google in 30 seconds. Read-only access. You can disconnect any time.
+                  Connect Google in 30 seconds with read-only access you can disconnect any time
                 </p>
               </div>
               <Link
@@ -214,7 +214,7 @@ function DemoRow({ item }: { item: DemoPromise }) {
       : { dot: "bg-primary", label: "text-primary" };
   const dueLabel =
     diff < -86400_000
-      ? `Overdue · ${Math.floor(-diff / 86400_000)}d`
+      ? `Overdue ${Math.floor(-diff / 86400_000)}d`
       : diff < 0
       ? "Overdue"
       : diff < 86400_000
@@ -226,7 +226,7 @@ function DemoRow({ item }: { item: DemoPromise }) {
   if (status !== "open") {
     return (
       <div className="flex items-center justify-between rounded-lg border border-dashed border-border px-4 py-3 text-[12.5px] text-muted-foreground">
-        <span>{status === "kept" ? "Marked done" : "Dismissed"} — {item.summary}</span>
+        <span>{status === "kept" ? "Marked done" : "Dismissed"}  {item.summary}</span>
         <button onClick={() => setStatus("open")} className="text-foreground/70 hover:text-foreground">Undo</button>
       </div>
     );
@@ -239,20 +239,18 @@ function DemoRow({ item }: { item: DemoPromise }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-x-2">
             <h3 className="text-[15px] font-medium tracking-tight">{item.summary}</h3>
-            {item.owed_to && <span className="text-[12.5px] text-muted-foreground">· {item.owed_to}</span>}
+            {item.owed_to && <span className="text-[12.5px] text-muted-foreground">{item.owed_to}</span>}
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px]">
             <span className={`font-medium ${tone.label}`}>{dueLabel}</span>
-            <span className="text-muted-foreground/70">·</span>
             <span className="inline-flex items-center gap-1 text-muted-foreground">
               <SrcIcon className="h-3 w-3" /> {item.channel}
             </span>
-            <span className="text-muted-foreground/70">·</span>
             <span className="font-mono text-[10.5px] text-muted-foreground">
               {Math.round(item.confidence * 100)}% confidence
             </span>
           </div>
-          <p className="mt-2 border-l-2 border-border pl-2 text-[12.5px] italic leading-snug text-muted-foreground line-clamp-2">
+          <p className="mt-2 border-l-2 border-border pl-2 text-[12.5px] leading-snug text-muted-foreground line-clamp-2">
             "{item.evidence_snippet}"
           </p>
         </div>
