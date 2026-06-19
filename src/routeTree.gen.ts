@@ -17,12 +17,15 @@ import { Route as FounderRouteImport } from './routes/founder'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as AuthenticatedAppSettingsRouteImport } from './routes/_authenticated/app.settings'
 import { Route as AuthenticatedAppPromisesRouteImport } from './routes/_authenticated/app.promises'
 import { Route as AuthenticatedAppMemoryRouteImport } from './routes/_authenticated/app.memory'
@@ -33,7 +36,12 @@ import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminOpsRouteImport } from './routes/_authenticated/admin.ops'
 import { Route as AuthenticatedAdminIngestionRouteImport } from './routes/_authenticated/admin.ingestion'
 import { Route as AuthenticatedAdminEventsRouteImport } from './routes/_authenticated/admin.events'
+import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
+import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicIngestSessionStartRouteImport } from './routes/api/public/ingest/session-start'
 import { Route as ApiPublicIngestSessionEndRouteImport } from './routes/api/public/ingest/session-end'
 import { Route as ApiPublicIngestScreenFrameRouteImport } from './routes/api/public/ingest/screen-frame'
@@ -87,6 +95,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
+  id: '/email/unsubscribe',
+  path: '/email/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
+  id: '/checkout/return',
+  path: '/checkout/return',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -116,6 +134,11 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
+  id: '/lovable/email/suppression',
+  path: '/lovable/email/suppression',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAppSettingsRoute =
   AuthenticatedAppSettingsRouteImport.update({
@@ -171,10 +194,38 @@ const AuthenticatedAdminEventsRoute =
     path: '/events',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const LovableEmailTransactionalSendRoute =
+  LovableEmailTransactionalSendRouteImport.update({
+    id: '/lovable/email/transactional/send',
+    path: '/lovable/email/transactional/send',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
     id: '/lovable/email/queue/process',
     path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
+  id: '/lovable/email/auth/webhook',
+  path: '/lovable/email/auth/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
+  id: '/lovable/email/auth/preview',
+  path: '/lovable/email/auth/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicPaymentsWebhookRoute =
+  ApiPublicPaymentsWebhookRouteImport.update({
+    id: '/api/public/payments/webhook',
+    path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicIngestSessionStartRoute =
@@ -264,6 +315,8 @@ export interface FileRoutesByFullPath {
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/api/chat': typeof ApiChatRoute
+  '/checkout/return': typeof CheckoutReturnRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/admin/events': typeof AuthenticatedAdminEventsRoute
   '/admin/ingestion': typeof AuthenticatedAdminIngestionRoute
   '/admin/ops': typeof AuthenticatedAdminOpsRoute
@@ -274,6 +327,7 @@ export interface FileRoutesByFullPath {
   '/app/memory': typeof AuthenticatedAppMemoryRoute
   '/app/promises': typeof AuthenticatedAppPromisesRoute
   '/app/settings': typeof AuthenticatedAppSettingsRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/app/': typeof AuthenticatedAppIndexRoute
   '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
@@ -289,7 +343,12 @@ export interface FileRoutesByFullPath {
   '/api/public/ingest/screen-frame': typeof ApiPublicIngestScreenFrameRoute
   '/api/public/ingest/session-end': typeof ApiPublicIngestSessionEndRoute
   '/api/public/ingest/session-start': typeof ApiPublicIngestSessionStartRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -301,6 +360,8 @@ export interface FileRoutesByTo {
   '/try': typeof TryRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/api/chat': typeof ApiChatRoute
+  '/checkout/return': typeof CheckoutReturnRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/admin/events': typeof AuthenticatedAdminEventsRoute
   '/admin/ingestion': typeof AuthenticatedAdminIngestionRoute
   '/admin/ops': typeof AuthenticatedAdminOpsRoute
@@ -311,6 +372,7 @@ export interface FileRoutesByTo {
   '/app/memory': typeof AuthenticatedAppMemoryRoute
   '/app/promises': typeof AuthenticatedAppPromisesRoute
   '/app/settings': typeof AuthenticatedAppSettingsRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/app': typeof AuthenticatedAppIndexRoute
   '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
@@ -326,7 +388,12 @@ export interface FileRoutesByTo {
   '/api/public/ingest/screen-frame': typeof ApiPublicIngestScreenFrameRoute
   '/api/public/ingest/session-end': typeof ApiPublicIngestSessionEndRoute
   '/api/public/ingest/session-start': typeof ApiPublicIngestSessionStartRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -342,6 +409,8 @@ export interface FileRoutesById {
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/api/chat': typeof ApiChatRoute
+  '/checkout/return': typeof CheckoutReturnRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/_authenticated/admin/events': typeof AuthenticatedAdminEventsRoute
   '/_authenticated/admin/ingestion': typeof AuthenticatedAdminIngestionRoute
   '/_authenticated/admin/ops': typeof AuthenticatedAdminOpsRoute
@@ -352,6 +421,7 @@ export interface FileRoutesById {
   '/_authenticated/app/memory': typeof AuthenticatedAppMemoryRoute
   '/_authenticated/app/promises': typeof AuthenticatedAppPromisesRoute
   '/_authenticated/app/settings': typeof AuthenticatedAppSettingsRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
   '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
@@ -367,7 +437,12 @@ export interface FileRoutesById {
   '/api/public/ingest/screen-frame': typeof ApiPublicIngestScreenFrameRoute
   '/api/public/ingest/session-end': typeof ApiPublicIngestSessionEndRoute
   '/api/public/ingest/session-start': typeof ApiPublicIngestSessionStartRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -383,6 +458,8 @@ export interface FileRouteTypes {
     | '/app'
     | '/onboarding'
     | '/api/chat'
+    | '/checkout/return'
+    | '/email/unsubscribe'
     | '/admin/events'
     | '/admin/ingestion'
     | '/admin/ops'
@@ -393,6 +470,7 @@ export interface FileRouteTypes {
     | '/app/memory'
     | '/app/promises'
     | '/app/settings'
+    | '/lovable/email/suppression'
     | '/admin/'
     | '/app/'
     | '/api/oauth/google/callback'
@@ -408,7 +486,12 @@ export interface FileRouteTypes {
     | '/api/public/ingest/screen-frame'
     | '/api/public/ingest/session-end'
     | '/api/public/ingest/session-start'
+    | '/api/public/payments/webhook'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -420,6 +503,8 @@ export interface FileRouteTypes {
     | '/try'
     | '/onboarding'
     | '/api/chat'
+    | '/checkout/return'
+    | '/email/unsubscribe'
     | '/admin/events'
     | '/admin/ingestion'
     | '/admin/ops'
@@ -430,6 +515,7 @@ export interface FileRouteTypes {
     | '/app/memory'
     | '/app/promises'
     | '/app/settings'
+    | '/lovable/email/suppression'
     | '/admin'
     | '/app'
     | '/api/oauth/google/callback'
@@ -445,7 +531,12 @@ export interface FileRouteTypes {
     | '/api/public/ingest/screen-frame'
     | '/api/public/ingest/session-end'
     | '/api/public/ingest/session-start'
+    | '/api/public/payments/webhook'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
   id:
     | '__root__'
     | '/'
@@ -460,6 +551,8 @@ export interface FileRouteTypes {
     | '/_authenticated/app'
     | '/_authenticated/onboarding'
     | '/api/chat'
+    | '/checkout/return'
+    | '/email/unsubscribe'
     | '/_authenticated/admin/events'
     | '/_authenticated/admin/ingestion'
     | '/_authenticated/admin/ops'
@@ -470,6 +563,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/memory'
     | '/_authenticated/app/promises'
     | '/_authenticated/app/settings'
+    | '/lovable/email/suppression'
     | '/_authenticated/admin/'
     | '/_authenticated/app/'
     | '/api/oauth/google/callback'
@@ -485,7 +579,12 @@ export interface FileRouteTypes {
     | '/api/public/ingest/screen-frame'
     | '/api/public/ingest/session-end'
     | '/api/public/ingest/session-start'
+    | '/api/public/payments/webhook'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -498,6 +597,9 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   TryRoute: typeof TryRoute
   ApiChatRoute: typeof ApiChatRoute
+  CheckoutReturnRoute: typeof CheckoutReturnRoute
+  EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiOauthGoogleCallbackRoute: typeof ApiOauthGoogleCallbackRoute
   ApiPublicAuthDevicePollRoute: typeof ApiPublicAuthDevicePollRoute
   ApiPublicAuthDeviceStartRoute: typeof ApiPublicAuthDeviceStartRoute
@@ -511,7 +613,12 @@ export interface RootRouteChildren {
   ApiPublicIngestScreenFrameRoute: typeof ApiPublicIngestScreenFrameRoute
   ApiPublicIngestSessionEndRoute: typeof ApiPublicIngestSessionEndRoute
   ApiPublicIngestSessionStartRoute: typeof ApiPublicIngestSessionStartRoute
+  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
+  LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
+  LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
+  LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -572,6 +679,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/email/unsubscribe': {
+      id: '/email/unsubscribe'
+      path: '/email/unsubscribe'
+      fullPath: '/email/unsubscribe'
+      preLoaderRoute: typeof EmailUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout/return': {
+      id: '/checkout/return'
+      path: '/checkout/return'
+      fullPath: '/checkout/return'
+      preLoaderRoute: typeof CheckoutReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -613,6 +734,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/lovable/email/suppression': {
+      id: '/lovable/email/suppression'
+      path: '/lovable/email/suppression'
+      fullPath: '/lovable/email/suppression'
+      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/app/settings': {
       id: '/_authenticated/app/settings'
@@ -684,11 +812,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminEventsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/lovable/email/transactional/send': {
+      id: '/lovable/email/transactional/send'
+      path: '/lovable/email/transactional/send'
+      fullPath: '/lovable/email/transactional/send'
+      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/queue/process': {
       id: '/lovable/email/queue/process'
       path: '/lovable/email/queue/process'
       fullPath: '/lovable/email/queue/process'
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/auth/webhook': {
+      id: '/lovable/email/auth/webhook'
+      path: '/lovable/email/auth/webhook'
+      fullPath: '/lovable/email/auth/webhook'
+      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/auth/preview': {
+      id: '/lovable/email/auth/preview'
+      path: '/lovable/email/auth/preview'
+      fullPath: '/lovable/email/auth/preview'
+      preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/payments/webhook': {
+      id: '/api/public/payments/webhook'
+      path: '/api/public/payments/webhook'
+      fullPath: '/api/public/payments/webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/ingest/session-start': {
@@ -852,6 +1015,9 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   TryRoute: TryRoute,
   ApiChatRoute: ApiChatRoute,
+  CheckoutReturnRoute: CheckoutReturnRoute,
+  EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiOauthGoogleCallbackRoute: ApiOauthGoogleCallbackRoute,
   ApiPublicAuthDevicePollRoute: ApiPublicAuthDevicePollRoute,
   ApiPublicAuthDeviceStartRoute: ApiPublicAuthDeviceStartRoute,
@@ -865,7 +1031,12 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicIngestScreenFrameRoute: ApiPublicIngestScreenFrameRoute,
   ApiPublicIngestSessionEndRoute: ApiPublicIngestSessionEndRoute,
   ApiPublicIngestSessionStartRoute: ApiPublicIngestSessionStartRoute,
+  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
+  LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
+  LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
+  LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
