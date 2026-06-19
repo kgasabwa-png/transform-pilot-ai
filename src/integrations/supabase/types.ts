@@ -44,6 +44,107 @@ export type Database = {
         }
         Relationships: []
       }
+      audio_chunks: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          error: string | null
+          id: string
+          sequence: number
+          session_id: string
+          source_channel: string | null
+          speaker: string | null
+          started_at: string
+          status: string
+          transcript: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          id?: string
+          sequence: number
+          session_id: string
+          source_channel?: string | null
+          speaker?: string | null
+          started_at: string
+          status?: string
+          transcript?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          id?: string
+          sequence?: number
+          session_id?: string
+          source_channel?: string | null
+          speaker?: string | null
+          started_at?: string
+          status?: string
+          transcript?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audio_chunks_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "capture_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      capture_sessions: {
+        Row: {
+          created_at: string
+          duration_seconds: number | null
+          ended_at: string | null
+          id: string
+          label: string | null
+          metadata: Json
+          source: string
+          started_at: string
+          status: string
+          summary: string | null
+          transcript: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          label?: string | null
+          metadata?: Json
+          source?: string
+          started_at?: string
+          status?: string
+          summary?: string | null
+          transcript?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          label?: string | null
+          metadata?: Json
+          source?: string
+          started_at?: string
+          status?: string
+          summary?: string | null
+          transcript?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       connections: {
         Row: {
           access_token: string | null
@@ -472,6 +573,7 @@ export type Database = {
       }
       promises: {
         Row: {
+          capture_session_id: string | null
           channel: string | null
           confidence: number | null
           created_at: string
@@ -489,6 +591,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          capture_session_id?: string | null
           channel?: string | null
           confidence?: number | null
           created_at?: string
@@ -506,6 +609,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          capture_session_id?: string | null
           channel?: string | null
           confidence?: number | null
           created_at?: string
@@ -523,6 +627,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "promises_capture_session_id_fkey"
+            columns: ["capture_session_id"]
+            isOneToOne: false
+            referencedRelation: "capture_sessions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "promises_source_id_fkey"
             columns: ["source_id"]
@@ -564,6 +675,62 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      screen_frames: {
+        Row: {
+          app_name: string | null
+          captured_at: string
+          created_at: string
+          error: string | null
+          id: string
+          ocr_text: string | null
+          sequence: number
+          session_id: string
+          status: string
+          url: string | null
+          user_id: string
+          vision_summary: string | null
+          window_title: string | null
+        }
+        Insert: {
+          app_name?: string | null
+          captured_at: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          ocr_text?: string | null
+          sequence: number
+          session_id: string
+          status?: string
+          url?: string | null
+          user_id: string
+          vision_summary?: string | null
+          window_title?: string | null
+        }
+        Update: {
+          app_name?: string | null
+          captured_at?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          ocr_text?: string | null
+          sequence?: number
+          session_id?: string
+          status?: string
+          url?: string | null
+          user_id?: string
+          vision_summary?: string | null
+          window_title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "screen_frames_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "capture_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sources: {
         Row: {
