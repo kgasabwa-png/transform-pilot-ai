@@ -78,6 +78,7 @@ function CapturePage() {
       ) : null}
       <div className="mb-6">
         <BrowserRecorder
+          maxSeconds={q && !q.is_pro ? 30 * 60 : undefined}
           onSessionChange={(id) => {
             if (id) setSelectedId(id);
             qc.invalidateQueries({ queryKey: ["capture-sessions"] });
