@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; connect-src https://transform-pilot-ai.lovable.app https://*.lovable.app;" />
+    <title>Nyvlo</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; padding: 20px; min-height: 100vh;
+        background: #0b0b0b; color: #f5f5f5;
+        font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+        display: flex; flex-direction: column; gap: 14px;
+      }
+      h1 { font-size: 15px; margin: 0; letter-spacing: -0.01em; font-weight: 600; }
+      .sub { color: #9a9a9a; font-size: 12px; margin-top: 2px; }
+      .card { background: #161616; border: 1px solid #242424; border-radius: 10px; padding: 14px; }
+      input[type="text"], textarea {
+        width: 100%; background: #0b0b0b; border: 1px solid #2a2a2a; color: #f5f5f5;
+        border-radius: 6px; padding: 8px 10px; font: inherit;
+      }
+      textarea { min-height: 90px; resize: vertical; }
+      label { font-size: 11px; color: #9a9a9a; text-transform: uppercase; letter-spacing: 0.06em; }
+      button {
+        appearance: none; border: 1px solid #2a2a2a; background: #1f1f1f; color: #f5f5f5;
+        border-radius: 6px; padding: 8px 12px; font: 500 13px/1 inherit; cursor: pointer;
+      }
+      button:hover { background: #262626; }
+      button.primary { background: #ef4444; border-color: #ef4444; color: white; }
+      button.primary.recording { background: #16a34a; border-color: #16a34a; }
+      button:disabled { opacity: 0.5; cursor: not-allowed; }
+      .row { display: flex; gap: 8px; align-items: center; }
+      .pulse { width: 10px; height: 10px; border-radius: 50%; background: #ef4444; animation: pulse 1.2s infinite; display: none; }
+      .recording .pulse { display: inline-block; }
+      @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.3 } }
+      .status { font-size: 12px; color: #9a9a9a; min-height: 1.2em; }
+      .ok { color: #22c55e; }
+      .err { color: #ef4444; }
+      .small { font-size: 11px; color: #6b6b6b; }
+      a { color: #60a5fa; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Nyvlo Desktop</h1>
+      <div class="sub">Record a call → auto-extract promises.</div>
+    </header>
+
+    <section class="card" id="setup-card">
+      <label>Nyvlo token</label>
+      <input id="token" type="text" placeholder="nyv_..." autocomplete="off" />
+      <div style="height: 8px"></div>
+      <div class="row" style="justify-content: space-between">
+        <button id="save-token">Save</button>
+        <a href="https://transform-pilot-ai.lovable.app/app/settings" target="_blank" rel="noreferrer">Get a token</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <label>Meeting</label>
+      <input id="meeting-title" type="text" placeholder="e.g. Acme weekly sync" />
+      <div style="height: 10px"></div>
+      <div class="row" id="record-row">
+        <button id="record" class="primary"><span class="pulse"></span> Start recording</button>
+        <div id="timer" class="small">00:00</div>
+      </div>
+      <div class="status" id="status"></div>
+    </section>
+
+    <section class="card" id="result-card" style="display: none">
+      <label>Transcript</label>
+      <textarea id="transcript" readonly></textarea>
+      <div style="height: 8px"></div>
+      <div class="row" style="justify-content: space-between">
+        <div class="small" id="promise-count">—</div>
+        <button id="reset">New recording</button>
+      </div>
+    </section>
+
+    <div class="small" style="text-align:center">
+      Audio never leaves your machine until you stop — then it's sent to Nyvlo only for transcription.
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
