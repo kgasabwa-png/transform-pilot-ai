@@ -190,14 +190,7 @@ export function NyvloMark({
     size === "lg" ? "text-[22px]" :
     size === "xl" ? "text-[44px]" :
     "text-[18px]";
-  // y+v stacked-chevron monogram — refined.
-  // Two interlocking V-strokes converge into a solid diamond node.
-  // Top chevron uses a coral→ember vertical gradient (lighter at the arms,
-  // hotter at the apex) so the eye is pulled into the convergence point.
-  // The bottom chevron mirrors with deeper saturation for grounded weight.
-  // Tiny coral spark on the apex of the lower V = the "memory" being held.
-  const stroke = size === "sm" ? 13 : 11;
-  const uid = `nv-${size}`;
+  const uid = `nv-orbit-${size}`;
   return (
     <span className={["inline-flex items-center gap-2.5 shrink-0", className].join(" ")}>
       <svg
@@ -207,55 +200,85 @@ export function NyvloMark({
         fill="none"
         aria-label="Nyvlo"
         role="img"
-        className={["shrink-0", animated ? "nyvlo-pulse" : ""].join(" ")}
-        style={{ filter: "drop-shadow(0 6px 18px oklch(0.65 0.22 28 / 38%))" }}
+        className={["shrink-0", animated ? "nyvlo-orbit-glow" : ""].join(" ")}
+        style={animated ? undefined : { filter: "drop-shadow(0 4px 14px oklch(0.74 0.17 30 / 30%))" }}
       >
         <defs>
-          <linearGradient id={`${uid}-top`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="oklch(0.82 0.16 32)" />
-            <stop offset="100%" stopColor="oklch(0.68 0.22 26)" />
-          </linearGradient>
-          <linearGradient id={`${uid}-bot`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="oklch(0.70 0.22 28)" />
-            <stop offset="100%" stopColor="oklch(0.52 0.20 22)" />
-          </linearGradient>
-          <radialGradient id={`${uid}-node`} cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="oklch(0.95 0.08 40)" />
-            <stop offset="55%" stopColor="oklch(0.72 0.22 28)" />
-            <stop offset="100%" stopColor="oklch(0.48 0.20 22)" stopOpacity="0.9" />
+          <radialGradient id={`${uid}-ambient`} cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="oklch(0.74 0.17 30 / 20%)" />
+            <stop offset="100%" stopColor="oklch(0.74 0.17 30 / 0%)" />
           </radialGradient>
+          <radialGradient id={`${uid}-sphere`} cx="36%" cy="32%" r="68%">
+            <stop offset="0%" stopColor="oklch(0.95 0.08 40)" />
+            <stop offset="25%" stopColor="oklch(0.80 0.17 32)" />
+            <stop offset="70%" stopColor="oklch(0.64 0.20 26)" />
+            <stop offset="100%" stopColor="oklch(0.52 0.18 24)" />
+          </radialGradient>
+          <radialGradient id={`${uid}-rim`} cx="65%" cy="70%" r="50%">
+            <stop offset="0%" stopColor="oklch(0.74 0.17 30 / 30%)" />
+            <stop offset="100%" stopColor="oklch(0.74 0.17 30 / 0%)" />
+          </radialGradient>
+          <radialGradient id={`${uid}-highlight`} cx="30%" cy="30%" r="50%">
+            <stop offset="0%" stopColor="oklch(0.97 0.005 250 / 50%)" />
+            <stop offset="100%" stopColor="oklch(0.97 0.005 250 / 0%)" />
+          </radialGradient>
+          <linearGradient id={`${uid}-ring`} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="oklch(0.97 0.005 250 / 40%)" />
+            <stop offset="45%" stopColor="oklch(0.74 0.17 30 / 75%)" />
+            <stop offset="100%" stopColor="oklch(0.97 0.005 250 / 40%)" />
+          </linearGradient>
         </defs>
 
-        {/* Soft halo behind the convergence */}
-        <circle cx="50" cy="55" r="22" fill={`url(#${uid}-node)`} opacity="0.18" />
+        {/* Ambient glow */}
+        <circle cx="50" cy="50" r="46" fill={`url(#${uid}-ambient)`} />
 
-        {/* Solid diamond node — the convergence */}
-        <path
-          d="M50 36 L61 55 L50 74 L39 55 Z"
-          fill={`url(#${uid}-node)`}
-          opacity="0.95"
-        />
+        {/* Orbit system */}
+        <g className={animated ? "nyvlo-orbit-slow" : ""} style={{ transformOrigin: "50px 50px" }}>
+          {/* Primary orbit arc */}
+          <path
+            d="M 16 37 A 40 33 0 1 1 82 31"
+            stroke={`url(#${uid}-ring)`}
+            strokeWidth="3.2"
+            fill="none"
+            strokeLinecap="round"
+          />
+          {/* Secondary subtle arc */}
+          <path
+            d="M 24 70 A 32 26 0 0 0 73 73"
+            stroke="oklch(0.74 0.17 30 / 22%)"
+            strokeWidth="1.4"
+            fill="none"
+            strokeLinecap="round"
+          />
 
-        {/* Bottom chevron — the 'v' (drawn first so the 'y' sits on top at apex) */}
-        <path
-          d="M20 35 L50 85 L80 35"
-          stroke={`url(#${uid}-bot)`}
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+          {/* Coral dots */}
+          <circle cx="15" cy="38" r="3.2" fill="oklch(0.74 0.17 30)">
+            {animated && <animate attributeName="opacity" values="1;0.55;1" dur="2.8s" repeatCount="indefinite" begin="0s" />}
+          </circle>
+          <circle cx="83" cy="30" r="3.2" fill="oklch(0.74 0.17 30)">
+            {animated && <animate attributeName="opacity" values="1;0.55;1" dur="2.8s" repeatCount="indefinite" begin="0.9s" />}
+          </circle>
+          <circle cx="74" cy="76" r="3.2" fill="oklch(0.74 0.17 30)">
+            {animated && <animate attributeName="opacity" values="1;0.55;1" dur="2.8s" repeatCount="indefinite" begin="1.8s" />}
+          </circle>
 
-        {/* Top chevron — the 'y' */}
-        <path
-          d="M20 15 L50 65 L80 15"
-          stroke={`url(#${uid}-top)`}
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+          {/* Muted dots */}
+          <circle cx="33" cy="19" r="2.6" fill="oklch(0.35 0.014 260)" />
+          <circle cx="87" cy="53" r="2.6" fill="oklch(0.35 0.014 260)" />
+          <circle cx="47" cy="84" r="2.6" fill="oklch(0.35 0.014 260)" />
+        </g>
 
-        {/* Hot spark at the lower apex — the memory it holds */}
-        <circle cx="50" cy="85" r="2.2" fill="oklch(0.95 0.08 40)" opacity="0.9" />
+        {/* Central sphere */}
+        <circle cx="50" cy="50" r="19.5" fill={`url(#${uid}-sphere)`} />
+
+        {/* Rim light */}
+        <circle cx="50" cy="50" r="19.5" fill={`url(#${uid}-rim)`} />
+
+        {/* Gloss highlight */}
+        <ellipse cx="40" cy="38" rx="9" ry="6" fill={`url(#${uid}-highlight)`} transform="rotate(-28 40 38)" />
+
+        {/* Core sparkle */}
+        <circle cx="42" cy="40" r="3" fill="oklch(0.97 0.005 250 / 45%)" />
       </svg>
 
       {withWordmark && (
