@@ -79,8 +79,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", type: "image/png", href: "/__l5e/assets-v1/6211f021-75b1-484a-8d96-f59fda81e71b/nyvlo-logo-transparent.png" },
-      { rel: "apple-touch-icon", href: "/__l5e/assets-v1/6211f021-75b1-484a-8d96-f59fda81e71b/nyvlo-logo-transparent.png" },
+      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" },
