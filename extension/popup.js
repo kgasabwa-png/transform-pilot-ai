@@ -1,6 +1,5 @@
 const API_BASE = "https://transform-pilot-ai.lovable.app";
 const APP_URL = `${API_BASE}/app`;
-const SETTINGS_URL = `${API_BASE}/app/settings`;
 
 const app = document.getElementById("app");
 
@@ -42,35 +41,41 @@ function fmtRel(iso) {
   return past ? `${days}d ago` : `in ${days}d`;
 }
 
-function renderSetup(errorMsg) {
+async function getToken() {
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage({ type: "nyvlo:getToken" }, (r) => {
+      resolve(r && r.token ? r.token : null);
+    });
+  });
+}
+
+function renderSignIn(msg) {
   app.innerHTML = "";
   app.appendChild(header());
-  const input = el("input", { type: "text", placeholder: "nyv_...", autocomplete: "off" });
-  const errEl = el("div", { class: "error" }, errorMsg || "");
-  const save = el(
-    "button",
-    {
-      onclick: async () => {
-        const token = input.value.trim();
-        if (!token.startsWith("nyv_")) {
-          errEl.textContent = "Token should start with nyv_";
-          return;
-        }
-        await chrome.storage.local.set({ nyvlo_token: token });
-        await load();
-      },
-    },
-    "Save token",
-  );
   app.appendChild(
     el("div", { class: "setup" }, [
-      el("p", {}, "Paste your Nyvlo extension token to connect this browser."),
-      input,
-      el("div", { style: "display:flex; gap:6px; align-items:center;" }, [
-        save,
-        el("a", { class: "btn btn-ghost", href: SETTINGS_URL, target: "_blank" }, "Get token"),
-      ]),
-      errEl,
+      el(
+        "p",
+        {},
+        msg ||
+          "Sign in to Nyvlo in your browser to connect this extension. No tokens, no copy-paste.",
+      ),
+      el(
+        "button",
+        {
+          style: "width:100%",
+          onclick: () => {
+            chrome.runtime.sendMessage({ type: "nyvlo:openSignIn" });
+            window.close();
+          },
+        },
+        "Open Nyvlo & sign in",
+      ),
+      el(
+        "p",
+        { style: "margin-top:10px; font-size:11px;" },
+        "Already signed in on this browser? Refresh that Nyvlo tab once, then reopen this popup.",
+      ),
     ]),
   );
 }
@@ -124,7 +129,6 @@ async function captureSelection(token, statusEl) {
       n > 0
         ? `Saved · ${n} commitment${n === 1 ? "" : "s"} extracted.`
         : "Saved to memory · no commitment found.";
-    // Reload dashboard after a moment to show new promises
     setTimeout(load, 1200);
   } catch (e) {
     statusEl.className = "error";
@@ -157,7 +161,6 @@ function renderDashboard(data, token) {
     ]),
   );
 
-  // Capture-selection card
   const statusEl = el("div", { class: "stat-hint", style: "margin-top:6px; min-height:14px;" }, "");
   const captureBtn = el(
     "button",
@@ -206,17 +209,9 @@ function renderDashboard(data, token) {
     el("footer", {}, [
       el("a", { class: "link", href: APP_URL, target: "_blank" }, "All promises"),
       el(
-        "a",
-        {
-          class: "link",
-          href: "#",
-          onclick: async (e) => {
-            e.preventDefault();
-            await chrome.storage.local.remove("nyvlo_token");
-            renderSetup();
-          },
-        },
-        "Disconnect",
+        "span",
+        { class: "link", title: data.user && data.user.email ? data.user.email : "" },
+        data.user && data.user.email ? data.user.email : "Signed in",
       ),
     ]),
   );
@@ -230,20 +225,19 @@ function renderLoading() {
 
 async function load() {
   renderLoading();
-  const { nyvlo_token } = await chrome.storage.local.get("nyvlo_token");
-  if (!nyvlo_token) return renderSetup();
+  const token = await getToken();
+  if (!token) return renderSignIn();
 
   try {
     const res = await fetch(`${API_BASE}/api/public/extension/today`, {
-      headers: { Authorization: `Bearer ${nyvlo_token}` },
+      headers: { Authorization: `Bearer ${token}` },
     });
     if (res.status === 401) {
-      await chrome.storage.local.remove("nyvlo_token");
-      return renderSetup("That token isn't valid. Generate a new one.");
+      return renderSignIn("Your Nyvlo session expired. Sign in again in the browser.");
     }
     if (!res.ok) throw new Error(`Failed (${res.status})`);
     const data = await res.json();
-    renderDashboard(data, nyvlo_token);
+    renderDashboard(data, token);
   } catch (e) {
     app.innerHTML = "";
     app.appendChild(header());
