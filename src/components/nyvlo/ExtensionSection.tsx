@@ -78,12 +78,41 @@ export function ExtensionSection() {
       </div>
 
       <div className="border-b border-border px-4 py-3 text-[12px] text-muted-foreground">
-        See today's promises and reliability in your browser toolbar. Download the
-        zip, unzip it, then load it via{" "}
+        Auto-captures promises from Gmail, Slack, Notion, and Linear (plus any
+        selection elsewhere). Download the zip, unzip it, then load it via{" "}
         <code className="rounded bg-muted px-1 py-0.5 text-[11px]">
           chrome://extensions
         </code>{" "}
-        → Developer mode → Load unpacked.
+        → Developer mode → Load unpacked. Open the popup once and paste a
+        token below to enable auto-capture.
+      </div>
+
+      <div className="flex items-center justify-between border-b border-border bg-secondary/20 px-4 py-2.5">
+        <div className="text-[12px]">
+          <div className="font-medium">Desktop app (meetings)</div>
+          <div className="text-[11px] text-muted-foreground">
+            Record a call → transcript → promises in your inbox.
+          </div>
+        </div>
+        <button
+          onClick={async () => {
+            try {
+              const res = await fetch("/nyvlo-desktop.zip");
+              if (!res.ok) throw new Error(`Download failed (${res.status})`);
+              const blob = await res.blob();
+              const a = document.createElement("a");
+              a.href = URL.createObjectURL(blob);
+              a.download = "nyvlo-desktop.zip";
+              a.click();
+              URL.revokeObjectURL(a.href);
+            } catch (e) {
+              toast.error(e instanceof Error ? e.message : "Download failed");
+            }
+          }}
+          className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[11px] hover:bg-muted"
+        >
+          <Download className="h-3 w-3" /> Source
+        </button>
       </div>
 
       {newToken && (
