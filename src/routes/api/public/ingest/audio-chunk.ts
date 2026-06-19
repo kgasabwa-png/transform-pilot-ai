@@ -97,10 +97,19 @@ export const Route = createFileRoute("/api/public/ingest/audio-chunk")({
           });
           if (!res.ok) {
             const t = await res.text().catch(() => "");
+            const msg = `STT ${res.status}: ${t.slice(0, 200)}`;
             await supabase
               .from("audio_chunks")
-              .update({ status: "failed", error: `STT ${res.status}: ${t.slice(0, 200)}` })
+              .update({ status: "failed", error: msg })
               .eq("id", chunk.id);
+            const { logIngestionError } = await import("@/lib/nyvlo/ingestion-log.server");
+            await logIngestionError({
+              endpoint: "audio-chunk",
+              userId: auth.userId,
+              statusCode: res.status,
+              error: msg,
+              context: { sessionId, sequence },
+            });
             return Response.json({ error: `STT failed ${res.status}` }, { status: 502, headers: cors });
           }
           const j = (await res.json().catch(() => ({}))) as { text?: string };
@@ -113,11 +122,20 @@ export const Route = createFileRoute("/api/public/ingest/audio-chunk")({
 
           return Response.json({ chunkId: chunk.id, transcript: text }, { headers: cors });
         } catch (e: any) {
+          const msg = String(e.message ?? e).slice(0, 200);
           await supabase
             .from("audio_chunks")
-            .update({ status: "failed", error: String(e.message ?? e).slice(0, 200) })
+            .update({ status: "failed", error: msg })
             .eq("id", chunk.id);
-          return Response.json({ error: String(e.message ?? e) }, { status: 502, headers: cors });
+          const { logIngestionError } = await import("@/lib/nyvlo/ingestion-log.server");
+          await logIngestionError({
+            endpoint: "audio-chunk",
+            userId: auth.userId,
+            statusCode: 502,
+            error: msg,
+            context: { sessionId, sequence },
+          });
+          return Response.json({ error: msg }, { status: 502, headers: cors });
         }
       },
     },

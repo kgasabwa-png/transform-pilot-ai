@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, Link, useLocation } from "@tanstack/react-rout
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getMyAdminStatus } from "@/lib/admin/admin.functions";
-import { BarChart3, Users, Activity, Wrench, ShieldAlert } from "lucide-react";
+import { BarChart3, Users, Activity, Wrench, ShieldAlert, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminLayout,
@@ -12,6 +12,7 @@ const nav = [
   { to: "/admin", label: "Overview", icon: BarChart3, exact: true },
   { to: "/admin/users", label: "Users", icon: Users },
   { to: "/admin/events", label: "Events", icon: Activity },
+  { to: "/admin/ingestion", label: "Ingestion errors", icon: AlertTriangle },
   { to: "/admin/ops", label: "Ops & Health", icon: Wrench },
 ];
 

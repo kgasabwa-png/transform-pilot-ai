@@ -23,8 +23,8 @@ function Landing() {
         </Link>
         <nav className="hidden items-center gap-7 text-[13.5px] text-muted-foreground md:flex">
           <a href="#how" className="hover:text-foreground">How it works</a>
-          <a href="#privacy" className="hover:text-foreground">Privacy</a>
-          <a href="#pricing" className="hover:text-foreground">Pricing</a>
+          <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
+          <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
         </nav>
         <div className="flex items-center gap-2">
           <Link to="/auth" className="hidden text-[13px] text-muted-foreground hover:text-foreground md:inline">Sign in</Link>
@@ -146,8 +146,10 @@ function Landing() {
             <span>© 2026 Nyvlo</span>
           </div>
           <div className="flex items-center gap-5">
-            <span className="text-muted-foreground/70">Privacy · coming soon</span>
-            <a href="mailto:hello@nyvlo.app" className="hover:text-foreground">Contact</a>
+            <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
+            <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
+            <Link to="/terms" className="hover:text-foreground">Terms</Link>
+            <a href="mailto:keila@nyvloai.com" className="hover:text-foreground">Contact</a>
           </div>
         </div>
       </footer>
