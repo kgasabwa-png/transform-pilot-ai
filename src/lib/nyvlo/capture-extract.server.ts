@@ -8,7 +8,11 @@ type ExtractedPromise = {
   due_at?: string | null;
   owner?: "self" | "other" | null;
   confidence?: number;
+  draft_reply?: string | null;
+  owed_to_name?: string | null;
+  evidence_snippet?: string | null;
 };
+
 
 export async function extractPromisesFromSession(
   sessionId: string,
@@ -59,9 +63,10 @@ export async function extractPromisesFromSession(
     .slice(0, 6_000);
 
   const system = `You extract promises and action items from work conversations.
-A "promise" is anything someone committed to do — follow-ups, deliverables, decisions, deadlines.
-Return ONLY a JSON object: { "summary": "1–2 sentence meeting summary", "promises": [{ "text": "...", "owner": "self|other", "due_at": "ISO8601 or null", "confidence": 0-1 }] }
-Be conservative. Skip chit-chat. Use the speaker labels to set owner — "self" means the user (typically labeled "me" or "user"), "other" means the counterparty.`;
+A "promise" is anything the USER committed to do — follow-ups, deliverables, decisions, deadlines they own.
+Return ONLY a JSON object: { "summary": "1–2 sentence meeting summary", "promises": [{ "text": "short imperative ('Send pricing deck to Sarah')", "owner": "self|other", "owed_to_name": "person's name or null", "due_at": "ISO8601 or null", "confidence": 0-1, "evidence_snippet": "verbatim quote from transcript (<=200 chars)", "draft_reply": "2-3 sentence draft message the user could send to follow through, written in the user's voice — or null if not applicable" }] }
+Be conservative. Skip chit-chat. Use the speaker labels to set owner — "self" means the user (typically labeled "me"/"user"), "other" means the counterparty. Always include draft_reply when owner is "self".`;
+
 
   const userMsg = `Session label: ${session.label ?? "(untitled)"}
 Started: ${session.started_at}
@@ -119,9 +124,12 @@ ${screenContext || "(no screen activity)"}`;
       due_at: p.due_at || null,
       status: "open" as const,
       channel: "capture",
-      owed_to: p.owner === "self" ? "me" : p.owner === "other" ? "other" : null,
+      owed_to: p.owed_to_name || (p.owner === "self" ? "me" : p.owner === "other" ? "other" : null),
       confidence: typeof p.confidence === "number" ? p.confidence : null,
+      draft_reply: p.draft_reply || null,
+      evidence_snippet: p.evidence_snippet || null,
     }));
+
 
   if (rows.length) {
     await supabase.from("promises").insert(rows as any);
