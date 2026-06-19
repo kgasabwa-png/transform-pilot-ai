@@ -133,7 +133,19 @@ export function BrowserRecorder({ onSessionChange, maxSeconds }: { onSessionChan
       };
 
       chunkTimerRef.current = window.setInterval(flush, 15_000);
-      tickRef.current = window.setInterval(() => setSeconds((s) => s + 1), 1000);
+      tickRef.current = window.setInterval(() => {
+        setSeconds((s) => {
+          const next = s + 1;
+          if (maxSeconds && next >= maxSeconds) {
+            toast.message(`Free-tier capture limit reached (${Math.floor(maxSeconds / 60)} min). Stopping…`, {
+              action: { label: "Upgrade", onClick: () => { window.location.href = "/pricing"; } },
+            });
+            // Schedule stop on next tick to avoid setState-during-render
+            queueMicrotask(() => stop());
+          }
+          return next;
+        });
+      }, 1000);
       setSeconds(0);
       setState("recording");
       toast.success("Recording — mic only. System audio needs the desktop app.");
