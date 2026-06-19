@@ -301,10 +301,11 @@ function SessionDetail({ sessionId, onDelete }: { sessionId: string; onDelete: (
       {/* AI Notes — the headline content */}
       {session.notes_md ? (
         <Card className="p-6">
-          <article className="nyvlo-notes prose prose-sm dark:prose-invert max-w-none">
+          <article className="nyvlo-notes max-w-none">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{session.notes_md}</ReactMarkdown>
           </article>
         </Card>
+
       ) : session.summary ? (
         <Card className="p-5">
           <p className="text-[15px] leading-relaxed">{session.summary}</p>
