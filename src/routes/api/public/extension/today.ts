@@ -11,36 +11,15 @@ export const Route = createFileRoute("/api/public/extension/today")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: cors }),
       GET: async ({ request }) => {
-        const auth = request.headers.get("authorization");
-        const token = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
-        if (!token || !token.startsWith("nyv_")) {
-          return Response.json(
-            { error: "Missing or invalid token" },
-            { status: 401, headers: cors },
-          );
+        const { resolveExtensionAuth } = await import("@/lib/nyvlo/extension-auth.server");
+        const auth = await resolveExtensionAuth(request.headers.get("authorization"));
+        if (!auth) {
+          return Response.json({ error: "Not signed in" }, { status: 401, headers: cors });
         }
 
         const { adminClient } = await import("@/lib/nyvlo/google.server");
         const supabase = adminClient();
-
-        const { data: tokenRow } = await supabase
-          .from("extension_tokens")
-          .select("user_id")
-          .eq("token", token)
-          .maybeSingle();
-
-        if (!tokenRow) {
-          return Response.json(
-            { error: "Invalid token" },
-            { status: 401, headers: cors },
-          );
-        }
-
-        const userId = tokenRow.user_id;
-        await supabase
-          .from("extension_tokens")
-          .update({ last_used_at: new Date().toISOString() })
-          .eq("token", token);
+        const userId = auth.userId;
 
         const in24h = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
         const [promisesRes, snapRes, profileRes] = await Promise.all([
