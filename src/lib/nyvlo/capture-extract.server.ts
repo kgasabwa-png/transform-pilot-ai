@@ -115,15 +115,12 @@ ${screenContext || "(no screen activity)"}`;
     .map((p) => ({
       user_id: userId,
       capture_session_id: sessionId,
-      text: p.text,
+      summary: p.text,
       due_at: p.due_at || null,
-      status: "open",
-      source_kind: "capture",
-      metadata: {
-        owner: p.owner ?? null,
-        confidence: p.confidence ?? null,
-        extracted_at: new Date().toISOString(),
-      } as any,
+      status: "open" as const,
+      channel: "capture",
+      owed_to: p.owner === "self" ? "me" : p.owner === "other" ? "other" : null,
+      confidence: typeof p.confidence === "number" ? p.confidence : null,
     }));
 
   if (rows.length) {
