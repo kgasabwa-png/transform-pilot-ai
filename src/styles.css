@@ -202,6 +202,12 @@ body {
 .nyvlo-orbit-slow  { animation: nyvlo-orbit 28s linear infinite; transform-origin: center; }
 .nyvlo-orbit-rev   { animation: nyvlo-counter 20s linear infinite; transform-origin: center; }
 
+@keyframes nyvlo-orbit-glow {
+  0%, 100% { filter: drop-shadow(0 3px 12px oklch(0.74 0.17 30 / 25%)); }
+  50%      { filter: drop-shadow(0 6px 22px oklch(0.74 0.17 30 / 50%)); }
+}
+.nyvlo-orbit-glow { animation: nyvlo-orbit-glow 3.5s ease-in-out infinite; }
+
 /* Rising line for hero entrance */
 @keyframes nyvlo-rise {
   0%   { opacity: 0; transform: translateY(14px); }
