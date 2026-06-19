@@ -190,9 +190,14 @@ export function NyvloMark({
     size === "lg" ? "text-[22px]" :
     size === "xl" ? "text-[44px]" :
     "text-[18px]";
-  // y+v stacked-chevron monogram: two interlocking V-strokes share a
-  // diamond intersection. Reads as "y" (top) over "v" (bottom).
-  const stroke = size === "sm" ? 14 : 12;
+  // y+v stacked-chevron monogram — refined.
+  // Two interlocking V-strokes converge into a solid diamond node.
+  // Top chevron uses a coral→ember vertical gradient (lighter at the arms,
+  // hotter at the apex) so the eye is pulled into the convergence point.
+  // The bottom chevron mirrors with deeper saturation for grounded weight.
+  // Tiny coral spark on the apex of the lower V = the "memory" being held.
+  const stroke = size === "sm" ? 13 : 11;
+  const uid = `nv-${size}`;
   return (
     <span className={["inline-flex items-center gap-2.5 shrink-0", className].join(" ")}>
       <svg
@@ -203,28 +208,56 @@ export function NyvloMark({
         aria-label="Nyvlo"
         role="img"
         className={["shrink-0", animated ? "nyvlo-pulse" : ""].join(" ")}
-        style={{ filter: "drop-shadow(0 0 12px oklch(0.70 0.20 28 / 45%))" }}
+        style={{ filter: "drop-shadow(0 6px 18px oklch(0.65 0.22 28 / 38%))" }}
       >
-        {/* Diamond intersection — soft coral wash where the two V's overlap */}
-        <path d="M50 35 L62 55 L50 75 L38 55 Z" fill="oklch(0.70 0.20 28)" fillOpacity="0.22" />
+        <defs>
+          <linearGradient id={`${uid}-top`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="oklch(0.82 0.16 32)" />
+            <stop offset="100%" stopColor="oklch(0.68 0.22 26)" />
+          </linearGradient>
+          <linearGradient id={`${uid}-bot`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="oklch(0.70 0.22 28)" />
+            <stop offset="100%" stopColor="oklch(0.52 0.20 22)" />
+          </linearGradient>
+          <radialGradient id={`${uid}-node`} cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="oklch(0.95 0.08 40)" />
+            <stop offset="55%" stopColor="oklch(0.72 0.22 28)" />
+            <stop offset="100%" stopColor="oklch(0.48 0.20 22)" stopOpacity="0.9" />
+          </radialGradient>
+        </defs>
+
+        {/* Soft halo behind the convergence */}
+        <circle cx="50" cy="55" r="22" fill={`url(#${uid}-node)`} opacity="0.18" />
+
+        {/* Solid diamond node — the convergence */}
+        <path
+          d="M50 36 L61 55 L50 74 L39 55 Z"
+          fill={`url(#${uid}-node)`}
+          opacity="0.95"
+        />
+
+        {/* Bottom chevron — the 'v' (drawn first so the 'y' sits on top at apex) */}
+        <path
+          d="M20 35 L50 85 L80 35"
+          stroke={`url(#${uid}-bot)`}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+
         {/* Top chevron — the 'y' */}
         <path
           d="M20 15 L50 65 L80 15"
-          stroke="oklch(0.72 0.20 28)"
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          opacity="0.92"
-        />
-        {/* Bottom chevron — the 'v' */}
-        <path
-          d="M20 35 L50 85 L80 35"
-          stroke="oklch(0.72 0.20 28)"
+          stroke={`url(#${uid}-top)`}
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeLinejoin="round"
         />
+
+        {/* Hot spark at the lower apex — the memory it holds */}
+        <circle cx="50" cy="85" r="2.2" fill="oklch(0.95 0.08 40)" opacity="0.9" />
       </svg>
+
       {withWordmark && (
         <span className={`font-display ${wordSize} text-foreground lowercase`}>
           nyvlo
