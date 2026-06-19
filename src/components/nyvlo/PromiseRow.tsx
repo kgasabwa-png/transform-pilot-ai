@@ -58,6 +58,16 @@ export function PromiseRow({ item }: { item: PromiseRowData }) {
     onError: () => toast.error("Couldn't submit feedback"),
   });
 
+  const mute = useServerFn(addMute);
+  const muteSource = useMutation({
+    mutationFn: (url: string) => mute({ data: { url } }),
+    onSuccess: (res) => {
+      toast.success(`Muted ${res.label ?? "source"} — won't auto-capture again`);
+      queryClient.invalidateQueries({ queryKey: ["mutedSources"] });
+    },
+    onError: () => toast.error("Couldn't mute source"),
+  });
+
   const SrcIcon = item.channel === "email" ? Mail : item.channel === "meeting" ? CalendarDays : StickyNote;
   const dueLabel = formatDue(item.due_at);
   const dueTone = dueTone_(item.due_at);
