@@ -199,23 +199,23 @@ export function NyvloMark({
         fill="none"
         aria-label="Nyvlo"
         className="shrink-0"
-        style={{ filter: "drop-shadow(0 0 14px oklch(0.70 0.18 245 / 55%))" }}
+        style={{ filter: "drop-shadow(0 0 14px oklch(0.70 0.20 28 / 55%))" }}
       >
         <defs>
           <radialGradient id="nyvlo-core" cx="50%" cy="42%" r="55%">
             <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="35%" stopColor="oklch(0.92 0.10 245)" />
-            <stop offset="75%" stopColor="oklch(0.70 0.18 245)" />
-            <stop offset="100%" stopColor="oklch(0.45 0.20 255)" />
+            <stop offset="35%" stopColor="oklch(0.92 0.10 35)" />
+            <stop offset="75%" stopColor="oklch(0.70 0.20 28)" />
+            <stop offset="100%" stopColor="oklch(0.45 0.20 22)" />
           </radialGradient>
           <linearGradient id="nyvlo-ring" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="oklch(0.92 0.10 245)" stopOpacity="1" />
-            <stop offset="50%" stopColor="oklch(0.75 0.18 245)" stopOpacity="0.85" />
-            <stop offset="100%" stopColor="oklch(0.55 0.20 255)" stopOpacity="0.25" />
+            <stop offset="0%" stopColor="oklch(0.92 0.10 35)" stopOpacity="1" />
+            <stop offset="50%" stopColor="oklch(0.75 0.20 28)" stopOpacity="0.85" />
+            <stop offset="100%" stopColor="oklch(0.55 0.20 22)" stopOpacity="0.25" />
           </linearGradient>
           <radialGradient id="nyvlo-halo" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="oklch(0.75 0.18 245)" stopOpacity="0.55" />
-            <stop offset="60%" stopColor="oklch(0.65 0.20 250)" stopOpacity="0.18" />
+            <stop offset="0%" stopColor="oklch(0.75 0.20 28)" stopOpacity="0.55" />
+            <stop offset="60%" stopColor="oklch(0.65 0.20 25)" stopOpacity="0.18" />
             <stop offset="100%" stopColor="transparent" />
           </radialGradient>
         </defs>
@@ -227,17 +227,17 @@ export function NyvloMark({
         <g className={animated ? "nyvlo-orbit-slow" : ""} style={{ transformOrigin: "32px 32px" }}>
           <circle cx="32" cy="32" r="24" stroke="url(#nyvlo-ring)" strokeWidth="1.5" fill="none" />
           <circle cx="56" cy="32" r="2.4" fill="#ffffff" />
-          <circle cx="56" cy="32" r="4" fill="oklch(0.75 0.18 245)" opacity="0.45" />
+          <circle cx="56" cy="32" r="4" fill="oklch(0.75 0.20 28)" opacity="0.45" />
         </g>
 
         {/* Inner ring counter-rotating */}
         <g className={animated ? "nyvlo-orbit-rev" : ""} style={{ transformOrigin: "32px 32px" }}>
-          <circle cx="32" cy="32" r="16" stroke="oklch(0.85 0.14 245)" strokeOpacity="0.5" strokeWidth="1" fill="none" strokeDasharray="2 3" />
-          <circle cx="16" cy="32" r="1.8" fill="oklch(0.95 0.05 245)" />
+          <circle cx="32" cy="32" r="16" stroke="oklch(0.85 0.14 32)" strokeOpacity="0.5" strokeWidth="1" fill="none" strokeDasharray="2 3" />
+          <circle cx="16" cy="32" r="1.8" fill="oklch(0.95 0.05 35)" />
         </g>
 
         {/* Glowing core */}
-        <circle cx="32" cy="32" r="14" fill="oklch(0.70 0.18 245)" opacity="0.22" />
+        <circle cx="32" cy="32" r="14" fill="oklch(0.70 0.20 28)" opacity="0.22" />
         <circle cx="32" cy="32" r="8.5" fill="url(#nyvlo-core)" />
         {/* Specular highlight */}
         <ellipse cx="29" cy="29" rx="2.6" ry="1.6" fill="#ffffff" opacity="0.85" />
