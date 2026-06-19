@@ -55,14 +55,14 @@ export function NotificationBell() {
       >
         <Bell className="h-4 w-4" />
         {unread.length > 0 && (
-          <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
+          <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-danger px-1 text-[10px] font-semibold text-destructive-foreground">
             {unread.length > 9 ? "9+" : unread.length}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-10 z-30 w-[340px] overflow-hidden rounded-lg border border-border bg-card shadow-lg">
+        <div className="absolute right-0 top-10 z-30 w-[340px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-lg border border-border bg-card shadow-lg">
           <div className="flex items-center justify-between border-b border-border bg-secondary/30 px-3 py-2">
             <span className="text-[11.5px] font-medium uppercase tracking-wider text-muted-foreground">
               Reminders
@@ -89,12 +89,12 @@ export function NotificationBell() {
                   to="/app/promises"
                   onClick={() => handleClickItem(n.id)}
                   className={`flex items-start gap-2 border-b border-border px-3 py-2.5 last:border-b-0 hover:bg-muted ${
-                    !n.read_at ? "bg-amber-50/40" : ""
+                    !n.read_at ? "bg-warning/10" : ""
                   }`}
                 >
                   <span
                     className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${
-                      n.kind === "overdue" ? "bg-red-500" : "bg-amber-500"
+                      n.kind === "overdue" ? "bg-danger" : "bg-warning"
                     } ${n.read_at ? "opacity-30" : ""}`}
                   />
                   <div className="min-w-0 flex-1">

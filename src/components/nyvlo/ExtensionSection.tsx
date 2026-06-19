@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Copy, Trash2, Plus, Download } from "lucide-react";
+import { Copy, Trash2, Plus, Download, VolumeX } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -10,7 +10,6 @@ import {
   deleteExtensionToken,
 } from "@/lib/nyvlo/extension.functions";
 import { listMutes, removeMute } from "@/lib/nyvlo/mutes.functions";
-import { VolumeX } from "lucide-react";
 
 export function ExtensionSection() {
   const queryClient = useQueryClient();
@@ -130,24 +129,24 @@ export function ExtensionSection() {
       </div>
 
       {newToken && (
-        <div className="border-b border-border bg-amber-50 px-4 py-3">
-          <div className="text-[11.5px] font-medium text-amber-900">
+        <div className="border-b border-border bg-warning/10 px-4 py-3">
+          <div className="text-[11.5px] font-medium text-foreground">
             Copy this token now — you won't see it again
           </div>
           <div className="mt-2 flex items-center gap-2">
-            <code className="flex-1 truncate rounded border border-amber-200 bg-white px-2 py-1 text-[11px] text-foreground">
+            <code className="flex-1 truncate rounded border border-warning/30 bg-card px-2 py-1 text-[11px] text-foreground">
               {newToken}
             </code>
             <button
               onClick={() => copy(newToken)}
-              className="inline-flex items-center gap-1 rounded-md bg-amber-900 px-2 py-1 text-[11px] text-amber-50 hover:opacity-90"
+              className="inline-flex items-center gap-1 rounded-md bg-foreground px-2 py-1 text-[11px] text-background hover:opacity-90"
             >
               <Copy className="h-3 w-3" /> Copy
             </button>
           </div>
           <button
             onClick={() => setNewToken(null)}
-            className="mt-2 text-[10.5px] text-amber-900/70 hover:underline"
+            className="mt-2 text-[10.5px] text-muted-foreground hover:underline"
           >
             I've copied it
           </button>

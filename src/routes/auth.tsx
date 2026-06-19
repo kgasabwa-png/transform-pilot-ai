@@ -69,15 +69,15 @@ function AuthPage() {
 
   if (checking) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-dvh items-center justify-center bg-background">
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   return (
-    <div className="grid min-h-screen bg-background md:grid-cols-2">
-      <div className="hidden flex-col justify-between border-r border-border bg-[oklch(0.985_0.003_95)] p-12 md:flex">
+    <div className="grid min-h-dvh bg-background md:grid-cols-2">
+      <div className="hidden flex-col justify-between border-r border-border bg-secondary p-12 md:flex">
         <Link to="/" className="flex items-center gap-2">
           <div className="flex h-6 w-6 items-center justify-center rounded-[7px] bg-foreground">
             <div className="h-2 w-2 rounded-full bg-primary" />

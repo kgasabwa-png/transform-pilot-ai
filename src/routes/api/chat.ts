@@ -13,24 +13,27 @@ export const Route = createFileRoute("/api/chat")({
         const key = process.env.LOVABLE_API_KEY;
         if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
 
-        // Auth: extract user from bearer
-        let userId: string | null = null;
-        const auth = request.headers.get("authorization");
-        if (auth?.startsWith("Bearer ")) {
-          try {
-            const { createClient } = await import("@supabase/supabase-js");
-            const sb = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!);
-            const { data } = await sb.auth.getUser(auth.slice(7));
-            userId = data.user?.id ?? null;
-          } catch { /* ignore */ }
+        // Cap message volume to prevent quota abuse
+        if (messages.length > 30) {
+          return new Response("Too many messages", { status: 413 });
         }
 
-        let contextText = "(User is not signed in or has no data yet.)";
-        if (userId) {
-          const { getUserContext } = await import("@/lib/nyvlo/google.server");
-          const ctx = await getUserContext(userId);
-          contextText = formatContext(ctx);
+        // Auth required — no anonymous chat
+        const auth = request.headers.get("authorization");
+        if (!auth?.startsWith("Bearer ")) {
+          return new Response("Unauthorized", { status: 401 });
         }
+        const { createClient } = await import("@supabase/supabase-js");
+        const sb = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!);
+        const { data: userData, error: userErr } = await sb.auth.getUser(auth.slice(7));
+        const userId = userData?.user?.id ?? null;
+        if (userErr || !userId) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+
+        const { getUserContext } = await import("@/lib/nyvlo/google.server");
+        const ctx = await getUserContext(userId);
+        const contextText = formatContext(ctx);
 
         const system = `You are Nyvlo, an AI assistant that helps the user remember promises, follow-ups, and loose ends from their work life.
 

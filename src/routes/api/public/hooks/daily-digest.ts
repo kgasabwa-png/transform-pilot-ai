@@ -12,12 +12,13 @@ export const Route = createFileRoute("/api/public/hooks/daily-digest")({
           return new Response("Unauthorized", { status: 401 });
         }
 
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { adminClient } = await import("@/lib/nyvlo/google.server");
+        const supabase = adminClient();
         const now = new Date();
         const horizon = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
         const day = now.toISOString().slice(0, 10);
 
-        const { data: rows, error } = await supabaseAdmin
+        const { data: rows, error } = await supabase
           .from("promises")
           .select("user_id, id, summary, due_at")
           .eq("status", "open")
@@ -44,7 +45,7 @@ export const Route = createFileRoute("/api/public/hooks/daily-digest")({
             list.length > 3
               ? `${top}\n…and ${list.length - 3} more`
               : top;
-          const { error: insErr } = await supabaseAdmin
+          const { error: insErr } = await supabase
             .from("notifications")
             .upsert(
               {
