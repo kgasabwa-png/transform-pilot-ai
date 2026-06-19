@@ -310,7 +310,7 @@ async function runExtractAndPersist(
         source_id: src.id,
         summary: p.summary,
         owed_to: p.owed_to,
-        channel: src.kind === "calendar_event" ? "meeting" : "email",
+        channel: src.kind === "calendar_event" ? "meeting" : src.kind === "web_capture" ? "web" : "email",
         due_at: p.due_at,
         confidence: p.confidence,
         draft_reply: p.draft_reply,
