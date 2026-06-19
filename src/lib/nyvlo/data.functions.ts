@@ -71,3 +71,41 @@ export const updatePromiseStatus = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true };
   });
+
+export const reportNotAPromise = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string; note?: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { error: fbErr } = await supabase.from("extraction_feedback").insert({
+      promise_id: data.id,
+      user_id: userId,
+      verdict: "not_a_promise",
+      note: data.note ?? null,
+    });
+    if (fbErr) throw fbErr;
+    await supabase
+      .from("promises")
+      .update({ status: "dismissed", resolved_at: new Date().toISOString() })
+      .eq("id", data.id);
+    return { ok: true };
+  });
+
+export const getPromiseSource = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { data: p, error } = await context.supabase
+      .from("promises")
+      .select("source_id")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error || !p?.source_id) return { url: null, title: null, kind: null };
+    const { data: src } = await context.supabase
+      .from("sources")
+      .select("kind, subject, raw")
+      .eq("id", p.source_id)
+      .maybeSingle();
+    const raw = (src?.raw ?? null) as { url?: string } | null;
+    return { url: raw?.url ?? null, title: src?.subject ?? null, kind: src?.kind ?? null };
+  });
