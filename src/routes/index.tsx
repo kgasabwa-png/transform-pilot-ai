@@ -83,9 +83,9 @@ function Landing() {
       {/* HOW IT WORKS */}
       <section id="how" className="mx-auto max-w-6xl px-6 py-20">
         <div className="grid gap-10 md:grid-cols-3">
-          <Feature icon={Calendar} title="Connects to your calendar" body="Nyvlo reads meeting titles, times and attendees. It uses these to ground every commitment in real context." />
-          <Feature icon={StickyNote} title="Remember this, anywhere" body="One click on any page, email or doc. Nyvlo captures the moment — a promise, an ask, a doc to send." />
-          <Feature icon={Sparkles} title="Catches what slipped" body="An overdue follow-up, an unanswered email, a doc you said you'd send. Drafts ready, one tap to ship." />
+          <Feature icon={Calendar} title="Grounded in your calendar" body="Nyvlo reads meeting titles, times, and attendees, then grounds every commitment in real context." />
+          <Feature icon={StickyNote} title="Remember this, anywhere" body="One click on any page, email, or doc captures the moment: a promise, an ask, a file to send." />
+          <Feature icon={Sparkles} title="Catches what slipped" body="Overdue follow-ups, unanswered emails, the doc you said you'd send. Drafts ready, one tap to ship." />
         </div>
       </section>
 
