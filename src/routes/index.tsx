@@ -36,25 +36,27 @@ function Landing() {
 
       {/* HERO */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 nyvlo-grain opacity-60" />
+        <div className="nyvlo-aurora" />
+        <div className="absolute inset-0 nyvlo-grain opacity-50" />
         <div className="relative mx-auto max-w-6xl px-6 pb-20 pt-16 md:pb-28 md:pt-24">
           <div className="mx-auto max-w-3xl text-center">
             <div className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-border bg-card/70 px-3 py-1 text-[11.5px] text-muted-foreground backdrop-blur">
               <span className="h-1.5 w-1.5 rounded-full bg-primary nyvlo-dot-pulse" />
               Now in private beta
             </div>
-            <h1 className="text-balance text-[44px] font-semibold leading-[1.05] tracking-[-0.02em] md:text-[68px]">
-              The AI that catches<br className="hidden md:block" /> what you forgot.
+            <h1 className="text-balance text-[44px] font-semibold leading-[1.02] tracking-[-0.025em] md:text-[72px]">
+              The AI that catches<br className="hidden md:block" />{" "}
+              <span className="font-serif italic font-normal tracking-tight">what you forgot.</span>
             </h1>
-            <p className="mx-auto mt-5 max-w-xl text-[16px] leading-relaxed text-muted-foreground md:text-[17px]">
-              Nyvlo finds the follow-ups, promises, and loose ends slipping through your week — and drafts the reply for you.
+            <p className="mx-auto mt-6 max-w-xl text-[16px] leading-relaxed text-muted-foreground md:text-[17.5px]">
+              Nyvlo finds the follow-ups, promises, and loose ends slipping through your week, and drafts the reply for you.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link to="/auth" className="inline-flex items-center gap-2 rounded-md bg-foreground px-4 py-2.5 text-[14px] font-medium text-background hover:opacity-90">
                 Get started free <ArrowRight className="h-4 w-4" />
               </Link>
               <Link to="/try" className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-4 py-2.5 text-[14px] font-medium text-foreground hover:bg-muted">
-                Try the demo →
+                Try the demo
               </Link>
             </div>
             <div className="mt-3 text-[11.5px] text-muted-foreground">Free during beta · connect Google in 30 seconds · no credit card</div>
@@ -71,11 +73,11 @@ function Landing() {
       <section className="border-t border-border bg-secondary/30">
         <div className="mx-auto max-w-5xl px-6 py-20">
           <p className="text-center text-[11px] uppercase tracking-[0.18em] text-muted-foreground">The Nyvlo moment</p>
-          <h2 className="mx-auto mt-3 max-w-2xl text-center text-[30px] font-semibold leading-tight tracking-tight md:text-[40px]">
-            "Oh shit — I told Sarah I'd send that two days ago."
+          <h2 className="mx-auto mt-3 max-w-2xl text-center text-[30px] font-semibold leading-tight tracking-tight md:text-[42px]">
+            "Oh no. I told Sarah I'd send that two days ago."
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-center text-[15px] leading-relaxed text-muted-foreground">
-            Everyone has felt this. Nyvlo is the moment <em className="not-italic text-foreground">before</em> it — when something quietly nudges you with the promise you made, the person waiting, and the draft already written.
+            Everyone has felt this. Nyvlo is the moment <span className="font-serif italic text-foreground">before</span> it: a quiet nudge with the promise you made, the person waiting, and the draft already written.
           </p>
         </div>
       </section>
@@ -83,8 +85,8 @@ function Landing() {
       {/* HOW IT WORKS */}
       <section id="how" className="mx-auto max-w-6xl px-6 py-20">
         <div className="grid gap-10 md:grid-cols-3">
-          <Feature icon={Calendar} title="Connects to your calendar" body="Nyvlo reads meeting titles, times and attendees. It uses these to ground every commitment in real context." />
-          <Feature icon={StickyNote} title="Remember this, anywhere" body="One click on any page, email or doc. Nyvlo captures the moment — a promise, an ask, a doc to send." />
+          <Feature icon={Calendar} title="Connects to your calendar" body="Nyvlo reads meeting titles, times and attendees, then grounds every commitment in real context." />
+          <Feature icon={StickyNote} title="Remember this, anywhere" body="One click on any page, email or doc. Nyvlo captures the moment: a promise, an ask, a doc to send." />
           <Feature icon={Sparkles} title="Catches what slipped" body="An overdue follow-up, an unanswered email, a doc you said you'd send. Drafts ready, one tap to ship." />
         </div>
       </section>
