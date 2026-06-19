@@ -1,0 +1,16 @@
+{
+  "name": "nyvlo-desktop",
+  "version": "0.1.0",
+  "description": "Nyvlo desktop — records meeting audio, transcribes locally via Lovable AI, extracts promises.",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "package:mac": "electron-packager . Nyvlo --platform=darwin --arch=universal --out=release --overwrite --icon=icon.icns",
+    "package:win": "electron-packager . Nyvlo --platform=win32 --arch=x64 --out=release --overwrite",
+    "package:linux": "electron-packager . Nyvlo --platform=linux --arch=x64 --out=release --overwrite"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "@electron/packager": "^18.3.0"
+  }
+}

@@ -22,6 +22,7 @@ import { Route as AuthenticatedAppCommandRouteImport } from './routes/_authentic
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicHooksSyncAllRouteImport } from './routes/api/public/hooks/sync-all'
 import { Route as ApiPublicHooksGenerateRemindersRouteImport } from './routes/api/public/hooks/generate-reminders'
+import { Route as ApiPublicExtensionTranscribeRouteImport } from './routes/api/public/extension/transcribe'
 import { Route as ApiPublicExtensionTodayRouteImport } from './routes/api/public/extension/today'
 import { Route as ApiPublicExtensionCaptureRouteImport } from './routes/api/public/extension/capture'
 import { Route as ApiOauthGoogleCallbackRouteImport } from './routes/api/oauth.google.callback'
@@ -94,6 +95,12 @@ const ApiPublicHooksGenerateRemindersRoute =
     path: '/api/public/hooks/generate-reminders',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicExtensionTranscribeRoute =
+  ApiPublicExtensionTranscribeRouteImport.update({
+    id: '/api/public/extension/transcribe',
+    path: '/api/public/extension/transcribe',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicExtensionTodayRoute = ApiPublicExtensionTodayRouteImport.update({
   id: '/api/public/extension/today',
   path: '/api/public/extension/today',
@@ -124,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
   '/api/public/extension/capture': typeof ApiPublicExtensionCaptureRoute
   '/api/public/extension/today': typeof ApiPublicExtensionTodayRoute
+  '/api/public/extension/transcribe': typeof ApiPublicExtensionTranscribeRoute
   '/api/public/hooks/generate-reminders': typeof ApiPublicHooksGenerateRemindersRoute
   '/api/public/hooks/sync-all': typeof ApiPublicHooksSyncAllRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -140,6 +148,7 @@ export interface FileRoutesByTo {
   '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
   '/api/public/extension/capture': typeof ApiPublicExtensionCaptureRoute
   '/api/public/extension/today': typeof ApiPublicExtensionTodayRoute
+  '/api/public/extension/transcribe': typeof ApiPublicExtensionTranscribeRoute
   '/api/public/hooks/generate-reminders': typeof ApiPublicHooksGenerateRemindersRoute
   '/api/public/hooks/sync-all': typeof ApiPublicHooksSyncAllRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -159,6 +168,7 @@ export interface FileRoutesById {
   '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
   '/api/public/extension/capture': typeof ApiPublicExtensionCaptureRoute
   '/api/public/extension/today': typeof ApiPublicExtensionTodayRoute
+  '/api/public/extension/transcribe': typeof ApiPublicExtensionTranscribeRoute
   '/api/public/hooks/generate-reminders': typeof ApiPublicHooksGenerateRemindersRoute
   '/api/public/hooks/sync-all': typeof ApiPublicHooksSyncAllRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
     | '/api/oauth/google/callback'
     | '/api/public/extension/capture'
     | '/api/public/extension/today'
+    | '/api/public/extension/transcribe'
     | '/api/public/hooks/generate-reminders'
     | '/api/public/hooks/sync-all'
     | '/lovable/email/queue/process'
@@ -194,6 +205,7 @@ export interface FileRouteTypes {
     | '/api/oauth/google/callback'
     | '/api/public/extension/capture'
     | '/api/public/extension/today'
+    | '/api/public/extension/transcribe'
     | '/api/public/hooks/generate-reminders'
     | '/api/public/hooks/sync-all'
     | '/lovable/email/queue/process'
@@ -212,6 +224,7 @@ export interface FileRouteTypes {
     | '/api/oauth/google/callback'
     | '/api/public/extension/capture'
     | '/api/public/extension/today'
+    | '/api/public/extension/transcribe'
     | '/api/public/hooks/generate-reminders'
     | '/api/public/hooks/sync-all'
     | '/lovable/email/queue/process'
@@ -225,6 +238,7 @@ export interface RootRouteChildren {
   ApiOauthGoogleCallbackRoute: typeof ApiOauthGoogleCallbackRoute
   ApiPublicExtensionCaptureRoute: typeof ApiPublicExtensionCaptureRoute
   ApiPublicExtensionTodayRoute: typeof ApiPublicExtensionTodayRoute
+  ApiPublicExtensionTranscribeRoute: typeof ApiPublicExtensionTranscribeRoute
   ApiPublicHooksGenerateRemindersRoute: typeof ApiPublicHooksGenerateRemindersRoute
   ApiPublicHooksSyncAllRoute: typeof ApiPublicHooksSyncAllRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -323,6 +337,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksGenerateRemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/extension/transcribe': {
+      id: '/api/public/extension/transcribe'
+      path: '/api/public/extension/transcribe'
+      fullPath: '/api/public/extension/transcribe'
+      preLoaderRoute: typeof ApiPublicExtensionTranscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/extension/today': {
       id: '/api/public/extension/today'
       path: '/api/public/extension/today'
@@ -385,6 +406,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiOauthGoogleCallbackRoute: ApiOauthGoogleCallbackRoute,
   ApiPublicExtensionCaptureRoute: ApiPublicExtensionCaptureRoute,
   ApiPublicExtensionTodayRoute: ApiPublicExtensionTodayRoute,
+  ApiPublicExtensionTranscribeRoute: ApiPublicExtensionTranscribeRoute,
   ApiPublicHooksGenerateRemindersRoute: ApiPublicHooksGenerateRemindersRoute,
   ApiPublicHooksSyncAllRoute: ApiPublicHooksSyncAllRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
