@@ -62,6 +62,14 @@ export function BrowserRecorder({ onSessionChange }: { onSessionChange?: (id: st
         body: JSON.stringify({ source: "browser", label: `Browser capture — ${new Date().toLocaleTimeString()}` }),
       });
       const j = await res.json();
+      if (res.status === 402) {
+        cleanup();
+        setState("idle");
+        toast.error(j.message || "Free-tier limit reached", {
+          action: { label: "Upgrade", onClick: () => { window.location.href = "/pricing"; } },
+        });
+        return;
+      }
       if (!res.ok || !j.session?.id) throw new Error(j.error || "session-start failed");
       setSessionId(j.session.id);
       onSessionChange?.(j.session.id);
