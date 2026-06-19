@@ -1,14 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { NyvloMark } from "@/components/nyvlo/Shell";
-import { ArrowRight, Calendar, ShieldCheck, Sparkles, Mail, FileText, StickyNote } from "lucide-react";
+import { ArrowRight, Calendar, ShieldCheck, Sparkles, Mail, FileText, StickyNote, CheckCircle2, Zap, ArrowUpRight } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Nyvlo | The AI that catches what you forgot" },
-      { name: "description", content: "Automated follow-ups and promise tracking for busy teams" },
-      { property: "og:title", content: "Nyvlo | The AI that catches what you forgot" },
-      { property: "og:description", content: "Nyvlo finds the follow-ups, promises, and loose ends slipping through your week" },
+      { title: "Nyvlo · The AI that catches what you forgot" },
+      { name: "description", content: "Nyvlo finds the follow-ups, promises, and loose ends slipping through your week, and drafts the reply for you." },
+      { property: "og:title", content: "Nyvlo · The AI that catches what you forgot" },
+      { property: "og:description", content: "Nyvlo finds the follow-ups, promises, and loose ends slipping through your week." },
     ],
   }),
   component: Landing,
@@ -16,156 +16,188 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   return (
-    <div className="min-h-dvh bg-background text-foreground antialiased">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-        <Link to="/" className="flex items-center">
-          <NyvloMark size="md" />
-        </Link>
-        <nav className="hidden items-center gap-8 text-[13px] text-muted-foreground md:flex">
-          <a href="#how" className="transition-colors hover:text-foreground">How it works</a>
-          <a href="#recap" className="transition-colors hover:text-foreground">Friday recap</a>
-          <Link to="/pricing" className="transition-colors hover:text-foreground">Pricing</Link>
-          <Link to="/privacy" className="transition-colors hover:text-foreground">Privacy</Link>
-        </nav>
-        <div className="flex items-center gap-1">
-          <Link to="/auth" className="hidden rounded-md px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:text-foreground md:inline">Sign in</Link>
-          <Link to="/auth" className="inline-flex items-center gap-1.5 rounded-md bg-foreground px-3.5 py-1.5 text-[13px] font-medium text-background transition-opacity hover:opacity-90">
-            Get started
+    <div className="min-h-dvh bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary">
+      <nav className="fixed inset-x-0 top-0 z-50 border-b border-border/40 bg-background/60 px-6 py-4 backdrop-blur-md">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
+          <Link to="/" className="flex items-center">
+            <NyvloMark size="md" />
           </Link>
+          <div className="hidden items-center gap-10 text-[13.5px] font-medium text-muted-foreground md:flex">
+            <a href="#how" className="transition-colors hover:text-foreground">Product</a>
+            <a href="#recap" className="transition-colors hover:text-foreground">Recap</a>
+            <Link to="/pricing" className="transition-colors hover:text-foreground">Pricing</Link>
+            <Link to="/privacy" className="transition-colors hover:text-foreground">Privacy</Link>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link to="/auth" className="rounded-lg px-4 py-2 text-[13.5px] font-medium text-muted-foreground transition-colors hover:text-foreground">Sign in</Link>
+            <Link to="/auth" className="inline-flex items-center gap-1.5 rounded-full bg-foreground px-5 py-2 text-[13.5px] font-semibold text-background transition-transform active:scale-[0.98] hover:shadow-lg hover:shadow-foreground/10">
+              Get Started
+            </Link>
+          </div>
         </div>
-      </header>
+      </nav>
 
       {/* HERO */}
-      <section className="relative isolate overflow-hidden">
+      <section className="relative isolate overflow-hidden pt-32 md:pt-48">
         <div className="nyvlo-aurora" />
-        <div className="relative mx-auto max-w-6xl px-6 pb-24 pt-20 md:pb-32 md:pt-28">
-          <div className="mx-auto max-w-3xl text-center">
-            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-border/80 bg-card/80 px-2.5 py-1 font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted-foreground backdrop-blur">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary nyvlo-dot-pulse" />
-              Private beta v0.4
+        <div className="relative mx-auto max-w-7xl px-6 pb-24 text-center">
+          <div className="mx-auto max-w-3xl">
+            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+              <span className="h-1.5 w-1.5 rounded-full bg-current nyvlo-dot-pulse" />
+              Private Beta Open
             </div>
-            <h1 className="text-balance text-[44px] font-semibold leading-[0.98] tracking-[-0.045em] text-foreground md:text-[80px]">
-              The AI that catches<br className="hidden md:block" /> what you forgot
+            <h1 className="text-balance text-[52px] font-bold leading-[1.05] tracking-[-0.06em] text-foreground md:text-[96px]">
+              The AI that catches what you forgot.
             </h1>
-            <p className="mx-auto mt-7 max-w-[36ch] text-[16.5px] leading-[1.55] text-muted-foreground md:text-[18px]">
-              Nyvlo tracks every promise and follow-up slipping through your week then drafts the reply for you
+            <p className="mx-auto mt-8 max-w-[32ch] text-[18px] leading-[1.6] text-muted-foreground md:text-[22px]">
+              Nyvlo finds the promises and follow-ups slipping through your week, and drafts the reply for you.
             </p>
-            <div className="mt-9 flex flex-wrap items-center justify-center gap-2.5">
-              <Link to="/auth" className="group inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-[14px] font-medium text-background transition-opacity hover:opacity-90">
-                Get started free
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <Link to="/auth" className="group inline-flex h-14 items-center gap-2 rounded-full bg-foreground px-8 text-[15px] font-bold text-background transition-all hover:px-9 active:scale-[0.98]">
+                Start your free trial
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
-              <Link to="/try" className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-[14px] font-medium text-foreground transition-colors hover:bg-muted">
-                See the demo
+              <Link to="/try" className="inline-flex h-14 items-center gap-2 rounded-full border border-border bg-card px-8 text-[15px] font-bold text-foreground transition-all hover:bg-muted hover:border-foreground/20 active:scale-[0.98]">
+                Watch interactive demo
               </Link>
             </div>
-            <div className="mt-4 font-mono text-[10.5px] uppercase tracking-[0.12em] text-muted-foreground">
-              Free during beta / Google in 30s / No card required
+            <div className="mt-8 flex items-center justify-center gap-6 font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60">
+              <span className="flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5" /> Google Sync</span>
+              <span className="flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5" /> No Credit Card</span>
+              <span className="flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5" /> Private AI</span>
             </div>
           </div>
 
-          {/* product preview */}
-          <div className="mx-auto mt-16 max-w-3xl md:mt-20">
+          <div className="relative mx-auto mt-24 max-w-5xl md:mt-32">
+            <div className="absolute -inset-4 rounded-[32px] bg-gradient-to-b from-primary/10 to-transparent blur-2xl md:-inset-10" />
             <PreviewCard />
           </div>
         </div>
       </section>
 
-      {/* MOMENT */}
-      <section className="border-t border-border bg-secondary/40">
-        <div className="mx-auto max-w-4xl px-6 py-24 md:py-28">
-          <p className="text-center font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">The Nyvlo moment</p>
-          <blockquote className="mx-auto mt-5 max-w-2xl text-center text-[28px] font-semibold leading-[1.15] tracking-[-0.03em] text-foreground md:text-[44px]">
+      {/* SOCIAL PROOF / QUOTE */}
+      <section className="relative z-10 border-y border-border/40 bg-background py-32">
+        <div className="mx-auto max-w-4xl px-6 text-center">
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-primary">The Moment</p>
+          <blockquote className="mx-auto mt-8 max-w-3xl text-[32px] font-bold leading-[1.1] tracking-[-0.04em] text-foreground md:text-[56px]">
             &ldquo;I told Sarah I&rsquo;d send that two days ago.&rdquo;
           </blockquote>
-          <p className="mx-auto mt-6 max-w-[44ch] text-center text-[15.5px] leading-relaxed text-muted-foreground">
-            The nudge that arrives before the guilt, with the promise you made, the person waiting, and the draft already written
+          <p className="mx-auto mt-10 max-w-[48ch] text-[17px] leading-relaxed text-muted-foreground md:text-[19px]">
+            We&rsquo;ve all been there. Nyvlo is the quiet nudge that arrives <span className="text-foreground font-semibold">before</span> the panic does, with the promise you made and the draft already written.
           </p>
         </div>
       </section>
 
-      {/* HOW */}
-      <section id="how" className="mx-auto max-w-6xl px-6 py-24 md:py-28">
-        <div className="mx-auto max-w-2xl">
-          <p className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">How it works</p>
-          <h2 className="mt-3 text-[30px] font-semibold leading-tight tracking-[-0.03em] md:text-[40px]">Three quiet moves every day</h2>
-        </div>
-        <div className="mt-14 grid gap-x-10 gap-y-12 md:grid-cols-3">
-          <Feature step="01" icon={Calendar} title="Reads your calendar" body="Meeting titles, times, and attendees grounded in real context" />
-          <Feature step="02" icon={StickyNote} title="Remembers, anywhere" body="Save a promise from any page, email, or document in a single click" />
-          <Feature step="03" icon={Sparkles} title="Catches what slipped" body="Overdue follow-ups and unanswered replies turned into ready-to-ship drafts" />
+      {/* FEATURES */}
+      <section id="how" className="mx-auto max-w-7xl px-6 py-32 md:py-48">
+        <div className="grid gap-16 md:grid-cols-2 md:items-center">
+          <div>
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-primary">Capabilities</p>
+            <h2 className="mt-6 text-[40px] font-bold leading-[1.1] tracking-[-0.05em] md:text-[64px]">Three quiet moves,<br />every single day.</h2>
+            <div className="mt-16 space-y-12">
+              <FeatureItem 
+                icon={Calendar} 
+                title="Reads your calendar" 
+                body="Connect your Google Calendar. Nyvlo understands meeting titles, attendees, and the intent behind every slot." 
+              />
+              <FeatureItem 
+                icon={StickyNote} 
+                title="Remembers anywhere" 
+                body="One click on any page, email, or doc. A promise made, an ask received, or a document you mentioned." 
+              />
+              <FeatureItem 
+                icon={Zap} 
+                title="Catches what slipped" 
+                body="Overdue follow-ups and unanswered questions. Nyvlo drafts the response, you just hit send." 
+              />
+            </div>
+          </div>
+          <div className="rounded-3xl border border-border bg-card p-2 shadow-2xl">
+            <div className="aspect-[4/5] rounded-[22px] bg-secondary/50 flex items-center justify-center">
+              <div className="text-center p-8">
+                <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-xl shadow-primary/20">
+                  <Sparkles className="h-8 w-8" />
+                </div>
+                <h3 className="text-2xl font-bold tracking-tight">AI-First Memory</h3>
+                <p className="mt-4 text-muted-foreground leading-relaxed">Nyvlo doesn't just store data; it understands context. It knows the difference between a "chat" and a "commitment".</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* RECAP */}
-      <section id="recap" className="border-y border-border bg-card">
-        <div className="mx-auto grid max-w-5xl items-center gap-12 px-6 py-24 md:grid-cols-[1.05fr,1fr] md:py-28">
-          <div>
-            <p className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">Friday recap</p>
-            <h3 className="mt-3 text-[30px] font-semibold leading-tight tracking-[-0.03em] md:text-[38px]">A reliability score worth sharing</h3>
-            <p className="mt-5 max-w-md text-[15.5px] leading-relaxed text-muted-foreground">
-              Every Friday Nyvlo tracks the promises you made and the ones it helped you keep
-            </p>
-          </div>
-          <div className="rounded-2xl border border-border bg-background p-6 shadow-[0_20px_60px_-30px_rgba(15,15,30,0.15)]">
-            <div className="flex items-baseline justify-between">
-              <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted-foreground">Week of Jun 16</span>
-              <span className="font-mono text-[10.5px] text-muted-foreground">v0.4</span>
+      <section id="recap" className="border-t border-border/40 bg-secondary/20 py-32 md:py-48">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid gap-16 md:grid-cols-[1fr,1.2fr] md:items-center">
+            <div className="order-2 md:order-1">
+              <div className="relative mx-auto max-w-md rounded-[32px] border border-border bg-background p-8 shadow-2xl">
+                <div className="flex items-center justify-between border-b border-border/60 pb-6">
+                  <div>
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Week ending</p>
+                    <p className="mt-1 font-bold">June 20, 2026</p>
+                  </div>
+                  <NyvloMark size="sm" />
+                </div>
+                <div className="mt-10 grid grid-cols-3 gap-4 text-center">
+                  <Stat label="Made" value="32" />
+                  <Stat label="Kept" value="29" />
+                  <Stat label="Caught" value="3" highlight />
+                </div>
+                <div className="mt-8 rounded-2xl bg-foreground p-8 text-center text-background">
+                  <p className="font-mono text-[10px] uppercase tracking-widest opacity-60">Reliability Score</p>
+                  <p className="mt-2 text-[80px] font-bold leading-none tracking-tighter">91</p>
+                  <p className="mt-4 text-[13px] font-medium opacity-80">You're in the top 5% of users this week.</p>
+                </div>
+              </div>
             </div>
-            <div className="mt-5 grid grid-cols-3 gap-2.5 text-center">
-              <Stat label="Made" value="27" />
-              <Stat label="Kept" value="24" />
-              <Stat label="Caught" value="3" tone="primary" />
-            </div>
-            <div className="mt-5 rounded-xl border border-border bg-secondary/50 p-6 text-center">
-              <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Reliability score</div>
-              <div className="mt-2 text-[64px] font-semibold leading-none tracking-[-0.04em] text-primary tabular-nums">89</div>
+            <div className="order-1 md:order-2">
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-primary">Friday Recap</p>
+              <h2 className="mt-6 text-[40px] font-bold leading-[1.1] tracking-[-0.05em] md:text-[64px]">A reliability score people actually share.</h2>
+              <p className="mt-8 max-w-xl text-[18px] leading-relaxed text-muted-foreground">
+                Every Friday afternoon, Nyvlo sends a summary of your week. How many promises you made, how many you kept, and exactly what would have slipped without a nudge.
+              </p>
+              <button className="group mt-10 inline-flex items-center gap-2 text-[15px] font-bold text-foreground">
+                See a sample recap <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </button>
             </div>
           </div>
         </div>
-      </section>
-
-      {/* PRIVACY */}
-      <section className="mx-auto max-w-4xl px-6 py-24 text-center md:py-28">
-        <div className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card">
-          <ShieldCheck className="h-4 w-4 text-primary" strokeWidth={1.75} />
-        </div>
-        <h2 className="mt-5 text-[30px] font-semibold tracking-[-0.03em] md:text-[40px]">Yours and only yours</h2>
-        <p className="mx-auto mt-5 max-w-[50ch] text-[15.5px] leading-relaxed text-muted-foreground">
-          Nyvlo only remembers what you save or connect with no silent capture or employer monitoring
-        </p>
       </section>
 
       {/* CTA */}
-      <section className="border-t border-border bg-secondary/40">
-        <div className="mx-auto max-w-3xl px-6 py-24 text-center md:py-28">
-          <h2 className="text-[36px] font-semibold leading-[1.02] tracking-[-0.04em] md:text-[56px]">Never drop the ball again</h2>
-          <p className="mx-auto mt-5 max-w-[40ch] text-[15.5px] text-muted-foreground">
-            Connect Google and get set up in under a minute
+      <section className="relative overflow-hidden bg-foreground py-32 md:py-48">
+        <div className="absolute inset-0 opacity-10 nyvlo-grain" />
+        <div className="relative mx-auto max-w-4xl px-6 text-center">
+          <h2 className="text-[48px] font-bold leading-[1.05] tracking-[-0.05em] text-background md:text-[80px]">Never drop the ball again.</h2>
+          <p className="mx-auto mt-8 max-w-[32ch] text-[18px] text-background/60 md:text-[22px]">
+            Join 4,000+ professionals using Nyvlo to stay reliable without the stress.
           </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-2.5">
-            <Link to="/auth" className="group inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-[14px] font-medium text-background transition-opacity hover:opacity-90">
-              Get started free
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Link to="/auth" className="h-16 inline-flex items-center gap-2 rounded-full bg-background px-10 text-[16px] font-bold text-foreground transition-transform hover:scale-[1.02] active:scale-[0.98]">
+              Get Started for Free
             </Link>
-            <Link to="/pricing" className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-[14px] font-medium text-foreground transition-colors hover:bg-muted">
-              See pricing
+            <Link to="/pricing" className="h-16 inline-flex items-center gap-2 rounded-full border border-background/20 px-10 text-[16px] font-bold text-background transition-colors hover:bg-background/10">
+              View Pricing
             </Link>
           </div>
         </div>
       </section>
 
-      <footer className="border-t border-border">
-        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-4 px-6 py-8 text-[12px] text-muted-foreground md:flex-row md:items-center">
-          <div className="flex items-center gap-3">
-            <NyvloMark size="sm" />
-            <span className="text-muted-foreground/80">© 2026 Nyvlo, Inc</span>
-          </div>
-          <div className="flex items-center gap-6">
-            <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
-            <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
-            <Link to="/terms" className="hover:text-foreground">Terms</Link>
-            <a href="mailto:keila@nyvloai.com" className="hover:text-foreground">Contact</a>
+      <footer className="border-t border-border/40 bg-background py-16">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
+            <div className="flex flex-col items-center gap-4 md:items-start">
+              <NyvloMark size="md" />
+              <p className="text-[13px] text-muted-foreground">© 2026 Nyvlo, Inc. All rights reserved.</p>
+            </div>
+            <div className="flex flex-wrap justify-center gap-x-10 gap-y-4 text-[13px] font-medium text-muted-foreground">
+              <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
+              <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
+              <Link to="/terms" className="hover:text-foreground">Terms</Link>
+              <a href="mailto:hello@nyvlo.ai" className="hover:text-foreground">Support</a>
+              <a href="https://twitter.com/nyvlo" className="hover:text-foreground">Twitter</a>
+            </div>
           </div>
         </div>
       </footer>
@@ -173,69 +205,93 @@ function Landing() {
   );
 }
 
-function Feature({ step, icon: Icon, title, body }: { step: string; icon: typeof Calendar; title: string; body: string }) {
+function FeatureItem({ icon: Icon, title, body }: { icon: any; title: string; body: string }) {
   return (
-    <div>
-      <div className="flex items-center gap-3">
-        <span className="font-mono text-[10.5px] tracking-[0.14em] text-muted-foreground">{step}</span>
-        <span className="h-px flex-1 bg-border" />
-        <Icon className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
+    <div className="flex gap-6">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary shadow-inner">
+        <Icon className="h-6 w-6" strokeWidth={2.5} />
       </div>
-      <h3 className="mt-5 text-[18px] font-semibold tracking-[-0.02em]">{title}</h3>
-      <p className="mt-2 text-[14.5px] leading-relaxed text-muted-foreground">{body}</p>
+      <div>
+        <h3 className="text-[20px] font-bold tracking-tight text-foreground">{title}</h3>
+        <p className="mt-2 text-[16px] leading-relaxed text-muted-foreground">{body}</p>
+      </div>
     </div>
   );
 }
 
-function Stat({ label, value, tone }: { label: string; value: string; tone?: "primary" }) {
+function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-3">
-      <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{label}</div>
-      <div className={`mt-1 text-[26px] font-semibold tracking-[-0.03em] tabular-nums ${tone === "primary" ? "text-primary" : "text-foreground"}`}>{value}</div>
+    <div className={["rounded-2xl border border-border p-4 transition-colors", highlight ? "bg-primary/5 border-primary/20" : "bg-muted/30"].join(" ")}>
+      <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">{label}</p>
+      <p className={["mt-1 text-[28px] font-bold tracking-tight", highlight ? "text-primary" : "text-foreground"].join(" ")}>{value}</p>
     </div>
   );
 }
 
 function PreviewCard() {
-  const rows = [
-    { dot: "bg-danger",  title: "Send pricing deck to Sarah",     meta: "Acme / overdue 2 days",         src: "from meeting / pricing sync", Icon: Mail },
-    { dot: "bg-danger",  title: "Reply to David at Luma",         meta: "Interview slot / overdue 3 days", src: "from email",                Icon: Mail },
-    { dot: "bg-warning", title: "Share Q3 roadmap with Maria",    meta: "Northwind / due today",         src: "from manual note",            Icon: StickyNote },
-    { dot: "bg-primary", title: "Prep notes for Luma interview",  meta: "Friday 2:00 PM",                src: "from calendar",               Icon: FileText },
+  const items = [
+    { title: "Send pricing deck to Sarah", meta: "Acme · overdue 2 days", type: "meeting" },
+    { title: "Reply to David at Luma", meta: "Interview slot · overdue 3 days", type: "email" },
+    { title: "Share Q3 roadmap with Maria", meta: "Northwind · due today", type: "note" },
+    { title: "Prep notes for Luma interview", meta: "Friday 2:00 PM", type: "calendar" },
   ];
+
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-[0_40px_120px_-40px_rgba(15,15,30,0.25)]">
-      {/* window chrome */}
-      <div className="flex items-center gap-2 border-b border-border bg-secondary/60 px-3.5 py-2.5">
-        <div className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-foreground/15" />
-          <span className="h-2.5 w-2.5 rounded-full bg-foreground/15" />
-          <span className="h-2.5 w-2.5 rounded-full bg-foreground/15" />
-        </div>
-        <div className="mx-auto flex items-center gap-2 font-mono text-[11px] text-muted-foreground">
-          <NyvloMark size="sm" />
-          <span className="text-muted-foreground/70">/ today</span>
-        </div>
-        <div className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-muted-foreground">⌘J</div>
-      </div>
-      <div className="px-5 pb-5 pt-4">
-        <div className="mb-3 flex items-center justify-between">
-          <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground">Needs attention</span>
-          <span className="font-mono text-[10.5px] text-muted-foreground tabular-nums">4 open</span>
-        </div>
-        <div className="flex flex-col gap-1.5">
-          {rows.map((r) => (
-            <div key={r.title} className="group flex items-center gap-3 rounded-lg border border-border bg-background px-3.5 py-3 transition-colors hover:bg-secondary/40">
-              <span className={`h-2 w-2 shrink-0 rounded-full ${r.dot}`} />
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-[14px] font-medium leading-tight">{r.title}</div>
-                <div className="mt-0.5 truncate font-mono text-[11px] text-muted-foreground">{r.meta} / {r.src}</div>
-              </div>
-              <button className="rounded-md border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-foreground/80 transition-colors group-hover:bg-foreground group-hover:text-background">
-                Send
-              </button>
+    <div className="group relative overflow-hidden rounded-[32px] border border-border/80 bg-background/80 p-3 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] backdrop-blur-2xl">
+      <div className="overflow-hidden rounded-[24px] border border-border bg-card shadow-inner">
+        {/* Window Controls */}
+        <div className="flex items-center justify-between border-b border-border/40 bg-secondary/40 px-6 py-4">
+          <div className="flex gap-2">
+            <div className="h-3 w-3 rounded-full bg-border" />
+            <div className="h-3 w-3 rounded-full bg-border" />
+            <div className="h-3 w-3 rounded-full bg-border" />
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 rounded-full bg-background px-3 py-1 text-[11px] font-bold tracking-tighter text-muted-foreground border border-border/60">
+              <NyvloMark size="sm" className="opacity-70" />
+              <span>/ dashboard</span>
             </div>
-          ))}
+          </div>
+          <div className="text-[11px] font-bold font-mono text-muted-foreground opacity-40">⌘J</div>
+        </div>
+
+        <div className="flex min-h-[400px]">
+          {/* Mock Sidebar */}
+          <div className="hidden w-48 border-r border-border/40 bg-secondary/10 p-4 md:block">
+            <div className="space-y-1">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className={`h-8 rounded-lg ${i === 1 ? 'bg-primary/10' : 'bg-muted/20'} w-full opacity-60`} />
+              ))}
+            </div>
+          </div>
+          
+          {/* Content Area */}
+          <div className="flex-1 p-8 text-left">
+            <div className="mb-8 flex items-center justify-between">
+              <h4 className="text-[13px] font-bold uppercase tracking-[0.2em] text-primary">Needs Attention</h4>
+              <div className="h-1.5 w-1.5 rounded-full bg-primary nyvlo-dot-pulse" />
+            </div>
+            
+            <div className="space-y-3">
+              {items.map((item, idx) => (
+                <div key={idx} className="group/item flex items-center gap-4 rounded-2xl border border-border bg-background p-4 transition-all hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-muted-foreground group-hover/item:bg-primary group-hover/item:text-primary-foreground transition-colors">
+                    {item.type === 'meeting' && <Calendar className="h-5 w-5" />}
+                    {item.type === 'email' && <Mail className="h-5 w-5" />}
+                    {item.type === 'note' && <StickyNote className="h-5 w-5" />}
+                    {item.type === 'calendar' && <FileText className="h-5 w-5" />}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[15px] font-bold text-foreground leading-tight">{item.title}</p>
+                    <p className="mt-1 font-mono text-[11px] text-muted-foreground uppercase tracking-tight">{item.meta}</p>
+                  </div>
+                  <button className="rounded-full bg-foreground px-4 py-1.5 text-[12px] font-bold text-background opacity-0 group-hover/item:opacity-100 transition-opacity">
+                    Draft Reply
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -158,6 +158,33 @@ body {
   animation: nyvlo-pulse 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+@keyframes nyvlo-scan {
+  0% { transform: translateY(-120%); opacity: 0; }
+  14%, 70% { opacity: 1; }
+  100% { transform: translateY(520%); opacity: 0; }
+}
+
+@keyframes nyvlo-reveal {
+  0% { opacity: 0; transform: translateY(14px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.nyvlo-scan-line {
+  animation: nyvlo-scan 4.8s var(--ease-out-expo) infinite;
+}
+
+.nyvlo-reveal {
+  animation: nyvlo-reveal 720ms var(--ease-out-expo) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nyvlo-dot-pulse,
+  .nyvlo-scan-line,
+  .nyvlo-reveal {
+    animation: none;
+  }
+}
+
 /* Custom scrollbar for minimalist feel */
 ::-webkit-scrollbar {
   width: 6px;
