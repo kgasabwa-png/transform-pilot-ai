@@ -6,7 +6,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Nyvlo | The AI that catches what you forgot" },
-      { name: "description", content: "Nyvlo finds the follow-ups, promises, and loose ends slipping through your week, and drafts the reply for you." },
+      { name: "description", content: "Automated follow-ups and promise tracking for busy teams" },
       { property: "og:title", content: "Nyvlo | The AI that catches what you forgot" },
       { property: "og:description", content: "Nyvlo finds the follow-ups, promises, and loose ends slipping through your week" },
     ],
@@ -42,13 +42,13 @@ function Landing() {
           <div className="mx-auto max-w-3xl text-center">
             <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-border/80 bg-card/80 px-2.5 py-1 font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted-foreground backdrop-blur">
               <span className="h-1.5 w-1.5 rounded-full bg-primary nyvlo-dot-pulse" />
-              Private beta · v0.4
+              Private beta v0.4
             </div>
             <h1 className="text-balance text-[44px] font-semibold leading-[0.98] tracking-[-0.045em] text-foreground md:text-[80px]">
-              The AI that catches<br className="hidden md:block" /> what you forgot.
+              The AI that catches<br className="hidden md:block" /> what you forgot
             </h1>
             <p className="mx-auto mt-7 max-w-[36ch] text-[16.5px] leading-[1.55] text-muted-foreground md:text-[18px]">
-              Nyvlo finds the follow-ups, promises, and loose ends slipping through your week, and drafts the reply for you.
+              Nyvlo tracks every promise and follow-up slipping through your week then drafts the reply for you
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-2.5">
               <Link to="/auth" className="group inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-[14px] font-medium text-background transition-opacity hover:opacity-90">
@@ -60,7 +60,7 @@ function Landing() {
               </Link>
             </div>
             <div className="mt-4 font-mono text-[10.5px] uppercase tracking-[0.12em] text-muted-foreground">
-              Free during beta · Google in 30s · no card
+              Free during beta / Google in 30s / No card required
             </div>
           </div>
 
@@ -79,7 +79,7 @@ function Landing() {
             &ldquo;I told Sarah I&rsquo;d send that two days ago.&rdquo;
           </blockquote>
           <p className="mx-auto mt-6 max-w-[44ch] text-center text-[15.5px] leading-relaxed text-muted-foreground">
-            Everyone has felt this. Nyvlo is the quiet nudge that arrives before it does, with the promise you made, the person waiting, and the draft already written.
+            The nudge that arrives before the guilt, with the promise you made, the person waiting, and the draft already written
           </p>
         </div>
       </section>
@@ -88,12 +88,12 @@ function Landing() {
       <section id="how" className="mx-auto max-w-6xl px-6 py-24 md:py-28">
         <div className="mx-auto max-w-2xl">
           <p className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">How it works</p>
-          <h2 className="mt-3 text-[30px] font-semibold leading-tight tracking-[-0.03em] md:text-[40px]">Three quiet moves, every day.</h2>
+          <h2 className="mt-3 text-[30px] font-semibold leading-tight tracking-[-0.03em] md:text-[40px]">Three quiet moves every day</h2>
         </div>
         <div className="mt-14 grid gap-x-10 gap-y-12 md:grid-cols-3">
-          <Feature step="01" icon={Calendar} title="Reads your calendar" body="Meeting titles, times, attendees. Every commitment grounded in real context." />
-          <Feature step="02" icon={StickyNote} title="Remembers, anywhere" body="One click on any page, email, or doc. A promise made, an ask received, a doc to send." />
-          <Feature step="03" icon={Sparkles} title="Catches what slipped" body="Overdue follow-ups, unanswered replies, docs you said you&rsquo;d send. Drafts ready, one tap to ship." />
+          <Feature step="01" icon={Calendar} title="Reads your calendar" body="Meeting titles, times, and attendees grounded in real context" />
+          <Feature step="02" icon={StickyNote} title="Remembers, anywhere" body="Save a promise from any page, email, or document in a single click" />
+          <Feature step="03" icon={Sparkles} title="Catches what slipped" body="Overdue follow-ups and unanswered replies turned into ready-to-ship drafts" />
         </div>
       </section>
 
@@ -102,9 +102,9 @@ function Landing() {
         <div className="mx-auto grid max-w-5xl items-center gap-12 px-6 py-24 md:grid-cols-[1.05fr,1fr] md:py-28">
           <div>
             <p className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">Friday recap</p>
-            <h3 className="mt-3 text-[30px] font-semibold leading-tight tracking-[-0.03em] md:text-[38px]">A reliability score people screenshot.</h3>
+            <h3 className="mt-3 text-[30px] font-semibold leading-tight tracking-[-0.03em] md:text-[38px]">A reliability score worth sharing</h3>
             <p className="mt-5 max-w-md text-[15.5px] leading-relaxed text-muted-foreground">
-              Every Friday, Nyvlo tells you how many promises you made, how many you kept, and how many would have slipped without it.
+              Every Friday Nyvlo tracks the promises you made and the ones it helped you keep
             </p>
           </div>
           <div className="rounded-2xl border border-border bg-background p-6 shadow-[0_20px_60px_-30px_rgba(15,15,30,0.15)]">
@@ -130,18 +130,18 @@ function Landing() {
         <div className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card">
           <ShieldCheck className="h-4 w-4 text-primary" strokeWidth={1.75} />
         </div>
-        <h2 className="mt-5 text-[30px] font-semibold tracking-[-0.03em] md:text-[40px]">Yours. Only yours.</h2>
+        <h2 className="mt-5 text-[30px] font-semibold tracking-[-0.03em] md:text-[40px]">Yours and only yours</h2>
         <p className="mx-auto mt-5 max-w-[50ch] text-[15.5px] leading-relaxed text-muted-foreground">
-          Nyvlo only remembers what you save or connect. No silent browsing capture. No employer dashboard. Pause anytime. Delete everything in one click.
+          Nyvlo only remembers what you save or connect with no silent capture or employer monitoring
         </p>
       </section>
 
       {/* CTA */}
       <section className="border-t border-border bg-secondary/40">
         <div className="mx-auto max-w-3xl px-6 py-24 text-center md:py-28">
-          <h2 className="text-[36px] font-semibold leading-[1.02] tracking-[-0.04em] md:text-[56px]">Never drop the ball again.</h2>
+          <h2 className="text-[36px] font-semibold leading-[1.02] tracking-[-0.04em] md:text-[56px]">Never drop the ball again</h2>
           <p className="mx-auto mt-5 max-w-[40ch] text-[15.5px] text-muted-foreground">
-            Sign up. Connect Google. You&rsquo;re set in under a minute.
+            Connect Google and get set up in under a minute
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-2.5">
             <Link to="/auth" className="group inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-[14px] font-medium text-background transition-opacity hover:opacity-90">
@@ -159,7 +159,7 @@ function Landing() {
         <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-4 px-6 py-8 text-[12px] text-muted-foreground md:flex-row md:items-center">
           <div className="flex items-center gap-3">
             <NyvloMark size="sm" />
-            <span className="text-muted-foreground/80">© 2026 Nyvlo, Inc.</span>
+            <span className="text-muted-foreground/80">© 2026 Nyvlo, Inc</span>
           </div>
           <div className="flex items-center gap-6">
             <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
@@ -198,9 +198,9 @@ function Stat({ label, value, tone }: { label: string; value: string; tone?: "pr
 
 function PreviewCard() {
   const rows = [
-    { dot: "bg-danger",  title: "Send pricing deck to Sarah",     meta: "Acme · overdue 2 days",         src: "from meeting · pricing sync", Icon: Mail },
-    { dot: "bg-danger",  title: "Reply to David at Luma",         meta: "Interview slot · overdue 3 days", src: "from email",                Icon: Mail },
-    { dot: "bg-warning", title: "Share Q3 roadmap with Maria",    meta: "Northwind · due today",         src: "from manual note",            Icon: StickyNote },
+    { dot: "bg-danger",  title: "Send pricing deck to Sarah",     meta: "Acme / overdue 2 days",         src: "from meeting / pricing sync", Icon: Mail },
+    { dot: "bg-danger",  title: "Reply to David at Luma",         meta: "Interview slot / overdue 3 days", src: "from email",                Icon: Mail },
+    { dot: "bg-warning", title: "Share Q3 roadmap with Maria",    meta: "Northwind / due today",         src: "from manual note",            Icon: StickyNote },
     { dot: "bg-primary", title: "Prep notes for Luma interview",  meta: "Friday 2:00 PM",                src: "from calendar",               Icon: FileText },
   ];
   return (
@@ -229,7 +229,7 @@ function PreviewCard() {
               <span className={`h-2 w-2 shrink-0 rounded-full ${r.dot}`} />
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[14px] font-medium leading-tight">{r.title}</div>
-                <div className="mt-0.5 truncate font-mono text-[11px] text-muted-foreground">{r.meta} · {r.src}</div>
+                <div className="mt-0.5 truncate font-mono text-[11px] text-muted-foreground">{r.meta} / {r.src}</div>
               </div>
               <button className="rounded-md border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-foreground/80 transition-colors group-hover:bg-foreground group-hover:text-background">
                 Send

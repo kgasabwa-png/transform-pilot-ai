@@ -46,7 +46,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
     <div className="flex min-h-dvh items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight">This page didn't load</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Something went wrong.</p>
+        <p className="mt-2 text-sm text-muted-foreground">Something went wrong</p>
         <button
           onClick={() => { router.invalidate(); reset(); }}
           className="mt-6 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
@@ -63,18 +63,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Nyvlo | What you forgot, found" },
-      { name: "description", content: "Nyvlo finds missed follow-ups, promises, and next steps from your workweek, then drafts the reply before anything slips." },
-      { property: "og:title", content: "Nyvlo | What you forgot, found" },
-      { property: "og:description", content: "Missed follow-ups, promises, and next steps found before they slip." },
+      { title: "Nyvlo | The AI that remembers for you" },
+      { name: "description", content: "Automated follow-ups and promise tracking for busy teams" },
+      { property: "og:title", content: "Nyvlo | The AI that remembers for you" },
+      { property: "og:description", content: "Nyvlo tracks every promise and follow-up slipping through your week" },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "Nyvlo" },
       { property: "og:image", content: "https://transform-pilot-ai.lovable.app/nyvlo-og.jpg" },
       { property: "og:image:width", content: "1216" },
       { property: "og:image:height", content: "640" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Nyvlo | What you forgot, found" },
-      { name: "twitter:description", content: "Missed follow-ups, promises, and next steps found before they slip" },
+      { name: "twitter:title", content: "Nyvlo | The AI that remembers for you" },
+      { name: "twitter:description", content: "Catch the follow-ups and promises slipping through your week" },
       { name: "twitter:image", content: "https://transform-pilot-ai.lovable.app/nyvlo-og.jpg" },
     ],
     links: [
