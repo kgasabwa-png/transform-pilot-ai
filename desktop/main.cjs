@@ -7,6 +7,7 @@ const { app, BrowserWindow, ipcMain, desktopCapturer, session, dialog, shell } =
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
+const { spawn } = require("child_process");
 
 const API_BASE = "https://transform-pilot-ai.lovable.app";
 const SUPABASE_URL = "https://tunndealwgyinwmjjwrl.supabase.co";
@@ -117,6 +118,87 @@ async function refreshIfNeeded() {
   }
 }
 
+// --- Native capture sidecar (NyvloCapture) --------------------------------
+let captureProc = null;
+
+function sidecarPath() {
+  if (app.isPackaged) {
+    const candidates = [
+      path.join(process.resourcesPath, "bin", "NyvloCapture"),
+      path.join(process.resourcesPath, "NyvloCapture"),
+    ];
+    return candidates.find((p) => fs.existsSync(p)) || candidates[0];
+  }
+  return path.join(__dirname, "sidecar", ".build", "release", "NyvloCapture");
+}
+
+async function startCapture({ label, audioOnly } = {}) {
+  if (captureProc) return { ok: false, error: "Capture already running" };
+
+  const sess = await refreshIfNeeded();
+  if (!sess || !sess.access_token) return { ok: false, error: "not-signed-in" };
+
+  const bin = sidecarPath();
+  if (!fs.existsSync(bin)) return { ok: false, error: "sidecar-missing", path: bin };
+
+  const args = ["--token", sess.access_token, "--api", API_BASE];
+  if (label) args.push("--label", label);
+  if (audioOnly) args.push("--audio-only");
+
+  try {
+    captureProc = spawn(bin, args, { stdio: ["pipe", "pipe", "pipe"] });
+  } catch (e) {
+    captureProc = null;
+    return { ok: false, error: e && e.message ? e.message : "spawn failed" };
+  }
+
+  let buf = "";
+  captureProc.stdout.on("data", (d) => {
+    buf += d.toString();
+    let nl;
+    while ((nl = buf.indexOf("\n")) !== -1) {
+      const line = buf.slice(0, nl).trim();
+      buf = buf.slice(nl + 1);
+      if (!line) continue;
+      try {
+        notifyRenderer("capture:event", JSON.parse(line));
+      } catch {
+        notifyRenderer("capture:event", { type: "log", message: line });
+      }
+    }
+  });
+
+  captureProc.stderr.on("data", (d) => {
+    notifyRenderer("capture:event", { type: "log", message: d.toString().trim() });
+  });
+
+  captureProc.on("error", (err) => {
+    captureProc = null;
+    notifyRenderer("capture:event", { type: "error", message: err.message });
+  });
+
+  captureProc.on("exit", (code, signal) => {
+    captureProc = null;
+    notifyRenderer("capture:event", { type: "exit", code, signal });
+  });
+
+  return { ok: true };
+}
+
+function stopCapture() {
+  if (!captureProc) return { ok: true };
+  const proc = captureProc;
+  try {
+    proc.stdin.write(JSON.stringify({ action: "stop" }) + "\n");
+  } catch {
+    try { proc.kill("SIGTERM"); } catch {}
+  }
+  setTimeout(() => {
+    if (proc && !proc.killed) { try { proc.kill("SIGKILL"); } catch {} }
+  }, 5000);
+  return { ok: true };
+}
+
 // --- Window ---------------------------------------------------------------
 let win;
 function notifyRenderer(channel, payload) {
@@ -166,6 +248,10 @@ app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
 
+app.on("before-quit", () => {
+  if (captureProc) { try { captureProc.kill("SIGKILL"); } catch {} }
+});
+
 // --- IPC ------------------------------------------------------------------
 ipcMain.handle("nyvlo:quit", () => app.quit());
 
@@ -193,3 +279,6 @@ ipcMain.handle("nyvlo:signOut", async () => {
 });
 
 ipcMain.handle("nyvlo:apiBase", async () => API_BASE);
+
+ipcMain.handle("nyvlo:startCapture", async (_e, opts) => startCapture(opts || {}));
+ipcMain.handle("nyvlo:stopCapture", async () => stopCapture());

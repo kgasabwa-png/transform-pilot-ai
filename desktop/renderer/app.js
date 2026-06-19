@@ -84,6 +84,95 @@ async function init() {
 }
 init();
 
+// --- Native capture (NyvloCapture sidecar) --------------------------------
+let capturing = false;
+let audioChunks = 0;
+let screenChunks = 0;
+
+window.nyvlo.onCaptureEvent((evt) => {
+  if (!evt) return;
+  switch (evt.type) {
+    case "started":
+      setStatus("Capturing system audio + screen…");
+      break;
+    case "chunk":
+      if (evt.kind === "audio") audioChunks++;
+      else if (evt.kind === "screen") screenChunks++;
+      setStatus(`Capturing… ${audioChunks} audio · ${screenChunks} screen uploaded`);
+      break;
+    case "ended":
+      break;
+    case "error":
+      setStatus(evt.message || "Capture error", "err");
+      break;
+    case "exit":
+      finalizeSidecar(evt);
+      break;
+    case "log":
+      console.log("[sidecar]", evt.message);
+      break;
+    default:
+      break;
+  }
+});
+
+async function startSidecarCapture() {
+  const label = meetingTitleEl.value.trim() || `Meeting · ${new Date().toLocaleString()}`;
+  setStatus("Starting capture…");
+  const r = await window.nyvlo.startCapture({ label });
+
+  if (!r.ok) {
+    if (r.error === "sidecar-missing") {
+      setStatus("Native capture not built; using browser recording.");
+      return startRecording();
+    }
+    if (r.error === "not-signed-in") {
+      setStatus("Sign in first.", "err");
+      renderSignedOut("Your session expired. Sign in again to keep capturing.");
+      return;
+    }
+    setStatus(`Couldn't start: ${r.error}`, "err");
+    return;
+  }
+
+  capturing = true;
+  audioChunks = 0;
+  screenChunks = 0;
+  startTime = Date.now();
+  timerHandle = setInterval(() => (timerEl.textContent = fmtTime(Date.now() - startTime)), 500);
+  recBtn.classList.add("recording");
+  recRow.classList.add("recording");
+  recBtn.innerHTML = '<span class="pulse"></span> Stop capture';
+  setStatus("Capturing system audio + screen…");
+}
+
+async function stopSidecarCapture() {
+  setStatus("Stopping…");
+  await window.nyvlo.stopCapture();
+}
+
+function finalizeSidecar(evt) {
+  if (!capturing) return;
+  capturing = false;
+  clearInterval(timerHandle);
+  timerHandle = null;
+  recBtn.classList.remove("recording");
+  recRow.classList.remove("recording");
+  recBtn.innerHTML = '<span class="pulse"></span> Start capture';
+
+  if (evt && typeof evt.code === "number" && evt.code !== 0) {
+    setStatus(`Capture stopped unexpectedly (exit ${evt.code}).`, "err");
+    return;
+  }
+
+  setStatus("Session saved. Promises will appear in your inbox shortly.", "ok");
+  resultCard.style.display = "block";
+  transcriptEl.value =
+    "Captured system audio + screen for this session. Nyvlo is transcribing and " +
+    "extracting promises on the server — check your inbox in a moment.";
+  promiseCountEl.textContent = `${audioChunks} audio · ${screenChunks} screen chunks uploaded`;
+}
+
 let recorder = null;
 let chunks = [];
 let stream = null;
@@ -231,11 +320,15 @@ async function finalize(mimeType) {
 }
 
 recBtn.addEventListener("click", () => {
+  if (capturing) {
+    stopSidecarCapture();
+    return;
+  }
   if (recorder && recorder.state === "recording") {
     recorder.stop();
-  } else {
-    startRecording();
+    return;
   }
+  startSidecarCapture();
 });
 
 resetBtn.addEventListener("click", () => {
