@@ -297,7 +297,7 @@ async function runExtractAndPersist(
 ) {
   try {
     const result = await extractFromSource({
-      kind: src.kind as "calendar_event",
+      kind: (src.kind === "web_capture" ? "web_capture" : "calendar_event"),
       subject: src.subject,
       participants: src.participants,
       body: src.body,
