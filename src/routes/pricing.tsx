@@ -9,8 +9,8 @@ import { Check, X } from "lucide-react";
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "Pricing · Nyvlo — $24/mo for unlimited capture" },
-      { name: "description", content: "Free during beta. Pro is $24/mo or $240/yr for unlimited capture, desktop app, and unlimited promises." },
+      { title: "Pricing · Nyvlo — Free, then $18/mo for unlimited" },
+      { name: "description", content: "Free forever for 10 captures a month. Pro is $18/mo or $144/yr ($12/mo) for unlimited capture, desktop app, and unlimited memory." },
     ],
   }),
   component: Pricing,
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/pricing")({
 type Cadence = "monthly" | "yearly";
 
 function Pricing() {
-  const [cadence, setCadence] = useState<Cadence>("monthly");
+  const [cadence, setCadence] = useState<Cadence>("yearly");
   const [checkoutPriceId, setCheckoutPriceId] = useState<string | null>(null);
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
 
@@ -29,9 +29,9 @@ function Pricing() {
     });
   }, []);
 
-  const priceId = cadence === "monthly" ? "nyvlo_pro_monthly" : "nyvlo_pro_yearly";
-  const proPrice = cadence === "monthly" ? "$24" : "$240";
-  const proCadence = cadence === "monthly" ? "/ month" : "/ year";
+  const priceId = cadence === "monthly" ? "pro_monthly_v2" : "pro_yearly_v2";
+  const proPrice = cadence === "monthly" ? "$18" : "$12";
+  const proCadence = cadence === "monthly" ? "/ month" : "/ month, billed yearly";
 
   const startCheckout = () => {
     if (!user) {
