@@ -23,10 +23,16 @@ export const Route = createFileRoute("/_authenticated/app/capture")({
 
 function CapturePage() {
   const fetchList = useServerFn(listCaptureSessions);
+  const fetchQuota = useServerFn(getCaptureQuota);
   const list = useQuery({
     queryKey: ["capture-sessions"],
     queryFn: () => fetchList(),
     refetchInterval: 10_000,
+  });
+  const quota = useQuery({
+    queryKey: ["capture-quota"],
+    queryFn: () => fetchQuota(),
+    refetchInterval: 30_000,
   });
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -34,13 +40,48 @@ function CapturePage() {
   const activeId = selectedId ?? sessions[0]?.id ?? null;
 
   const qc = useQueryClient();
+  const q = quota.data;
+  const pctUsed = q && !q.is_pro ? Math.min(100, Math.round((q.used / q.limit) * 100)) : 0;
+  const nearLimit = q && !q.is_pro && q.used >= q.limit * 0.7;
+
   return (
     <Shell title="Live Capture" subtitle="Meeting + screen sessions feeding the agent.">
+      {q && !q.is_pro ? (
+        <div className={`mb-4 flex items-center gap-4 rounded-lg border px-4 py-3 text-sm ${
+          q.allowed ? "border-border bg-card/60" : "border-amber-500/40 bg-amber-50/60 dark:bg-amber-950/20"
+        }`}>
+          <div className="flex-1">
+            <div className="font-medium">
+              {q.allowed
+                ? `${q.used} / ${q.limit} free captures used this month`
+                : `You've used all ${q.limit} free captures this month`}
+            </div>
+            <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className={`h-full rounded-full ${q.allowed ? "bg-primary" : "bg-amber-500"}`}
+                style={{ width: `${pctUsed}%` }}
+              />
+            </div>
+            {nearLimit ? (
+              <p className="mt-2 text-[12px] text-muted-foreground">
+                Free captures are limited to 30 min each. Upgrade for unlimited capture, mic + system audio, and the desktop app.
+              </p>
+            ) : null}
+          </div>
+          <Link
+            to="/pricing"
+            className="rounded-md bg-foreground px-3 py-1.5 text-[12.5px] font-medium text-background hover:opacity-90"
+          >
+            Upgrade
+          </Link>
+        </div>
+      ) : null}
       <div className="mb-6">
         <BrowserRecorder
           onSessionChange={(id) => {
             if (id) setSelectedId(id);
             qc.invalidateQueries({ queryKey: ["capture-sessions"] });
+            qc.invalidateQueries({ queryKey: ["capture-quota"] });
           }}
         />
       </div>
