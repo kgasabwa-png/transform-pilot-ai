@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Check, Sparkles, X, ChevronDown, Mail, CalendarDays, StickyNote, ExternalLink, Flag } from "lucide-react";
+import { Check, Sparkles, X, ChevronDown, Mail, CalendarDays, StickyNote, ExternalLink, Flag, VolumeX } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { updatePromiseStatus, reportNotAPromise, getPromiseSource } from "@/lib/nyvlo/data.functions";
+import { addMute } from "@/lib/nyvlo/mutes.functions";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
@@ -55,6 +56,16 @@ export function PromiseRow({ item }: { item: PromiseRowData }) {
       invalidate();
     },
     onError: () => toast.error("Couldn't submit feedback"),
+  });
+
+  const mute = useServerFn(addMute);
+  const muteSource = useMutation({
+    mutationFn: (url: string) => mute({ data: { url } }),
+    onSuccess: (res) => {
+      toast.success(`Muted ${res.label ?? "source"} — won't auto-capture again`);
+      queryClient.invalidateQueries({ queryKey: ["mutedSources"] });
+    },
+    onError: () => toast.error("Couldn't mute source"),
   });
 
   const SrcIcon = item.channel === "email" ? Mail : item.channel === "meeting" ? CalendarDays : StickyNote;
@@ -135,13 +146,24 @@ export function PromiseRow({ item }: { item: PromiseRowData }) {
             <div className="text-[11.5px] text-muted-foreground">
               Captured {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
             </div>
-            <button
-              onClick={() => notAPromise.mutate()}
-              disabled={notAPromise.isPending}
-              className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-[11.5px] text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40"
-            >
-              <Flag className="h-3 w-3" /> Not a promise
-            </button>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <button
+                onClick={() => notAPromise.mutate()}
+                disabled={notAPromise.isPending}
+                className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-[11.5px] text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40"
+              >
+                <Flag className="h-3 w-3" /> Not a promise
+              </button>
+              {sourceQ.data?.url && (
+                <button
+                  onClick={() => muteSource.mutate(sourceQ.data!.url!)}
+                  disabled={muteSource.isPending}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-[11.5px] text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40"
+                >
+                  <VolumeX className="h-3 w-3" /> Mute source
+                </button>
+              )}
+            </div>
           </div>
           {item.draft_reply && (
             <div>

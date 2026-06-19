@@ -279,6 +279,30 @@ export type Database = {
           },
         ]
       }
+      muted_sources: {
+        Row: {
+          created_at: string
+          id: string
+          label: string | null
+          mute_key: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          mute_key: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          mute_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null

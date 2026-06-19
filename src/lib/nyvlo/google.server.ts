@@ -390,6 +390,20 @@ export async function captureWebSnippet(
   },
 ) {
   const admin = adminClient();
+
+  // Per-source mute check (Phase 4): silence specific threads/channels/pages.
+  const { deriveMuteKey } = await import("./mute-key");
+  const { key: muteKey } = deriveMuteKey(input.url);
+  const { data: muted } = await admin
+    .from("muted_sources")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("mute_key", muteKey)
+    .maybeSingle();
+  if (muted) {
+    return { source_id: null, promises: [], stats: { muted: true } };
+  }
+
   const occurred = new Date().toISOString();
   const body = input.note
     ? `${input.selected_text}\n\n[User note: ${input.note}]`

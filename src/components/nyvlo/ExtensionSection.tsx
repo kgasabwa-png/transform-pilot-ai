@@ -9,6 +9,8 @@ import {
   createExtensionToken,
   deleteExtensionToken,
 } from "@/lib/nyvlo/extension.functions";
+import { listMutes, removeMute } from "@/lib/nyvlo/mutes.functions";
+import { VolumeX } from "lucide-react";
 
 export function ExtensionSection() {
   const queryClient = useQueryClient();
@@ -20,6 +22,18 @@ export function ExtensionSection() {
     queryKey: ["extensionTokens"],
     queryFn: () => fetchTokens(),
   });
+
+  const fetchMutes = useServerFn(listMutes);
+  const unmute = useServerFn(removeMute);
+  const { data: mutes = [] } = useQuery({
+    queryKey: ["mutedSources"],
+    queryFn: () => fetchMutes(),
+  });
+
+  const handleUnmute = async (id: string) => {
+    await unmute({ data: { id } });
+    queryClient.invalidateQueries({ queryKey: ["mutedSources"] });
+  };
 
   const [busy, setBusy] = useState(false);
   const [newToken, setNewToken] = useState<string | null>(null);
@@ -183,6 +197,35 @@ export function ExtensionSection() {
               <Plus className="h-3 w-3" /> New token
             </button>
           </div>
+        </div>
+      )}
+
+      <div className="border-t border-border bg-secondary/20 px-4 py-2 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+        Muted sources
+      </div>
+      {mutes.length === 0 ? (
+        <div className="px-4 py-3 text-[11.5px] text-muted-foreground">
+          Nothing muted. Hit "Mute source" on any promise to stop capturing from that thread or page.
+        </div>
+      ) : (
+        <div className="flex flex-col">
+          {mutes.map((m) => (
+            <div
+              key={m.id}
+              className="flex items-center justify-between border-b border-border px-4 py-2 last:border-b-0"
+            >
+              <div className="min-w-0">
+                <div className="truncate text-[12px]">{m.label ?? m.mute_key}</div>
+                <div className="truncate text-[10.5px] text-muted-foreground">{m.mute_key}</div>
+              </div>
+              <button
+                onClick={() => handleUnmute(m.id)}
+                className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] hover:bg-muted"
+              >
+                <VolumeX className="h-3 w-3" /> Unmute
+              </button>
+            </div>
+          ))}
         </div>
       )}
     </div>
