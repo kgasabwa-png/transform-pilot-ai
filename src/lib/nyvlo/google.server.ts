@@ -297,7 +297,7 @@ export async function syncAndExtractForUser(userId: string) {
             subject: e.summary ?? null,
             participants,
             body: e.description ?? null,
-            raw: ev as Record<string, unknown>,
+            raw: ev as never,
             occurred_at: occurred,
           },
           { onConflict: "user_id,kind,external_id", ignoreDuplicates: false },
@@ -323,7 +323,7 @@ export async function syncAndExtractForUser(userId: string) {
             subject: m.subject,
             participants: [m.to],
             body: m.body || m.snippet,
-            raw: m as unknown as Record<string, unknown>,
+            raw: m as never,
             occurred_at: m.date,
           },
           { onConflict: "user_id,kind,external_id", ignoreDuplicates: false },
@@ -347,7 +347,7 @@ export async function syncAndExtractForUser(userId: string) {
       kind: "sync",
       started_at: runStarted,
       finished_at: new Date().toISOString(),
-      stats: stats as unknown as Record<string, unknown>,
+      stats: stats as never,
     });
     return stats;
   } catch (err) {
@@ -357,7 +357,7 @@ export async function syncAndExtractForUser(userId: string) {
       kind: "sync",
       started_at: runStarted,
       finished_at: new Date().toISOString(),
-      stats: stats as unknown as Record<string, unknown>,
+      stats: stats as never,
       error: msg,
     });
     throw err;

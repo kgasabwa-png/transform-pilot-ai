@@ -19,6 +19,7 @@ import { Route as AuthenticatedAppSettingsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAppPromisesRouteImport } from './routes/_authenticated/app.promises'
 import { Route as AuthenticatedAppMemoryRouteImport } from './routes/_authenticated/app.memory'
 import { Route as AuthenticatedAppCommandRouteImport } from './routes/_authenticated/app.command'
+import { Route as ApiOauthGoogleCallbackRouteImport } from './routes/api/oauth.google.callback'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -71,6 +72,11 @@ const AuthenticatedAppCommandRoute = AuthenticatedAppCommandRouteImport.update({
   path: '/command',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const ApiOauthGoogleCallbackRoute = ApiOauthGoogleCallbackRouteImport.update({
+  id: '/api/oauth/google/callback',
+  path: '/api/oauth/google/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/app/promises': typeof AuthenticatedAppPromisesRoute
   '/app/settings': typeof AuthenticatedAppSettingsRoute
   '/app/': typeof AuthenticatedAppIndexRoute
+  '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -92,6 +99,7 @@ export interface FileRoutesByTo {
   '/app/promises': typeof AuthenticatedAppPromisesRoute
   '/app/settings': typeof AuthenticatedAppSettingsRoute
   '/app': typeof AuthenticatedAppIndexRoute
+  '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -105,6 +113,7 @@ export interface FileRoutesById {
   '/_authenticated/app/promises': typeof AuthenticatedAppPromisesRoute
   '/_authenticated/app/settings': typeof AuthenticatedAppSettingsRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
+  '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -118,6 +127,7 @@ export interface FileRouteTypes {
     | '/app/promises'
     | '/app/settings'
     | '/app/'
+    | '/api/oauth/google/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/app/promises'
     | '/app/settings'
     | '/app'
+    | '/api/oauth/google/callback'
   id:
     | '__root__'
     | '/'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/promises'
     | '/_authenticated/app/settings'
     | '/_authenticated/app/'
+    | '/api/oauth/google/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -147,6 +159,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiOauthGoogleCallbackRoute: typeof ApiOauthGoogleCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -221,6 +234,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppCommandRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/api/oauth/google/callback': {
+      id: '/api/oauth/google/callback'
+      path: '/api/oauth/google/callback'
+      fullPath: '/api/oauth/google/callback'
+      preLoaderRoute: typeof ApiOauthGoogleCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -259,6 +279,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiOauthGoogleCallbackRoute: ApiOauthGoogleCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
