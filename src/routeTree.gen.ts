@@ -14,6 +14,11 @@ import { Route as TryRouteImport } from './routes/try'
 import { Route as ConsoleRouteImport } from './routes/console'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as AppPromisesRouteImport } from './routes/app.promises'
+import { Route as AppMemoryRouteImport } from './routes/app.memory'
+import { Route as AppCommandRouteImport } from './routes/app.command'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AppAccountsIdRouteImport } from './routes/app.accounts.$id'
 
@@ -42,6 +47,31 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPromisesRoute = AppPromisesRouteImport.update({
+  id: '/promises',
+  path: '/promises',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMemoryRoute = AppMemoryRouteImport.update({
+  id: '/memory',
+  path: '/memory',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCommandRoute = AppCommandRouteImport.update({
+  id: '/command',
+  path: '/command',
+  getParentRoute: () => AppRoute,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -60,15 +90,24 @@ export interface FileRoutesByFullPath {
   '/try': typeof TryRoute
   '/waitlist': typeof WaitlistRoute
   '/api/chat': typeof ApiChatRoute
+  '/app/command': typeof AppCommandRoute
+  '/app/memory': typeof AppMemoryRoute
+  '/app/promises': typeof AppPromisesRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/': typeof AppIndexRoute
   '/app/accounts/$id': typeof AppAccountsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app': typeof AppRouteWithChildren
   '/console': typeof ConsoleRoute
   '/try': typeof TryRoute
   '/waitlist': typeof WaitlistRoute
   '/api/chat': typeof ApiChatRoute
+  '/app/command': typeof AppCommandRoute
+  '/app/memory': typeof AppMemoryRoute
+  '/app/promises': typeof AppPromisesRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app': typeof AppIndexRoute
   '/app/accounts/$id': typeof AppAccountsIdRoute
 }
 export interface FileRoutesById {
@@ -79,6 +118,11 @@ export interface FileRoutesById {
   '/try': typeof TryRoute
   '/waitlist': typeof WaitlistRoute
   '/api/chat': typeof ApiChatRoute
+  '/app/command': typeof AppCommandRoute
+  '/app/memory': typeof AppMemoryRoute
+  '/app/promises': typeof AppPromisesRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/': typeof AppIndexRoute
   '/app/accounts/$id': typeof AppAccountsIdRoute
 }
 export interface FileRouteTypes {
@@ -90,15 +134,24 @@ export interface FileRouteTypes {
     | '/try'
     | '/waitlist'
     | '/api/chat'
+    | '/app/command'
+    | '/app/memory'
+    | '/app/promises'
+    | '/app/settings'
+    | '/app/'
     | '/app/accounts/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/app'
     | '/console'
     | '/try'
     | '/waitlist'
     | '/api/chat'
+    | '/app/command'
+    | '/app/memory'
+    | '/app/promises'
+    | '/app/settings'
+    | '/app'
     | '/app/accounts/$id'
   id:
     | '__root__'
@@ -108,6 +161,11 @@ export interface FileRouteTypes {
     | '/try'
     | '/waitlist'
     | '/api/chat'
+    | '/app/command'
+    | '/app/memory'
+    | '/app/promises'
+    | '/app/settings'
+    | '/app/'
     | '/app/accounts/$id'
   fileRoutesById: FileRoutesById
 }
@@ -157,6 +215,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/promises': {
+      id: '/app/promises'
+      path: '/promises'
+      fullPath: '/app/promises'
+      preLoaderRoute: typeof AppPromisesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/memory': {
+      id: '/app/memory'
+      path: '/memory'
+      fullPath: '/app/memory'
+      preLoaderRoute: typeof AppMemoryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/command': {
+      id: '/app/command'
+      path: '/command'
+      fullPath: '/app/command'
+      preLoaderRoute: typeof AppCommandRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -175,10 +268,20 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppCommandRoute: typeof AppCommandRoute
+  AppMemoryRoute: typeof AppMemoryRoute
+  AppPromisesRoute: typeof AppPromisesRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppIndexRoute: typeof AppIndexRoute
   AppAccountsIdRoute: typeof AppAccountsIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppCommandRoute: AppCommandRoute,
+  AppMemoryRoute: AppMemoryRoute,
+  AppPromisesRoute: AppPromisesRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppIndexRoute: AppIndexRoute,
   AppAccountsIdRoute: AppAccountsIdRoute,
 }
 
@@ -195,13 +298,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
