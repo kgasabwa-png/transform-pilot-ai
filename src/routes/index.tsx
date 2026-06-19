@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { NyvloMark } from "@/components/nyvlo/Shell";
-import { ArrowRight, Calendar, Check, FileText, Mail, Play, ShieldCheck, Sparkles, StickyNote, type LucideIcon } from "lucide-react";
+import { ArrowRight, Calendar, FileText, Mail, Play, ShieldCheck, Sparkles, StickyNote, type LucideIcon } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
