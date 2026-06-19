@@ -270,3 +270,17 @@ body {
   background: oklch(0.97 0.005 250 / 8%);
   border-color: oklch(0.97 0.005 250 / 18%);
 }
+
+/* Granola-style meeting notes */
+.nyvlo-notes { color: var(--foreground); font-size: 14.5px; line-height: 1.65; }
+.nyvlo-notes h1, .nyvlo-notes h2 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 0.5rem; }
+.nyvlo-notes h3 { font-size: 0.95rem; font-weight: 600; margin: 1.1rem 0 0.4rem; }
+.nyvlo-notes p { margin: 0.4rem 0; }
+.nyvlo-notes strong { font-weight: 600; color: var(--foreground); display: inline-block; margin-top: 0.9rem; }
+.nyvlo-notes ul { margin: 0.25rem 0 0.6rem; padding-left: 1.1rem; list-style: disc; }
+.nyvlo-notes ol { margin: 0.25rem 0 0.6rem; padding-left: 1.25rem; list-style: decimal; }
+.nyvlo-notes li { margin: 0.18rem 0; }
+.nyvlo-notes li::marker { color: oklch(0.70 0.21 28); }
+.nyvlo-notes a { color: oklch(0.70 0.21 28); text-decoration: underline; text-underline-offset: 2px; }
+.nyvlo-notes code { background: oklch(0.97 0.005 250 / 6%); padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.85em; }
+.nyvlo-notes hr { border: 0; border-top: 1px solid var(--border); margin: 1rem 0; }
