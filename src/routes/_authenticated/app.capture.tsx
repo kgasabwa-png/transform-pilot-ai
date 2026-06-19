@@ -11,6 +11,7 @@ import {
   getCaptureSession,
   extractSessionPromises,
   deleteCaptureSession,
+  getCaptureQuota,
 } from "@/lib/nyvlo/capture.functions";
 import { Mic, Monitor, Sparkles, Trash2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
