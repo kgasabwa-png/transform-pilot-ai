@@ -56,11 +56,14 @@ export function BrowserRecorder({ onSessionChange, maxSeconds }: { onSessionChan
       const auth = await authHeader();
       if (!auth) throw new Error("Not signed in.");
 
+      const now = new Date();
+      const niceLabel = `Meeting · ${now.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })} ${now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
       const res = await fetch("/api/public/ingest/session-start", {
         method: "POST",
         headers: { Authorization: auth, "Content-Type": "application/json" },
-        body: JSON.stringify({ source: "browser", label: `Browser capture — ${new Date().toLocaleTimeString()}` }),
+        body: JSON.stringify({ source: "browser", label: niceLabel }),
       });
+
       const j = await res.json();
       if (res.status === 402) {
         cleanup();

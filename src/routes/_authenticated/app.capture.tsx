@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Shell } from "@/components/nyvlo/Shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,9 +15,17 @@ import {
   deleteCaptureSession,
   getCaptureQuota,
 } from "@/lib/nyvlo/capture.functions";
-import { Mic, Monitor, Sparkles, Trash2, RefreshCw } from "lucide-react";
+import {
+  Sparkles,
+  Trash2,
+  RefreshCw,
+  ChevronDown,
+  ChevronRight,
+  Copy,
+  Check,
+  Clock,
+} from "lucide-react";
 import { toast } from "sonner";
-
 
 export const Route = createFileRoute("/_authenticated/app/capture")({
   component: CapturePage,
@@ -45,16 +55,18 @@ function CapturePage() {
   const nearLimit = q && !q.is_pro && q.used >= q.limit * 0.7;
 
   return (
-    <Shell title="Live Capture" subtitle="Meeting + screen sessions feeding the agent.">
+    <Shell title="Notes" subtitle="Your meetings, written down for you.">
       {q && !q.is_pro ? (
-        <div className={`mb-4 flex items-center gap-4 rounded-lg border px-4 py-3 text-sm ${
-          q.allowed ? "border-border bg-card/60" : "border-amber-500/40 bg-amber-50/60 dark:bg-amber-950/20"
-        }`}>
+        <div
+          className={`mb-4 flex items-center gap-4 rounded-lg border px-4 py-3 text-sm ${
+            q.allowed ? "border-border bg-card/60" : "border-amber-500/40 bg-amber-50/60 dark:bg-amber-950/20"
+          }`}
+        >
           <div className="flex-1">
             <div className="font-medium">
               {q.allowed
-                ? `${q.used} / ${q.limit} free captures used this month`
-                : `You've used all ${q.limit} free captures this month`}
+                ? `${q.used} / ${q.limit} free meetings this month`
+                : `You've used all ${q.limit} free meetings this month`}
             </div>
             <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
               <div
@@ -64,7 +76,7 @@ function CapturePage() {
             </div>
             {nearLimit ? (
               <p className="mt-2 text-[12px] text-muted-foreground">
-                Free captures are limited to 30 min each. Upgrade for unlimited capture, mic + system audio, and the desktop app.
+                Free meetings are capped at 30 minutes each. Upgrade for unlimited capture, system audio, and the desktop app.
               </p>
             ) : null}
           </div>
@@ -76,6 +88,7 @@ function CapturePage() {
           </Link>
         </div>
       ) : null}
+
       <div className="mb-6">
         <BrowserRecorder
           maxSeconds={q && !q.is_pro ? 30 * 60 : undefined}
@@ -86,17 +99,19 @@ function CapturePage() {
           }}
         />
       </div>
-      <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
-        <Card className="p-3">
-          <div className="mb-2 px-1 text-[11px] uppercase tracking-wider text-muted-foreground">
-            Sessions
+
+      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+        <Card className="p-2">
+          <div className="mb-1 px-2 pt-1 text-[11px] uppercase tracking-wider text-muted-foreground">
+            Recent meetings
           </div>
           {list.isLoading && (
             <div className="px-2 py-3 text-sm text-muted-foreground">Loading…</div>
           )}
           {!list.isLoading && sessions.length === 0 && (
-            <div className="px-2 py-3 text-sm text-muted-foreground">
-              No sessions yet. Start the desktop app and click <strong>Start capture</strong>.
+            <div className="px-2 py-4 text-[13px] leading-relaxed text-muted-foreground">
+              No meetings yet. Hit <strong>Start recording</strong> above when your next call begins —
+              Nyvlo writes the notes.
             </div>
           )}
           <div className="space-y-0.5">
@@ -117,13 +132,20 @@ function CapturePage() {
                     {s.status === "active" && (
                       <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive" />
                     )}
-                    <span className="truncate font-medium">
-                      {s.label || "Untitled session"}
-                    </span>
+                    <span className="truncate font-medium">{s.label || "Untitled meeting"}</span>
                   </div>
                   <div className="mt-0.5 truncate text-[11px] text-muted-foreground">
-                    {new Date(s.started_at).toLocaleString()} ·{" "}
-                    {s.duration_seconds ? `${Math.round(s.duration_seconds / 60)}m` : s.status}
+                    {new Date(s.started_at).toLocaleString([], {
+                      month: "short",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
+                    {s.duration_seconds
+                      ? ` · ${Math.max(1, Math.round(s.duration_seconds / 60))}m`
+                      : s.status === "active"
+                      ? " · live"
+                      : ""}
                   </div>
                 </button>
               );
@@ -143,25 +165,14 @@ function CapturePage() {
 
 function EmptyState() {
   return (
-    <Card className="flex min-h-[420px] flex-col items-center justify-center gap-4 p-8 text-center">
-      <div className="flex gap-3">
-        <Mic className="h-8 w-8 text-muted-foreground" />
-        <Monitor className="h-8 w-8 text-muted-foreground" />
-      </div>
+    <Card className="flex min-h-[420px] flex-col items-center justify-center gap-3 p-8 text-center">
       <div className="max-w-md">
-        <h2 className="text-lg font-semibold">Capture meetings + screen</h2>
+        <h2 className="text-lg font-semibold">Nothing to show yet</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Nyvlo's desktop app records your meetings (including the other person's voice via
-          ScreenCaptureKit) and what's on your screen, then extracts promises and follow-ups
-          automatically.
+          Start a recording above and Nyvlo will write the meeting notes, surface every commitment,
+          and draft the follow-ups — automatically.
         </p>
       </div>
-      <Link
-        to="/app/settings"
-        className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-      >
-        Get the desktop app
-      </Link>
     </Card>
   );
 }
@@ -171,6 +182,8 @@ function SessionDetail({ sessionId, onDelete }: { sessionId: string; onDelete: (
   const extract = useServerFn(extractSessionPromises);
   const remove = useServerFn(deleteCaptureSession);
   const qc = useQueryClient();
+  const [showRaw, setShowRaw] = useState(false);
+  const [extracting, setExtracting] = useState(false);
 
   const q = useQuery({
     queryKey: ["capture-session", sessionId],
@@ -178,7 +191,7 @@ function SessionDetail({ sessionId, onDelete }: { sessionId: string; onDelete: (
     refetchInterval: 5_000,
   });
 
-  const session = q.data?.session;
+  const session = q.data?.session as any;
   const chunks = q.data?.chunks ?? [];
   const frames = q.data?.frames ?? [];
   const promises = q.data?.promises ?? [];
@@ -188,111 +201,257 @@ function SessionDetail({ sessionId, onDelete }: { sessionId: string; onDelete: (
   }
 
   const onExtract = async () => {
+    setExtracting(true);
     try {
       const r = await extract({ data: { sessionId } });
-      toast.success(`Extracted ${r.inserted} promise${r.inserted === 1 ? "" : "s"}`);
+      toast.success(
+        r.inserted
+          ? `${r.inserted} commitment${r.inserted === 1 ? "" : "s"} captured`
+          : "Notes regenerated",
+      );
       qc.invalidateQueries({ queryKey: ["capture-session", sessionId] });
     } catch (e: any) {
-      toast.error(e.message ?? "Extraction failed");
+      toast.error(e.message ?? "Couldn't regenerate notes");
+    } finally {
+      setExtracting(false);
     }
   };
 
   const onDeleteClick = async () => {
-    if (!confirm("Delete this session and all its data?")) return;
+    if (!confirm("Delete this meeting and all its data?")) return;
     await remove({ data: { sessionId } });
     qc.invalidateQueries({ queryKey: ["capture-sessions"] });
     onDelete();
   };
 
+  const stillProcessing =
+    session.status === "ended" && !session.notes_md && !session.summary && chunks.length > 0;
+  const isLive = session.status === "active";
+  const noContent = session.status === "ended" && chunks.length === 0 && frames.length === 0;
+
   return (
     <div className="space-y-5">
-      <Card className="p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold">{session.label || "Untitled session"}</h2>
-            <div className="mt-0.5 text-[12px] text-muted-foreground">
-              {new Date(session.started_at).toLocaleString()}
-              {session.ended_at && ` → ${new Date(session.ended_at).toLocaleTimeString()}`} ·{" "}
-              {session.status}
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={onExtract}>
-              <Sparkles className="mr-1.5 h-3.5 w-3.5" /> Extract promises
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => q.refetch()}>
-              <RefreshCw className="h-3.5 w-3.5" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={onDeleteClick}>
-              <Trash2 className="h-3.5 w-3.5 text-destructive" />
-            </Button>
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="truncate text-2xl font-semibold tracking-tight">
+            {session.label || "Untitled meeting"}
+          </h1>
+          <div className="mt-1 flex items-center gap-3 text-[12.5px] text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              <Clock className="h-3.5 w-3.5" />
+              {new Date(session.started_at).toLocaleString([], {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+              })}
+            </span>
+            {session.duration_seconds ? (
+              <span>· {Math.max(1, Math.round(session.duration_seconds / 60))} min</span>
+            ) : null}
+            {isLive ? (
+              <span className="inline-flex items-center gap-1.5 text-destructive">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive" />
+                Live
+              </span>
+            ) : null}
           </div>
         </div>
-        {session.summary && (
-          <p className="mt-4 rounded-md bg-muted/40 p-3 text-sm">{session.summary}</p>
-        )}
-      </Card>
+        <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onExtract}
+            disabled={extracting || isLive}
+            title="Regenerate notes"
+          >
+            <Sparkles className={`h-3.5 w-3.5 ${extracting ? "animate-pulse" : ""}`} />
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => q.refetch()} title="Refresh">
+            <RefreshCw className="h-3.5 w-3.5" />
+          </Button>
+          <Button variant="ghost" size="sm" onClick={onDeleteClick} title="Delete">
+            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+          </Button>
+        </div>
+      </div>
 
+      {/* Status banners */}
+      {isLive && (
+        <Card className="border-destructive/30 bg-destructive/[0.04] p-4 text-sm">
+          Recording in progress. Notes will be written automatically when you stop.
+        </Card>
+      )}
+      {stillProcessing && (
+        <Card className="border-border/60 p-4 text-sm text-muted-foreground">
+          <span className="inline-flex items-center gap-2">
+            <Sparkles className="h-3.5 w-3.5 animate-pulse" />
+            Writing your notes…
+          </span>
+        </Card>
+      )}
+      {noContent && (
+        <Card className="border-border/60 p-4 text-sm text-muted-foreground">
+          This session ended without any audio. Nothing to summarize.
+        </Card>
+      )}
+
+      {/* AI Notes — the headline content */}
+      {session.notes_md ? (
+        <Card className="p-6">
+          <article className="nyvlo-notes max-w-none">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{session.notes_md}</ReactMarkdown>
+          </article>
+        </Card>
+
+      ) : session.summary ? (
+        <Card className="p-5">
+          <p className="text-[15px] leading-relaxed">{session.summary}</p>
+        </Card>
+      ) : null}
+
+      {/* Action items */}
       {promises.length > 0 && (
         <Card className="p-5">
-          <h3 className="mb-3 text-sm font-medium">Extracted promises ({promises.length})</h3>
-          <ul className="space-y-2">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-semibold tracking-tight">
+              Action items <span className="text-muted-foreground">({promises.length})</span>
+            </h3>
+            <Link
+              to="/app/promises"
+              className="text-[12px] text-muted-foreground hover:text-foreground"
+            >
+              View all →
+            </Link>
+          </div>
+          <ul className="divide-y divide-border/60">
             {promises.map((p: any) => (
-              <li key={p.id} className="rounded-md border border-border/60 bg-background/50 p-3">
-                <div className="text-sm">{p.summary}</div>
-                <div className="mt-1 flex gap-3 text-[11px] text-muted-foreground">
-                  {p.owed_to && <span>owner: {p.owed_to}</span>}
-                  {p.due_at && <span>due: {new Date(p.due_at).toLocaleString()}</span>}
-                  {p.confidence != null && <span>conf: {Math.round(p.confidence * 100)}%</span>}
-                </div>
-              </li>
+              <ActionItem key={p.id} p={p} />
             ))}
           </ul>
         </Card>
       )}
 
-      <div className="grid gap-5 md:grid-cols-2">
-        <Card className="p-5">
-          <h3 className="mb-3 flex items-center gap-2 text-sm font-medium">
-            <Mic className="h-3.5 w-3.5" /> Transcript ({chunks.length})
-          </h3>
-          <div className="max-h-[500px] space-y-2 overflow-auto">
-            {chunks.length === 0 && (
-              <div className="text-sm text-muted-foreground">Waiting for audio…</div>
-            )}
-            {chunks.map((c: any) => (
-              <div key={c.id} className="text-[13px]">
-                <div className="text-[11px] text-muted-foreground">
-                  {c.speaker || "speaker"} · {new Date(c.started_at).toLocaleTimeString()}
-                  {c.status !== "done" && ` · ${c.status}`}
+      {/* Raw capture — collapsed by default */}
+      {(chunks.length > 0 || frames.length > 0) && (
+        <Card className="p-0">
+          <button
+            onClick={() => setShowRaw((v) => !v)}
+            className="flex w-full items-center justify-between px-5 py-3 text-left text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <span className="inline-flex items-center gap-2">
+              {showRaw ? (
+                <ChevronDown className="h-3.5 w-3.5" />
+              ) : (
+                <ChevronRight className="h-3.5 w-3.5" />
+              )}
+              Raw transcript & screen activity
+              <span className="text-[11px] text-muted-foreground/70">
+                ({chunks.length} clips · {frames.length} frames)
+              </span>
+            </span>
+          </button>
+          {showRaw && (
+            <div className="grid gap-5 border-t border-border/60 p-5 md:grid-cols-2">
+              <div>
+                <h4 className="mb-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+                  Transcript
+                </h4>
+                <div className="max-h-[420px] space-y-2 overflow-auto pr-1">
+                  {chunks.length === 0 && (
+                    <div className="text-sm text-muted-foreground">No audio.</div>
+                  )}
+                  {chunks.map((c: any) => (
+                    <div key={c.id} className="text-[13px]">
+                      <div className="text-[11px] text-muted-foreground">
+                        {c.speaker || "speaker"} · {new Date(c.started_at).toLocaleTimeString()}
+                        {c.status !== "done" && ` · ${c.status}`}
+                      </div>
+                      <div className="mt-0.5 leading-relaxed">{c.transcript || "…"}</div>
+                    </div>
+                  ))}
                 </div>
-                <div className="mt-0.5">{c.transcript || "…"}</div>
               </div>
-            ))}
-          </div>
-        </Card>
-
-        <Card className="p-5">
-          <h3 className="mb-3 flex items-center gap-2 text-sm font-medium">
-            <Monitor className="h-3.5 w-3.5" /> Screen activity ({frames.length})
-          </h3>
-          <div className="max-h-[500px] space-y-2 overflow-auto">
-            {frames.length === 0 && (
-              <div className="text-sm text-muted-foreground">No screen captures yet.</div>
-            )}
-            {frames.map((f: any) => (
-              <div key={f.id} className="text-[13px]">
-                <div className="text-[11px] text-muted-foreground">
-                  {f.app_name || "App"}
-                  {f.window_title && ` — ${f.window_title}`} ·{" "}
-                  {new Date(f.captured_at).toLocaleTimeString()}
+              <div>
+                <h4 className="mb-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+                  Screen activity
+                </h4>
+                <div className="max-h-[420px] space-y-2 overflow-auto pr-1">
+                  {frames.length === 0 && (
+                    <div className="text-sm text-muted-foreground">No screen captures.</div>
+                  )}
+                  {frames.map((f: any) => (
+                    <div key={f.id} className="text-[13px]">
+                      <div className="text-[11px] text-muted-foreground">
+                        {f.app_name || "App"}
+                        {f.window_title && ` — ${f.window_title}`} ·{" "}
+                        {new Date(f.captured_at).toLocaleTimeString()}
+                      </div>
+                      <div className="mt-0.5 leading-relaxed">{f.vision_summary || "…"}</div>
+                    </div>
+                  ))}
                 </div>
-                <div className="mt-0.5">{f.vision_summary || "…"}</div>
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </Card>
-      </div>
+      )}
     </div>
+  );
+}
+
+function ActionItem({ p }: { p: any }) {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const onCopy = () => {
+    if (!p.draft_reply) return;
+    navigator.clipboard.writeText(p.draft_reply);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+  return (
+    <li className="py-3 first:pt-0 last:pb-0">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-start gap-3 text-left"
+      >
+        <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+        <div className="min-w-0 flex-1">
+          <div className="text-[14px] leading-snug text-foreground">{p.summary}</div>
+          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[11.5px] text-muted-foreground">
+            {p.owed_to && p.owed_to !== "me" && <span>for {p.owed_to}</span>}
+            {p.owed_to === "me" && <span>yours</span>}
+            {p.due_at && <span>· due {new Date(p.due_at).toLocaleDateString()}</span>}
+            {p.draft_reply && <span>· draft ready</span>}
+          </div>
+        </div>
+        {p.draft_reply ? (
+          open ? (
+            <ChevronDown className="mt-1 h-3.5 w-3.5 text-muted-foreground" />
+          ) : (
+            <ChevronRight className="mt-1 h-3.5 w-3.5 text-muted-foreground" />
+          )
+        ) : null}
+      </button>
+      {open && p.draft_reply && (
+        <div className="mt-2 ml-[18px] rounded-md border border-border/60 bg-muted/30 p-3">
+          <div className="mb-1.5 flex items-center justify-between">
+            <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground">
+              Draft
+            </span>
+            <button
+              onClick={onCopy}
+              className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
+            >
+              {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+              {copied ? "Copied" : "Copy"}
+            </button>
+          </div>
+          <p className="whitespace-pre-wrap text-[13px] leading-relaxed">{p.draft_reply}</p>
+        </div>
+      )}
+    </li>
   );
 }
