@@ -43,10 +43,13 @@ export const deleteExtensionToken = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { id: string }) => input)
   .handler(async ({ data, context }) => {
+    // RLS already restricts this to the calling user; the explicit user_id
+    // filter is defence in depth in case a future policy change widens access.
     const { error } = await context.supabase
       .from("extension_tokens")
       .delete()
-      .eq("id", data.id);
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
     if (error) throw error;
     return { ok: true };
   });

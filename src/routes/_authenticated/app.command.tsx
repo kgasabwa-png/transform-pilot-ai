@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/app/command")({
   head: () => ({ meta: [{ title: "Command Center · Nyvlo" }] }),
+  validateSearch: (s: Record<string, unknown>) => ({ q: typeof s.q === "string" ? s.q : undefined }),
   component: CommandPage,
 });
 

@@ -63,7 +63,8 @@ export function Shell({ children, title, subtitle }: { children: ReactNode; titl
 
           <button
             onClick={() => setPaletteOpen(true)}
-            className="mb-5 flex items-center gap-2 rounded-md border border-border bg-background/80 px-2.5 py-1.5 text-left text-xs text-muted-foreground hover:bg-background"
+            aria-label="Ask Nyvlo (open command palette)"
+            className="mb-5 flex items-center gap-2 rounded-md border border-border bg-background/80 px-2.5 py-1.5 text-left text-xs text-muted-foreground hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Search className="h-3.5 w-3.5" />
             <span className="flex-1">Ask Nyvlo…</span>
@@ -154,10 +155,12 @@ export function Shell({ children, title, subtitle }: { children: ReactNode; titl
   );
 }
 
-export function NyvloMark({ className = "" }: { className?: string }) {
+export function NyvloMark({ className = "", size = "md" }: { className?: string; size?: "sm" | "md" }) {
+  const dims = size === "sm" ? "h-4 w-4 rounded-[5px]" : "h-6 w-6 rounded-[7px]";
+  const dot = size === "sm" ? "h-1.5 w-1.5" : "h-2 w-2";
   return (
-    <div className={["flex h-6 w-6 items-center justify-center rounded-[7px] bg-foreground", className].join(" ")}>
-      <div className="h-2 w-2 rounded-full bg-primary" />
+    <div className={["flex items-center justify-center bg-foreground", dims, className].join(" ")}>
+      <div className={["rounded-full bg-primary", dot].join(" ")} />
     </div>
   );
 }
