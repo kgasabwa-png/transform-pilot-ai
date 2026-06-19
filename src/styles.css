@@ -117,14 +117,14 @@ body {
 }
 
 ::selection {
-  background: oklch(0.5 0.22 280 / 18%);
+  background: oklch(0.68 0.21 38 / 22%);
   color: var(--foreground);
 }
 
 /* subtle dotted texture, very faint */
 .nyvlo-grain {
   background-image:
-    radial-gradient(oklch(0.18 0.01 270 / 4%) 1px, transparent 1px);
+    radial-gradient(oklch(0.205 0 0 / 5%) 1px, transparent 1px);
   background-size: 22px 22px;
 }
 
