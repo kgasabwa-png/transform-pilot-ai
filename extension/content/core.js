@@ -73,7 +73,7 @@
 
     const token = await getToken();
     if (!token) {
-      showToast("Nyvlo: open the extension and paste your token to enable auto-capture.", "err");
+      showToast("Nyvlo: sign in once in your browser to enable auto-capture.", "err");
       return;
     }
 
