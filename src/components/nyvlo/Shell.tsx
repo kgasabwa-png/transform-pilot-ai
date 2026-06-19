@@ -1,8 +1,11 @@
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
-import { Inbox, Clock, Sparkles, Settings, Command, Search, BookMarked } from "lucide-react";
+import { Inbox, Clock, Sparkles, Settings, Command, Search, BookMarked, LogOut } from "lucide-react";
 import { CommandPalette } from "./CommandPalette";
-import { user } from "@/lib/nyvlo/data";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getProfile } from "@/lib/nyvlo/profile.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 const nav = [
   { to: "/app", label: "Today", icon: Sparkles, exact: true },
@@ -15,6 +18,19 @@ const nav = [
 export function Shell({ children, title, subtitle }: { children: ReactNode; title: string; subtitle?: string }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const fetchProfile = useServerFn(getProfile);
+
+  const { data } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => fetchProfile(),
+    staleTime: 60_000,
+  });
+
+  const profile = data?.profile;
+  const connection = data?.connection;
+  const displayName = profile?.full_name || profile?.email?.split("@")[0] || "You";
+  const displayEmail = profile?.email || "";
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -27,10 +43,14 @@ export function Shell({ children, title, subtitle }: { children: ReactNode; titl
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto flex max-w-[1400px]">
-        {/* Left rail */}
         <aside className="sticky top-0 hidden h-screen w-[244px] shrink-0 flex-col border-r border-border/80 bg-[oklch(0.985_0.003_95)] px-4 py-6 md:flex">
           <Link to="/" className="mb-7 flex items-center gap-2 px-2">
             <NyvloMark />
@@ -71,21 +91,35 @@ export function Shell({ children, title, subtitle }: { children: ReactNode; titl
           <div className="mt-auto rounded-lg border border-border bg-background p-3">
             <div className="flex items-center gap-2">
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
-                {user.name[0]}
+                {displayName[0]?.toUpperCase() ?? "?"}
               </div>
               <div className="min-w-0">
-                <div className="truncate text-[13px] font-medium">{user.name}</div>
-                <div className="truncate text-[11px] text-muted-foreground">{user.email}</div>
+                <div className="truncate text-[13px] font-medium">{displayName}</div>
+                <div className="truncate text-[11px] text-muted-foreground">{displayEmail}</div>
               </div>
             </div>
             <div className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <span className="nyvlo-dot-pulse h-1.5 w-1.5 rounded-full bg-success" />
-              Calendar connected
+              {connection ? (
+                <>
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  Google connected
+                </>
+              ) : (
+                <>
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                  <Link to="/app/settings" className="hover:underline">Not connected</Link>
+                </>
+              )}
             </div>
+            <button
+              onClick={signOut}
+              className="mt-2 flex w-full items-center gap-1.5 rounded px-1 py-1 text-[11px] text-muted-foreground hover:text-foreground"
+            >
+              <LogOut className="h-3 w-3" /> Sign out
+            </button>
           </div>
         </aside>
 
-        {/* Main */}
         <main className="flex-1 min-w-0">
           <header className="sticky top-0 z-10 border-b border-border/70 bg-background/80 px-6 py-5 backdrop-blur md:px-10 md:py-7">
             <div className="flex items-center justify-between gap-4">
