@@ -123,7 +123,7 @@ ${screenContext || "(no screen activity)"}`;
   }
   const json = (await res.json()) as any;
   const raw = json.choices?.[0]?.message?.content ?? "{}";
-  let parsed: { summary?: string; promises?: ExtractedPromise[] } = {};
+  let parsed: { summary?: string; notes_md?: string; promises?: ExtractedPromise[] } = {};
   try {
     parsed = JSON.parse(raw);
   } catch {
@@ -154,17 +154,19 @@ ${screenContext || "(no screen activity)"}`;
       evidence_snippet: p.evidence_snippet || null,
     }));
 
-
   if (rows.length) {
     await supabase.from("promises").insert(rows as any);
   }
 
-  if (parsed.summary) {
+  const sessionUpdate: Record<string, unknown> = {};
+  if (parsed.summary) sessionUpdate.summary = parsed.summary;
+  if (typeof parsed.notes_md === "string") sessionUpdate.notes_md = parsed.notes_md;
+  if (Object.keys(sessionUpdate).length) {
     await supabase
       .from("capture_sessions")
-      .update({ summary: parsed.summary })
+      .update(sessionUpdate)
       .eq("id", sessionId);
   }
 
-  return { inserted: rows.length, summary: parsed.summary ?? null };
+  return { inserted: rows.length, summary: parsed.summary ?? null, notes_md: parsed.notes_md ?? null };
 }
