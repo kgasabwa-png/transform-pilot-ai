@@ -190,7 +190,6 @@ export function NyvloMark({
     size === "lg" ? "text-[22px]" :
     size === "xl" ? "text-[44px]" :
     "text-[18px]";
-  const uid = `nv-orbit-${size}`;
   return (
     <span className={["inline-flex items-center gap-2.5 shrink-0", className].join(" ")}>
       <svg
@@ -200,85 +199,14 @@ export function NyvloMark({
         fill="none"
         aria-label="Nyvlo"
         role="img"
-        className={["shrink-0", animated ? "nyvlo-orbit-glow" : ""].join(" ")}
-        style={animated ? undefined : { filter: "drop-shadow(0 4px 14px oklch(0.74 0.17 30 / 30%))" }}
+        className={["shrink-0", animated ? "nyvlo-spark-pulse" : ""].join(" ")}
       >
-        <defs>
-          <radialGradient id={`${uid}-ambient`} cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="oklch(0.74 0.17 30 / 20%)" />
-            <stop offset="100%" stopColor="oklch(0.74 0.17 30 / 0%)" />
-          </radialGradient>
-          <radialGradient id={`${uid}-sphere`} cx="36%" cy="32%" r="68%">
-            <stop offset="0%" stopColor="oklch(0.95 0.08 40)" />
-            <stop offset="25%" stopColor="oklch(0.80 0.17 32)" />
-            <stop offset="70%" stopColor="oklch(0.64 0.20 26)" />
-            <stop offset="100%" stopColor="oklch(0.52 0.18 24)" />
-          </radialGradient>
-          <radialGradient id={`${uid}-rim`} cx="65%" cy="70%" r="50%">
-            <stop offset="0%" stopColor="oklch(0.74 0.17 30 / 30%)" />
-            <stop offset="100%" stopColor="oklch(0.74 0.17 30 / 0%)" />
-          </radialGradient>
-          <radialGradient id={`${uid}-highlight`} cx="30%" cy="30%" r="50%">
-            <stop offset="0%" stopColor="oklch(0.97 0.005 250 / 50%)" />
-            <stop offset="100%" stopColor="oklch(0.97 0.005 250 / 0%)" />
-          </radialGradient>
-          <linearGradient id={`${uid}-ring`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="oklch(0.97 0.005 250 / 40%)" />
-            <stop offset="45%" stopColor="oklch(0.74 0.17 30 / 75%)" />
-            <stop offset="100%" stopColor="oklch(0.97 0.005 250 / 40%)" />
-          </linearGradient>
-        </defs>
-
-        {/* Ambient glow */}
-        <circle cx="50" cy="50" r="46" fill={`url(#${uid}-ambient)`} />
-
-        {/* Orbit system */}
-        <g className={animated ? "nyvlo-orbit-slow" : ""} style={{ transformOrigin: "50px 50px" }}>
-          {/* Primary orbit arc */}
-          <path
-            d="M 16 37 A 40 33 0 1 1 82 31"
-            stroke={`url(#${uid}-ring)`}
-            strokeWidth="3.2"
-            fill="none"
-            strokeLinecap="round"
-          />
-          {/* Secondary subtle arc */}
-          <path
-            d="M 24 70 A 32 26 0 0 0 73 73"
-            stroke="oklch(0.74 0.17 30 / 22%)"
-            strokeWidth="1.4"
-            fill="none"
-            strokeLinecap="round"
-          />
-
-          {/* Coral dots */}
-          <circle cx="15" cy="38" r="3.2" fill="oklch(0.74 0.17 30)">
-            {animated && <animate attributeName="opacity" values="1;0.55;1" dur="2.8s" repeatCount="indefinite" begin="0s" />}
-          </circle>
-          <circle cx="83" cy="30" r="3.2" fill="oklch(0.74 0.17 30)">
-            {animated && <animate attributeName="opacity" values="1;0.55;1" dur="2.8s" repeatCount="indefinite" begin="0.9s" />}
-          </circle>
-          <circle cx="74" cy="76" r="3.2" fill="oklch(0.74 0.17 30)">
-            {animated && <animate attributeName="opacity" values="1;0.55;1" dur="2.8s" repeatCount="indefinite" begin="1.8s" />}
-          </circle>
-
-          {/* Muted dots */}
-          <circle cx="33" cy="19" r="2.6" fill="oklch(0.35 0.014 260)" />
-          <circle cx="87" cy="53" r="2.6" fill="oklch(0.35 0.014 260)" />
-          <circle cx="47" cy="84" r="2.6" fill="oklch(0.35 0.014 260)" />
-        </g>
-
-        {/* Central sphere */}
-        <circle cx="50" cy="50" r="19.5" fill={`url(#${uid}-sphere)`} />
-
-        {/* Rim light */}
-        <circle cx="50" cy="50" r="19.5" fill={`url(#${uid}-rim)`} />
-
-        {/* Gloss highlight */}
-        <ellipse cx="40" cy="38" rx="9" ry="6" fill={`url(#${uid}-highlight)`} transform="rotate(-28 40 38)" />
-
-        {/* Core sparkle */}
-        <circle cx="42" cy="40" r="3" fill="oklch(0.97 0.005 250 / 45%)" />
+        {/* Single-gesture spark: four soft petals meeting at a precise center.
+            Flat coral, no gradients, no rings — Anthropic/OpenAI minimalist energy. */}
+        <path
+          d="M50 8 C 52 30, 54 46, 70 48 C 86 50, 92 50, 92 50 C 92 50, 86 50, 70 52 C 54 54, 52 70, 50 92 C 48 70, 46 54, 30 52 C 14 50, 8 50, 8 50 C 8 50, 14 50, 30 48 C 46 46, 48 30, 50 8 Z"
+          fill="oklch(0.72 0.20 28)"
+        />
       </svg>
 
       {withWordmark && (
