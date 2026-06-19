@@ -24,6 +24,7 @@ import { Route as AuthenticatedAppPromisesRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAppMemoryRouteImport } from './routes/_authenticated/app.memory'
 import { Route as AuthenticatedAppLinkRouteImport } from './routes/_authenticated/app.link'
 import { Route as AuthenticatedAppCommandRouteImport } from './routes/_authenticated/app.command'
+import { Route as AuthenticatedAppCaptureRouteImport } from './routes/_authenticated/app.capture'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
 import { Route as AuthenticatedAdminOpsRouteImport } from './routes/_authenticated/admin.ops'
 import { Route as AuthenticatedAdminEventsRouteImport } from './routes/_authenticated/admin.events'
@@ -116,6 +117,11 @@ const AuthenticatedAppLinkRoute = AuthenticatedAppLinkRouteImport.update({
 const AuthenticatedAppCommandRoute = AuthenticatedAppCommandRouteImport.update({
   id: '/command',
   path: '/command',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppCaptureRoute = AuthenticatedAppCaptureRouteImport.update({
+  id: '/capture',
+  path: '/capture',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
 const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
@@ -226,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/admin/events': typeof AuthenticatedAdminEventsRoute
   '/admin/ops': typeof AuthenticatedAdminOpsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/app/capture': typeof AuthenticatedAppCaptureRoute
   '/app/command': typeof AuthenticatedAppCommandRoute
   '/app/link': typeof AuthenticatedAppLinkRoute
   '/app/memory': typeof AuthenticatedAppMemoryRoute
@@ -257,6 +264,7 @@ export interface FileRoutesByTo {
   '/admin/events': typeof AuthenticatedAdminEventsRoute
   '/admin/ops': typeof AuthenticatedAdminOpsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/app/capture': typeof AuthenticatedAppCaptureRoute
   '/app/command': typeof AuthenticatedAppCommandRoute
   '/app/link': typeof AuthenticatedAppLinkRoute
   '/app/memory': typeof AuthenticatedAppMemoryRoute
@@ -292,6 +300,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/events': typeof AuthenticatedAdminEventsRoute
   '/_authenticated/admin/ops': typeof AuthenticatedAdminOpsRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/_authenticated/app/capture': typeof AuthenticatedAppCaptureRoute
   '/_authenticated/app/command': typeof AuthenticatedAppCommandRoute
   '/_authenticated/app/link': typeof AuthenticatedAppLinkRoute
   '/_authenticated/app/memory': typeof AuthenticatedAppMemoryRoute
@@ -327,6 +336,7 @@ export interface FileRouteTypes {
     | '/admin/events'
     | '/admin/ops'
     | '/admin/users'
+    | '/app/capture'
     | '/app/command'
     | '/app/link'
     | '/app/memory'
@@ -358,6 +368,7 @@ export interface FileRouteTypes {
     | '/admin/events'
     | '/admin/ops'
     | '/admin/users'
+    | '/app/capture'
     | '/app/command'
     | '/app/link'
     | '/app/memory'
@@ -392,6 +403,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/events'
     | '/_authenticated/admin/ops'
     | '/_authenticated/admin/users'
+    | '/_authenticated/app/capture'
     | '/_authenticated/app/command'
     | '/_authenticated/app/link'
     | '/_authenticated/app/memory'
@@ -545,6 +557,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppCommandRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/capture': {
+      id: '/_authenticated/app/capture'
+      path: '/capture'
+      fullPath: '/app/capture'
+      preLoaderRoute: typeof AuthenticatedAppCaptureRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/admin/users': {
       id: '/_authenticated/admin/users'
       path: '/users'
@@ -685,6 +704,7 @@ const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
 interface AuthenticatedAppRouteChildren {
+  AuthenticatedAppCaptureRoute: typeof AuthenticatedAppCaptureRoute
   AuthenticatedAppCommandRoute: typeof AuthenticatedAppCommandRoute
   AuthenticatedAppLinkRoute: typeof AuthenticatedAppLinkRoute
   AuthenticatedAppMemoryRoute: typeof AuthenticatedAppMemoryRoute
@@ -694,6 +714,7 @@ interface AuthenticatedAppRouteChildren {
 }
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
+  AuthenticatedAppCaptureRoute: AuthenticatedAppCaptureRoute,
   AuthenticatedAppCommandRoute: AuthenticatedAppCommandRoute,
   AuthenticatedAppLinkRoute: AuthenticatedAppLinkRoute,
   AuthenticatedAppMemoryRoute: AuthenticatedAppMemoryRoute,
