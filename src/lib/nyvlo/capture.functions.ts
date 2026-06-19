@@ -1,6 +1,24 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+export const getCaptureQuota = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase.rpc("get_capture_quota", {
+      _user_id: context.userId,
+    });
+    if (error) throw error;
+    return data as {
+      is_pro: boolean;
+      used: number;
+      limit: number;
+      allowed: boolean;
+      period_start: string;
+    };
+  });
+
+
+
 export const listCaptureSessions = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
