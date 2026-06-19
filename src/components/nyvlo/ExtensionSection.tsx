@@ -23,6 +23,18 @@ export function ExtensionSection() {
     queryFn: () => fetchTokens(),
   });
 
+  const fetchMutes = useServerFn(listMutes);
+  const unmute = useServerFn(removeMute);
+  const { data: mutes = [] } = useQuery({
+    queryKey: ["mutedSources"],
+    queryFn: () => fetchMutes(),
+  });
+
+  const handleUnmute = async (id: string) => {
+    await unmute({ data: { id } });
+    queryClient.invalidateQueries({ queryKey: ["mutedSources"] });
+  };
+
   const [busy, setBusy] = useState(false);
   const [newToken, setNewToken] = useState<string | null>(null);
 
