@@ -201,12 +201,14 @@ export function NyvloMark({
         role="img"
         className={["shrink-0", animated ? "nyvlo-spark-pulse" : ""].join(" ")}
       >
-        {/* Single-gesture spark: four soft petals meeting at a precise center.
-            Flat coral, no gradients, no rings — Anthropic/OpenAI minimalist energy. */}
+        {/* y+v monogram: a heavy coral chevron converging to one point,
+            with a nested negative-space 'v' inside the 'y', plus a short
+            descender tick — asymmetric, single bold gesture. */}
         <path
-          d="M50 8 C 52 30, 54 46, 70 48 C 86 50, 92 50, 92 50 C 92 50, 86 50, 70 52 C 54 54, 52 70, 50 92 C 48 70, 46 54, 30 52 C 14 50, 8 50, 8 50 C 8 50, 14 50, 30 48 C 46 46, 48 30, 50 8 Z"
-          fill="oklch(0.72 0.20 28)"
+          d="M12 16 L50 72 L88 16 L70 16 L50 46 L30 16 Z"
+          fill="oklch(0.70 0.21 28)"
         />
+        <rect x="46" y="78" width="8" height="14" rx="2" fill="oklch(0.70 0.21 28)" />
       </svg>
 
       {withWordmark && (
