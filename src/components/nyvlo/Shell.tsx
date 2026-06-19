@@ -201,23 +201,13 @@ export function NyvloMark({
         role="img"
         className={["shrink-0", animated ? "nyvlo-spark-pulse" : ""].join(" ")}
       >
-        {/* nyvlo mark: one continuous ink gesture — the 'y' and 'v' written
-            in a single breath. Left arm dips lower than the right (asymmetry
-            = life), curls through the valley, lifts to the right, and the
-            descender trails off-axis like ink leaving the page. */}
+        {/* nyvlo mark: a single upward arch — a single breath, no descender */}
         <path
-          d="M16 18 C 28 38, 40 60, 50 64 C 60 60, 72 38, 84 18"
+          d="M18 72 C 30 40, 42 24, 50 20 C 58 24, 70 40, 82 72"
           stroke="oklch(0.70 0.21 28)"
-          strokeWidth="13"
+          strokeWidth="14"
           strokeLinecap="round"
           strokeLinejoin="round"
-          fill="none"
-        />
-        <path
-          d="M50 64 C 50 78, 46 86, 38 92"
-          stroke="oklch(0.70 0.21 28)"
-          strokeWidth="11"
-          strokeLinecap="round"
           fill="none"
         />
       </svg>
