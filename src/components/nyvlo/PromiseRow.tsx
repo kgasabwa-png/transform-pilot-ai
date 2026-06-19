@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Check, Sparkles, X, ChevronDown, Mail, CalendarDays, StickyNote, ExternalLink, Flag } from "lucide-react";
+import { Check, Sparkles, X, ChevronDown, Mail, CalendarDays, StickyNote, ExternalLink, Flag, VolumeX } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { updatePromiseStatus, reportNotAPromise, getPromiseSource } from "@/lib/nyvlo/data.functions";
+import { addMute } from "@/lib/nyvlo/mutes.functions";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
