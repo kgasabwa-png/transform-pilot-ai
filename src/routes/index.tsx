@@ -44,10 +44,10 @@ function Landing() {
               Now in private beta
             </div>
             <h1 className="text-balance text-[44px] font-semibold leading-[1.05] tracking-[-0.02em] md:text-[68px]">
-              The AI that catches<br className="hidden md:block" /> what you forgot.
+              Catch what you forgot<br className="hidden md:block" /> before anyone notices
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-[16px] leading-relaxed text-muted-foreground md:text-[17px]">
-              Nyvlo finds the follow-ups, promises, and loose ends slipping through your week — and drafts the reply for you.
+              Nyvlo quietly tracks the follow-ups, promises, and loose ends slipping through your week, then drafts the reply for you.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link to="/auth" className="inline-flex items-center gap-2 rounded-md bg-foreground px-4 py-2.5 text-[14px] font-medium text-background hover:opacity-90">
