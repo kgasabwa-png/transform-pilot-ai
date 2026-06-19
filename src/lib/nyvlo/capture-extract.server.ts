@@ -165,7 +165,7 @@ ${screenContext || "(no screen activity)"}`;
   if (Object.keys(sessionUpdate).length) {
     await supabase
       .from("capture_sessions")
-      .update(sessionUpdate)
+      .update(sessionUpdate as any)
       .eq("id", sessionId);
   }
 
