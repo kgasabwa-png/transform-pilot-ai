@@ -175,7 +175,7 @@ function FounderPage() {
         </section>
 
         <p className="mt-10 text-[11.5px] text-muted-foreground">
-          Bookmark this page. It's <code className="font-mono">/founder</code> — not linked from anywhere public.
+          Bookmark this page. It's <code className="font-mono">/founder</code> · not linked from anywhere public.
         </p>
       </main>
     </div>

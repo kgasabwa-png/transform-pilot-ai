@@ -9,7 +9,7 @@ import { Check, X } from "lucide-react";
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "Pricing · Nyvlo — Free, then $18/mo for unlimited" },
+      { title: "Pricing · Nyvlo · Free, then $18/mo for unlimited" },
       { name: "description", content: "Free forever for 10 captures a month. Pro is $18/mo or $144/yr ($12/mo) for unlimited capture, desktop app, and unlimited memory." },
     ],
   }),

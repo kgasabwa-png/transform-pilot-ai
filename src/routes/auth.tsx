@@ -91,7 +91,7 @@ function AuthPage() {
           </h2>
           <p className="text-sm text-muted-foreground">
             Connect your calendar and inbox. Nyvlo silently surfaces the promises, follow-ups,
-            and loose ends slipping through your week — before they become problems.
+            and loose ends slipping through your week · before they become problems.
           </p>
           <ul className="space-y-3 text-sm">
             <li className="flex items-start gap-2">
