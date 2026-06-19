@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { NyvloMark } from "@/components/nyvlo/Shell";
 
 export const Route = createFileRoute("/auth")({
@@ -92,15 +92,15 @@ function AuthPage() {
           </p>
           <ul className="space-y-3 text-sm">
             <li className="flex items-start gap-2">
-              <span className="mt-1.5 h-1 w-1 rounded-full bg-foreground" />
+              <Check className="mt-0.5 h-4 w-4 text-primary" strokeWidth={1.75} />
               <span>Reads your Calendar and sent Gmail with read-only access</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="mt-1.5 h-1 w-1 rounded-full bg-foreground" />
+              <Check className="mt-0.5 h-4 w-4 text-primary" strokeWidth={1.75} />
               <span>Drafts the follow-up so you only press send</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="mt-1.5 h-1 w-1 rounded-full bg-foreground" />
+              <Check className="mt-0.5 h-4 w-4 text-primary" strokeWidth={1.75} />
               <span>Tracks your reliability score over time</span>
             </li>
           </ul>
