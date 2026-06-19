@@ -104,6 +104,37 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useEffect(() => {
+    // Mirror the Supabase access token into a same-origin cookie so the
+    // Nyvlo browser extension can pick it up via chrome.cookies — no
+    // copy-paste, no UI. The token is identical to what's in localStorage,
+    // so this doesn't widen the threat model.
+    let unsub: (() => void) | undefined;
+    (async () => {
+      try {
+        const { supabase } = await import("@/integrations/supabase/client");
+        const writeCookie = (token: string | null) => {
+          const isHttps = window.location.protocol === "https:";
+          const base = `path=/; SameSite=Lax${isHttps ? "; Secure" : ""}`;
+          if (token) {
+            document.cookie = `nyvlo-at=${token}; ${base}; max-age=3600`;
+          } else {
+            document.cookie = `nyvlo-at=; ${base}; max-age=0`;
+          }
+        };
+        const { data } = await supabase.auth.getSession();
+        writeCookie(data.session?.access_token ?? null);
+        const sub = supabase.auth.onAuthStateChange((event, session) => {
+          if (event === "SIGNED_OUT") return writeCookie(null);
+          if (session?.access_token) writeCookie(session.access_token);
+        });
+        unsub = () => sub.data.subscription.unsubscribe();
+      } catch {
+        // best effort
+      }
+    })();
+    return () => unsub?.();
+  }, []);
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />

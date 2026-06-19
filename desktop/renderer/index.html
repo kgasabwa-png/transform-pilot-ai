@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; connect-src https://transform-pilot-ai.lovable.app https://*.lovable.app;" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; connect-src https://transform-pilot-ai.lovable.app https://*.lovable.app https://tunndealwgyinwmjjwrl.supabase.co;" />
     <title>Nyvlo</title>
     <style>
       :root { color-scheme: dark; }
@@ -29,6 +29,7 @@
       button:hover { background: #262626; }
       button.primary { background: #ef4444; border-color: #ef4444; color: white; }
       button.primary.recording { background: #16a34a; border-color: #16a34a; }
+      button.accent { background: #2563eb; border-color: #2563eb; color: white; }
       button:disabled { opacity: 0.5; cursor: not-allowed; }
       .row { display: flex; gap: 8px; align-items: center; }
       .pulse { width: 10px; height: 10px; border-radius: 50%; background: #ef4444; animation: pulse 1.2s infinite; display: none; }
@@ -39,6 +40,10 @@
       .err { color: #ef4444; }
       .small { font-size: 11px; color: #6b6b6b; }
       a { color: #60a5fa; }
+      .user-row { display: flex; justify-content: space-between; align-items: center; }
+      .user-email { font-size: 12px; color: #d0d0d0; }
+      .signout { font-size: 11px; color: #9a9a9a; background: none; border: none; cursor: pointer; padding: 4px 6px; }
+      .signout:hover { color: #f5f5f5; }
     </style>
   </head>
   <body>
@@ -47,17 +52,11 @@
       <div class="sub">Record a call → auto-extract promises.</div>
     </header>
 
-    <section class="card" id="setup-card">
-      <label>Nyvlo token</label>
-      <input id="token" type="text" placeholder="nyv_..." autocomplete="off" />
-      <div style="height: 8px"></div>
-      <div class="row" style="justify-content: space-between">
-        <button id="save-token">Save</button>
-        <a href="https://transform-pilot-ai.lovable.app/app/settings" target="_blank" rel="noreferrer">Get a token</a>
-      </div>
+    <section class="card" id="auth-card">
+      <div id="auth-content">Loading…</div>
     </section>
 
-    <section class="card">
+    <section class="card" id="meeting-card" style="display:none">
       <label>Meeting</label>
       <input id="meeting-title" type="text" placeholder="e.g. Acme weekly sync" />
       <div style="height: 10px"></div>

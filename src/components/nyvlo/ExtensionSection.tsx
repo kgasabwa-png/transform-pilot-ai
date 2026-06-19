@@ -1,26 +1,16 @@
-import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Copy, Trash2, Plus, Download, VolumeX } from "lucide-react";
+import { Download, VolumeX, Trash2, Check, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
-import {
-  listExtensionTokens,
-  createExtensionToken,
-  deleteExtensionToken,
-} from "@/lib/nyvlo/extension.functions";
 import { listMutes, removeMute } from "@/lib/nyvlo/mutes.functions";
+import {
+  listLinkedDevices,
+  revokeLinkedDevice,
+} from "@/lib/nyvlo/device-link.functions";
 
 export function ExtensionSection() {
   const queryClient = useQueryClient();
-  const fetchTokens = useServerFn(listExtensionTokens);
-  const createToken = useServerFn(createExtensionToken);
-  const deleteToken = useServerFn(deleteExtensionToken);
-
-  const { data: tokens = [] } = useQuery({
-    queryKey: ["extensionTokens"],
-    queryFn: () => fetchTokens(),
-  });
 
   const fetchMutes = useServerFn(listMutes);
   const unmute = useServerFn(removeMute);
@@ -29,36 +19,22 @@ export function ExtensionSection() {
     queryFn: () => fetchMutes(),
   });
 
+  const fetchDevices = useServerFn(listLinkedDevices);
+  const revoke = useServerFn(revokeLinkedDevice);
+  const { data: devices = [] } = useQuery({
+    queryKey: ["linkedDevices"],
+    queryFn: () => fetchDevices(),
+  });
+
   const handleUnmute = async (id: string) => {
     await unmute({ data: { id } });
     queryClient.invalidateQueries({ queryKey: ["mutedSources"] });
   };
 
-  const [busy, setBusy] = useState(false);
-  const [newToken, setNewToken] = useState<string | null>(null);
-
-  const handleCreate = async () => {
-    setBusy(true);
-    try {
-      const res = await createToken({ data: {} });
-      setNewToken(res.token);
-      queryClient.invalidateQueries({ queryKey: ["extensionTokens"] });
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't create token");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("Revoke this token? The extension using it will stop working.")) return;
-    await deleteToken({ data: { id } });
-    queryClient.invalidateQueries({ queryKey: ["extensionTokens"] });
-  };
-
-  const copy = async (text: string) => {
-    await navigator.clipboard.writeText(text);
-    toast.success("Token copied");
+  const handleRevoke = async (code: string) => {
+    if (!confirm("Revoke this device? It will be signed out next time it checks in.")) return;
+    await revoke({ data: { code } });
+    queryClient.invalidateQueries({ queryKey: ["linkedDevices"] });
   };
 
   const handleDownload = async (url: string, filename: string) => {
@@ -69,6 +45,10 @@ export function ExtensionSection() {
       toast.error(e instanceof Error ? e.message : "Download failed");
     }
   };
+
+  const approvedDevices = devices.filter(
+    (d: { status: string }) => d.status === "approved" || d.status === "consumed",
+  );
 
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-card">
@@ -86,20 +66,19 @@ export function ExtensionSection() {
       </div>
 
       <div className="border-b border-border px-4 py-3 text-[12px] text-muted-foreground">
-        Auto-captures promises from Gmail, Slack, Notion, and Linear (plus any
-        selection elsewhere). Download the zip, unzip it, then load it via{" "}
-        <code className="rounded bg-muted px-1 py-0.5 text-[11px]">
-          chrome://extensions
-        </code>{" "}
-        → Developer mode → Load unpacked. Open the popup once and paste a
-        token below to enable auto-capture.
+        Auto-captures promises from Gmail, Slack, Notion, and Linear. Install
+        once, and it signs in automatically using your Nyvlo session — no
+        tokens, no copy-paste. To install: download the zip, unzip it, open{" "}
+        <code className="rounded bg-muted px-1 py-0.5 text-[11px]">chrome://extensions</code>{" "}
+        → Developer mode → Load unpacked.
       </div>
 
       <div className="flex items-center justify-between border-b border-border bg-secondary/20 px-4 py-2.5">
         <div className="text-[12px]">
           <div className="font-medium">Desktop app (meetings)</div>
           <div className="text-[11px] text-muted-foreground">
-            Record a call → transcript → promises in your inbox.
+            Record a call → transcript → promises in your inbox. Click "Sign in
+            with Nyvlo" on first launch — that's the only setup.
           </div>
         </div>
         <button
@@ -111,74 +90,51 @@ export function ExtensionSection() {
         </button>
       </div>
 
-      {newToken && (
-        <div className="border-b border-border bg-warning/10 px-4 py-3">
-          <div className="text-[11.5px] font-medium text-foreground">
-            Copy this token now — you won't see it again
-          </div>
-          <div className="mt-2 flex items-center gap-2">
-            <code className="flex-1 truncate rounded border border-warning/30 bg-card px-2 py-1 text-[11px] text-foreground">
-              {newToken}
-            </code>
-            <button
-              onClick={() => copy(newToken)}
-              className="inline-flex items-center gap-1 rounded-md bg-foreground px-2 py-1 text-[11px] text-background hover:opacity-90"
-            >
-              <Copy className="h-3 w-3" /> Copy
-            </button>
-          </div>
-          <button
-            onClick={() => setNewToken(null)}
-            className="mt-2 text-[10.5px] text-muted-foreground hover:underline"
-          >
-            I've copied it
-          </button>
-        </div>
-      )}
-
-      {tokens.length === 0 ? (
-        <div className="px-4 py-4">
-          <button
-            onClick={handleCreate}
-            disabled={busy}
-            className="inline-flex items-center gap-1 rounded-md bg-foreground px-2.5 py-1.5 text-[12px] font-medium text-background hover:opacity-90 disabled:opacity-50"
-          >
-            <Plus className="h-3 w-3" /> Generate extension token
-          </button>
+      <div className="border-t border-border bg-secondary/20 px-4 py-2 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+        Linked devices
+      </div>
+      {approvedDevices.length === 0 ? (
+        <div className="px-4 py-3 text-[11.5px] text-muted-foreground">
+          No devices linked yet. Sign in from the desktop app or extension to add one.
         </div>
       ) : (
         <div className="flex flex-col">
-          {tokens.map((t) => (
-            <div
-              key={t.id}
-              className="flex items-center justify-between border-b border-border px-4 py-2.5 last:border-b-0"
-            >
-              <div className="min-w-0">
-                <div className="truncate text-[12.5px]">{t.label ?? "Token"}</div>
-                <div className="text-[11px] text-muted-foreground">
-                  {t.last_used_at
-                    ? `Last used ${formatDistanceToNow(new Date(t.last_used_at), { addSuffix: true })}`
-                    : "Never used"}
-                </div>
-              </div>
-              <button
-                onClick={() => handleDelete(t.id)}
-                className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-red-600"
-                aria-label="Revoke token"
+          {approvedDevices.map(
+            (d: {
+              code: string;
+              device_label: string | null;
+              status: string;
+              approved_at: string | null;
+            }) => (
+              <div
+                key={d.code}
+                className="flex items-center justify-between border-b border-border px-4 py-2 last:border-b-0"
               >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          ))}
-          <div className="px-4 py-2.5">
-            <button
-              onClick={handleCreate}
-              disabled={busy}
-              className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11.5px] hover:bg-muted disabled:opacity-50"
-            >
-              <Plus className="h-3 w-3" /> New token
-            </button>
-          </div>
+                <div className="min-w-0">
+                  <div className="truncate text-[12.5px]">
+                    {d.device_label || "Device"}
+                  </div>
+                  <div className="flex items-center gap-1 text-[10.5px] text-muted-foreground">
+                    {d.status === "approved" ? (
+                      <Clock className="h-3 w-3" />
+                    ) : (
+                      <Check className="h-3 w-3" />
+                    )}
+                    {d.approved_at
+                      ? `Linked ${formatDistanceToNow(new Date(d.approved_at), { addSuffix: true })}`
+                      : "Pending"}
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleRevoke(d.code)}
+                  className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-red-600"
+                  aria-label="Revoke device"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ),
+          )}
         </div>
       )}
 
