@@ -173,18 +173,16 @@ export function Shell({ children, title, subtitle }: { children: ReactNode; titl
   );
 }
 
+import nyvloLogo from "@/assets/nyvlo-logo-transparent.png.asset.json";
+
 export function NyvloMark({ className = "", size = "md" }: { className?: string; size?: "sm" | "md" | "lg" }) {
-  const sizes = {
-    sm: { text: "text-[16px]", dot: "h-1.5 w-1.5 mb-[1px]", gap: "gap-1" },
-    md: { text: "text-[19px]", dot: "h-[7px] w-[7px] mb-[1.5px]", gap: "gap-1.5" },
-    lg: { text: "text-[23px]", dot: "h-2 w-2 mb-[2px]", gap: "gap-2" },
-  };
-  const s = sizes[size];
-  
+  const heights = { sm: "h-6", md: "h-8", lg: "h-10" };
   return (
-    <span className={["inline-flex items-end font-bold tracking-[-0.05em] text-foreground transition-opacity hover:opacity-90", s.text, s.gap, className].join(" ")}>
-      <span className="leading-none">nyvlo</span>
-      <span className={["rounded-full bg-primary shadow-[0_0_10px_-2px_var(--primary)]", s.dot].join(" ")} aria-hidden />
-    </span>
+    <img
+      src={nyvloLogo.url}
+      alt="Nyvlo"
+      className={["w-auto select-none transition-opacity hover:opacity-90", heights[size], className].join(" ")}
+      draggable={false}
+    />
   );
 }
