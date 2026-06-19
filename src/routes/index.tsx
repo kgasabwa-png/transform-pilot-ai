@@ -129,8 +129,8 @@ function Landing() {
       {/* INSTALL / CTA */}
       <section id="install" className="border-t border-border">
         <div className="mx-auto max-w-3xl px-6 py-20 text-center">
-          <h2 className="text-[34px] font-semibold tracking-tight md:text-[44px]">Never drop the ball again.</h2>
-          <p className="mx-auto mt-4 max-w-md text-[15px] text-muted-foreground">Sign up. Connect Google. You're set in under a minute.</p>
+          <h2 className="text-[34px] font-semibold tracking-tight md:text-[44px]">Never drop the ball again</h2>
+          <p className="mx-auto mt-4 max-w-md text-[15px] text-muted-foreground">Sign up, connect Google, and you're set in under a minute.</p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
             <Link to="/auth" className="inline-flex items-center gap-2 rounded-md bg-foreground px-4 py-2.5 text-[14px] font-medium text-background hover:opacity-90">
               Get started free <ArrowRight className="h-4 w-4" />
