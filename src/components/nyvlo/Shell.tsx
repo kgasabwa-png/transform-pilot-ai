@@ -54,11 +54,7 @@ export function Shell({ children, title, subtitle }: { children: ReactNode; titl
       <div className="mx-auto flex max-w-[1400px]">
         <aside className="sticky top-0 hidden h-dvh w-[244px] shrink-0 flex-col border-r border-border/80 bg-secondary px-4 py-6 md:flex">
           <Link to="/" className="mb-7 flex items-center gap-2 px-2">
-            <img
-              src="/__l5e/assets-v1/6211f021-75b1-484a-8d96-f59fda81e71b/nyvlo-logo-transparent.png"
-              alt="Nyvlo"
-              className="h-9 w-auto"
-            />
+            <NyvloMark size="lg" />
           </Link>
 
           <button
@@ -155,13 +151,13 @@ export function Shell({ children, title, subtitle }: { children: ReactNode; titl
   );
 }
 
-export function NyvloMark({ className = "", size = "md" }: { className?: string; size?: "sm" | "md" }) {
-  const dims = size === "sm" ? "h-5" : "h-7";
+export function NyvloMark({ className = "", size = "md" }: { className?: string; size?: "sm" | "md" | "lg" }) {
+  const dims = size === "sm" ? "h-8" : size === "lg" ? "h-14" : "h-11";
   return (
     <img
       src="/__l5e/assets-v1/6211f021-75b1-484a-8d96-f59fda81e71b/nyvlo-logo-transparent.png"
       alt="Nyvlo"
-      className={[dims, "w-auto", className].join(" ")}
+      className={[dims, "w-auto shrink-0", className].join(" ")}
     />
   );
 }
