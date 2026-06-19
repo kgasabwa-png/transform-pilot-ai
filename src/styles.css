@@ -32,7 +32,6 @@
 
   --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-display: "Geist", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Instrument Serif", ui-serif, Georgia, serif;
   --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
   --radius-sm: 0.5rem;
@@ -81,6 +80,10 @@
   --success: oklch(0.68 0.16 160);
   --warning: oklch(0.76 0.14 80);
   --danger: oklch(0.58 0.2 25);
+
+  --shadow-mark: 0 8px 22px -16px oklch(0.18 0.01 270 / 35%);
+  --shadow-soft: 0 28px 90px -48px oklch(0.18 0.01 270 / 38%);
+  --shadow-demo: 0 44px 140px -70px oklch(0.48 0.24 275 / 42%), 0 24px 90px -52px oklch(0.18 0.01 270 / 36%);
 }
 
 * {
@@ -106,8 +109,6 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-.font-serif { font-family: var(--font-serif); }
-
 ::selection {
   background: var(--primary);
   color: var(--primary-foreground);
@@ -123,12 +124,13 @@ body {
 /* Minimalist volumetric light — layered for depth */
 .nyvlo-aurora {
   position: absolute;
-  inset: -120px -10% auto -10%;
-  height: 800px;
+  inset: -120px -8% auto -8%;
+  height: 720px;
   pointer-events: none;
   background: 
-    radial-gradient(50% 50% at 50% 0%, oklch(0.48 0.24 275 / 12%), transparent 80%),
-    radial-gradient(80% 60% at 50% -10%, white 0%, transparent 100%);
+    linear-gradient(180deg, oklch(1 0 0 / 72%), transparent 64%),
+    radial-gradient(42% 34% at 50% 12%, oklch(0.48 0.24 275 / 13%), transparent 72%),
+    radial-gradient(72% 58% at 50% 0%, oklch(0.965 0.012 270), transparent 76%);
   z-index: 0;
 }
 
