@@ -14,7 +14,7 @@ import {
 } from "@/lib/nyvlo/capture.functions";
 import { Mic, Monitor, Sparkles, Trash2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
+
 
 export const Route = createFileRoute("/_authenticated/app/capture")({
   component: CapturePage,

@@ -117,10 +117,19 @@ export const Route = createFileRoute("/api/public/ingest/screen-frame")({
 
           if (!res.ok) {
             const t = await res.text().catch(() => "");
+            const msg = `Vision ${res.status}: ${t.slice(0, 200)}`;
             await supabase
               .from("screen_frames")
-              .update({ status: "failed", error: `Vision ${res.status}: ${t.slice(0, 200)}` })
+              .update({ status: "failed", error: msg })
               .eq("id", frame.id);
+            const { logIngestionError } = await import("@/lib/nyvlo/ingestion-log.server");
+            await logIngestionError({
+              endpoint: "screen-frame",
+              userId: auth.userId,
+              statusCode: res.status,
+              error: msg,
+              context: { sessionId, sequence },
+            });
             return Response.json({ error: `vision failed ${res.status}` }, { status: 502, headers: cors });
           }
           const json = (await res.json()) as any;
@@ -146,11 +155,20 @@ export const Route = createFileRoute("/api/public/ingest/screen-frame")({
             { headers: cors },
           );
         } catch (e: any) {
+          const msg = String(e.message ?? e).slice(0, 200);
           await supabase
             .from("screen_frames")
-            .update({ status: "failed", error: String(e.message ?? e).slice(0, 200) })
+            .update({ status: "failed", error: msg })
             .eq("id", frame.id);
-          return Response.json({ error: String(e.message ?? e) }, { status: 502, headers: cors });
+          const { logIngestionError } = await import("@/lib/nyvlo/ingestion-log.server");
+          await logIngestionError({
+            endpoint: "screen-frame",
+            userId: auth.userId,
+            statusCode: 502,
+            error: msg,
+            context: { sessionId, sequence },
+          });
+          return Response.json({ error: msg }, { status: 502, headers: cors });
         }
       },
     },
