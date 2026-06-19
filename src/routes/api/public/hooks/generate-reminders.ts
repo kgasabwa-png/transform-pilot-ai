@@ -40,8 +40,8 @@ export const Route = createFileRoute("/api/public/hooks/generate-reminders")({
           const dedup_key = `${kind}:${p.id}:${today}`;
 
           const title = overdue
-            ? `Overdue: ${p.title}`
-            : `Due soon: ${p.title}`;
+            ? `Overdue: ${p.summary}`
+            : `Due soon: ${p.summary}`;
           const body = overdue
             ? `This was due ${formatRelative(dueMs, now)}.`
             : `Due ${formatRelative(dueMs, now)}.`;
