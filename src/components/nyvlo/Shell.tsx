@@ -190,63 +190,61 @@ export function NyvloMark({
     size === "lg" ? "text-[22px]" :
     size === "xl" ? "text-[40px]" :
     "text-[18px]";
+  // 12-petal radial bloom — AI-native mark.
+  // Each petal = a vector of attention always pointed at you;
+  // the solid core = the memory it's holding.
+  const petals = Array.from({ length: 12 }, (_, i) => i * 30);
   return (
     <span className={["inline-flex items-center gap-2.5 shrink-0", className].join(" ")}>
       <svg
         width={px}
         height={px}
-        viewBox="0 0 64 64"
+        viewBox="0 0 100 100"
         fill="none"
         aria-label="Nyvlo"
+        role="img"
         className="shrink-0"
-        style={{ filter: "drop-shadow(0 0 14px oklch(0.70 0.20 28 / 55%))" }}
+        style={{ filter: "drop-shadow(0 0 18px oklch(0.70 0.20 28 / 55%))" }}
       >
         <defs>
-          <radialGradient id="nyvlo-core" cx="50%" cy="42%" r="55%">
-            <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="35%" stopColor="oklch(0.92 0.10 35)" />
-            <stop offset="75%" stopColor="oklch(0.70 0.20 28)" />
-            <stop offset="100%" stopColor="oklch(0.45 0.20 22)" />
+          <radialGradient id="nyvlo-petal" cx="50%" cy="0%" r="100%">
+            <stop offset="0%" stopColor="oklch(0.92 0.10 35)" />
+            <stop offset="55%" stopColor="oklch(0.72 0.20 28)" />
+            <stop offset="100%" stopColor="oklch(0.50 0.20 22)" stopOpacity="0.85" />
           </radialGradient>
-          <linearGradient id="nyvlo-ring" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="oklch(0.92 0.10 35)" stopOpacity="1" />
-            <stop offset="50%" stopColor="oklch(0.75 0.20 28)" stopOpacity="0.85" />
-            <stop offset="100%" stopColor="oklch(0.55 0.20 22)" stopOpacity="0.25" />
-          </linearGradient>
-          <radialGradient id="nyvlo-halo" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="oklch(0.75 0.20 28)" stopOpacity="0.55" />
-            <stop offset="60%" stopColor="oklch(0.65 0.20 25)" stopOpacity="0.18" />
-            <stop offset="100%" stopColor="transparent" />
+          <radialGradient id="nyvlo-core-bloom" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="60%" stopColor="oklch(0.82 0.18 30)" />
+            <stop offset="100%" stopColor="oklch(0.55 0.20 24)" />
           </radialGradient>
         </defs>
 
-        {/* Soft halo */}
-        <circle cx="32" cy="32" r="28" fill="url(#nyvlo-halo)" />
-
-        {/* Outer ring with satellite */}
-        <g className={animated ? "nyvlo-orbit-slow" : ""} style={{ transformOrigin: "32px 32px" }}>
-          <circle cx="32" cy="32" r="24" stroke="url(#nyvlo-ring)" strokeWidth="1.5" fill="none" />
-          <circle cx="56" cy="32" r="2.4" fill="#ffffff" />
-          <circle cx="56" cy="32" r="4" fill="oklch(0.75 0.20 28)" opacity="0.45" />
+        {/* Bloom: 12 radial petals */}
+        <g
+          className={animated ? "nyvlo-orbit-slow" : ""}
+          style={{ transformOrigin: "50px 50px" }}
+        >
+          {petals.map((deg) => (
+            <path
+              key={deg}
+              d="M50 50 C53 38 53 26 50 10 C47 26 47 38 50 50 Z"
+              fill="url(#nyvlo-petal)"
+              transform={`rotate(${deg} 50 50)`}
+            />
+          ))}
         </g>
 
-        {/* Inner ring counter-rotating */}
-        <g className={animated ? "nyvlo-orbit-rev" : ""} style={{ transformOrigin: "32px 32px" }}>
-          <circle cx="32" cy="32" r="16" stroke="oklch(0.85 0.14 32)" strokeOpacity="0.5" strokeWidth="1" fill="none" strokeDasharray="2 3" />
-          <circle cx="16" cy="32" r="1.8" fill="oklch(0.95 0.05 35)" />
-        </g>
-
-        {/* Glowing core */}
-        <circle cx="32" cy="32" r="14" fill="oklch(0.70 0.20 28)" opacity="0.22" />
-        <circle cx="32" cy="32" r="8.5" fill="url(#nyvlo-core)" />
-        {/* Specular highlight */}
-        <ellipse cx="29" cy="29" rx="2.6" ry="1.6" fill="#ffffff" opacity="0.85" />
+        {/* Solid core — the memory */}
+        <circle cx="50" cy="50" r="11" fill="oklch(0.70 0.20 28)" opacity="0.28" />
+        <circle cx="50" cy="50" r="7" fill="url(#nyvlo-core-bloom)" />
+        <ellipse cx="48" cy="48" rx="1.8" ry="1.1" fill="#ffffff" opacity="0.9" />
       </svg>
       {withWordmark && (
-        <span className={`font-display ${wordSize} font-semibold tracking-[-0.025em] text-foreground`}>
+        <span className={`font-display ${wordSize} font-semibold tracking-[-0.03em] text-foreground`}>
           Nyvlo
         </span>
       )}
     </span>
   );
 }
+
