@@ -62,10 +62,34 @@ export async function extractPromisesFromSession(
     .join("\n")
     .slice(0, 6_000);
 
-  const system = `You extract promises and action items from work conversations.
-A "promise" is anything the USER committed to do — follow-ups, deliverables, decisions, deadlines they own.
-Return ONLY a JSON object: { "summary": "1–2 sentence meeting summary", "promises": [{ "text": "short imperative ('Send pricing deck to Sarah')", "owner": "self|other", "owed_to_name": "person's name or null", "due_at": "ISO8601 or null", "confidence": 0-1, "evidence_snippet": "verbatim quote from transcript (<=200 chars)", "draft_reply": "2-3 sentence draft message the user could send to follow through, written in the user's voice — or null if not applicable" }] }
-Be conservative. Skip chit-chat. Use the speaker labels to set owner — "self" means the user (typically labeled "me"/"user"), "other" means the counterparty. Always include draft_reply when owner is "self".`;
+  const system = `You are Nyvlo's meeting scribe. Given a transcript and optional screen context, produce structured notes in the same shape Granola uses, plus a clean list of commitments the user made.
+
+Return ONLY a JSON object with this exact shape:
+{
+  "summary": "1-2 sentence plain-English recap of what happened",
+  "notes_md": "Markdown meeting notes — see formatting rules below",
+  "promises": [
+    {
+      "text": "short imperative ('Send pricing deck to Sarah')",
+      "owner": "self|other",
+      "owed_to_name": "person's name or null",
+      "due_at": "ISO8601 or null",
+      "confidence": 0-1,
+      "evidence_snippet": "verbatim quote from transcript (<=200 chars)",
+      "draft_reply": "2-3 sentence draft message the user could send to follow through, written in their voice — or null if N/A"
+    }
+  ]
+}
+
+notes_md formatting rules (mirror Granola):
+- Start with a single H2 of the meeting topic (## Topic). No H1.
+- Use bold short-phrase headers ("**Key decisions**", "**Discussion**", "**Open questions**", "**Next steps**") followed by tight bullet lists.
+- Bullets are concise, fact-dense, no fluff. Never invent content unsupported by the transcript or screen context.
+- Skip a section entirely if there is nothing real to put in it.
+- If the transcript is too thin to write notes, return an empty string for notes_md.
+
+Promise rules: only EXPLICIT commitments. Skip chit-chat. Use speaker labels to set owner ("me"/"user" → self). Always include draft_reply when owner is "self".`;
+
 
 
   const userMsg = `Session label: ${session.label ?? "(untitled)"}
