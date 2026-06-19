@@ -89,6 +89,39 @@ export type Database = {
         }
         Relationships: []
       }
+      device_link_codes: {
+        Row: {
+          approved_at: string | null
+          code: string
+          consumed_at: string | null
+          created_at: string
+          device_label: string | null
+          expires_at: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          code: string
+          consumed_at?: string | null
+          created_at?: string
+          device_label?: string | null
+          expires_at?: string
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          code?: string
+          consumed_at?: string | null
+          created_at?: string
+          device_label?: string | null
+          expires_at?: string
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -570,6 +603,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_device_link: {
+        Args: { _code: string; _label: string }
+        Returns: undefined
+      }
+      consume_device_link: {
+        Args: { _code: string }
+        Returns: {
+          status: string
+          user_id: string
+        }[]
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -595,6 +639,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      start_device_link: { Args: { _label: string }; Returns: string }
     }
     Enums: {
       promise_status: "open" | "kept" | "missed" | "dismissed"

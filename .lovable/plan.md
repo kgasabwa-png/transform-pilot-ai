@@ -1,62 +1,66 @@
-# Nyvlo capture roadmap
+# Kill manual tokens — desktop + extension auto-auth
 
-Goal: make Nyvlo trustworthy first, then make capture effortless without per‑user OAuth gymnastics. Everything below ships as one queued backlog — I'll work top-down and check in after each phase.
+Goal: end-user never sees a token. Sign in once, everything else is automatic.
 
-## Phase 1 — Trust (this turn)
+## 1. Shared auth primitives (web app)
 
-The product can't be useful if users don't believe the promises it shows. Fix this before adding more capture surfaces.
+New public server route: `src/routes/api/public/auth/device-exchange.ts`
 
-1. **Anti-hallucination guard in extraction**
-   - Change the Gemini prompt to return `null` (and nothing else) when the source text contains no concrete commitment from the user.
-   - Reject low-confidence extractions (< 0.55) server-side instead of saving them.
-   - Require every promise to carry a verbatim `evidence_snippet` copied from the source — if the model can't quote it, we don't save it.
-2. **Show the source on every promise**
-   - `PromiseRow` already has an evidence area; surface it inline (not only in Details) and add a "Source" link to the originating `sources` row (email, page URL, transcript).
-   - Add a "Not a promise" button → marks `status='dismissed'` + writes a `feedback` row we can use to tune extraction later.
-3. **Migration**: `promises.evidence_required = true` default; `extraction_feedback` table (promise_id, verdict, user_id).
+- `POST /api/public/auth/device-exchange` — body `{ code }`. Validates a one-time device code minted by the web app (`device_codes` table, 60s TTL, single use). Returns `{ access_token, refresh_token, user }` from the user's Supabase session.
+- `POST /api/public/auth/device-start` — desktop/extension calls this anonymously, gets `{ code, verification_url }` where `verification_url = https://<app>/link?code=...`. Code is pending until the signed-in user approves it.
+- `GET /api/public/auth/device-poll?code=...` — client polls until approved, then receives tokens.
 
-Exit criteria: I can paste a vague paragraph and Nyvlo refuses to invent a promise; every shown promise has a visible quote.
+New table `device_link_codes (code text pk, user_id uuid null, status text, created_at, approved_at, consumed_at)` with RLS + grants. Anon can insert (start) and select own row by code; authenticated can update own pending row to approve.
 
-## Phase 2 — Browser extension auto-capture (broadscope)
+New authenticated route `src/routes/_authenticated/link.tsx`:
+- Reads `?code=...`, shows "Link your Nyvlo desktop app / extension?" with Approve button. On approve, calls a server fn that stamps `status='approved', user_id=auth.uid()`.
 
-One extension, content scripts per site, no OAuth, no admin approval. Each script watches the DOM of a page the user already has open and POSTs structured text to `/api/public/extension/capture` (already built) with the existing token auth.
+This replaces the entire "extension token" UI flow.
 
-- **Gmail web** (`mail.google.com`): when a thread view opens, read sender/subject/body of the focused message, debounce, send once per thread-open. User sees a small Nyvlo pill in the thread header — click to confirm or mute that thread.
-- **Slack web** (`app.slack.com`): on message hover, show a "Capture" affordance; auto-capture DMs sent *by* the user (those are the promises that matter) with channel + recipient context.
-- **Notion** (`www.notion.so`): capture the current page title + selected block on a hotkey (⌘⇧K). Full-page auto-capture is too noisy.
-- **Linear** (`linear.app`): on issue open, capture title + description + assignee; on comment-by-user, capture the comment.
-- **Generic fallback**: existing "capture selection" already works everywhere else.
+## 2. Desktop app rewrite (Electron)
 
-All five share one content-script framework + per-site adapter. Manifest gets `host_permissions` for those four domains. No background polling — strictly reactive to what the user is already looking at, which is what makes it not creepy and not an admin problem.
+`desktop/main.cjs`:
+- On launch, check `electron-store` for refresh token. If missing → open default browser to `/link?code=<new>` via `device-start`, poll `/device-poll` until approved, persist tokens.
+- Register custom protocol `nyvlo://` so the web `/link` page can deep-link `nyvlo://linked?code=...` back into the app (faster than polling; polling is the fallback).
+- IPC exposes `getAccessToken()` to renderer; auto-refreshes via Supabase refresh endpoint.
 
-Exit criteria: open a Gmail thread → promise appears in inbox within 5s, with the email body as evidence and a link back to the thread.
+`desktop/renderer/app.js`:
+- Remove the token textarea + save/load logic.
+- All `fetch(TRANSCRIBE/CAPTURE)` calls use `Authorization: Bearer ${await window.nyvlo.getAccessToken()}`.
+- Status surface: "Signed in as <email>" + Sign out.
 
-## Phase 3 — Desktop app for meeting audio (Electron + local Whisper)
+`desktop/renderer/index.html`: drop token UI; keep record/reset/timer/transcript.
 
-Browser extensions can't reliably capture system/mic audio across Zoom/Meet/Teams/Granola/in-person. A small Electron app can.
+Server routes `api/public/extension/transcribe.ts` and `capture.ts` start accepting `Authorization: Bearer <supabase access token>` (verify via `supabase.auth.getUser(token)`) in addition to current legacy token, so we don't break anything mid-migration.
 
-- **Electron shell** packaged via `@electron/packager` (per the desktop-app knowledge).
-- **Audio capture**: `navigator.mediaDevices.getDisplayMedia({ audio: true })` for system audio + `getUserMedia` for mic, mixed locally. User picks "start recording" before a call.
-- **Local transcription**: bundle `whisper.cpp` WASM (no cloud, no per-minute cost, runs on the user's machine). Falls back to Lovable AI `openai/gpt-4o-mini-transcribe` if WASM init fails.
-- **Promise extraction**: transcript → existing extraction server function → promises appear in the same inbox tagged `channel='meeting'`.
-- **Auth**: same extension token model; the desktop app is just another client.
+## 3. Browser extension auto-auth
 
-Exit criteria: record a 5-minute call, get a transcript and 0–N promises with timestamped evidence.
+`extension/manifest.json`:
+- Add `"host_permissions": ["https://*.nyvlo.com/*", "https://*.lovable.app/*"]` and `"permissions": ["cookies", "storage"]`.
 
-## Phase 4 — Polish (after the above land)
+`extension/popup.js` / new `extension/background.js`:
+- On install + on popup open, call `chrome.cookies.get` for the Supabase auth cookie on the web app origin. If present, read the access token from it and store in `chrome.storage.local`.
+- If absent, popup shows a single "Sign in to Nyvlo" button that opens the web app `/auth` in a new tab. Once user signs in there, the cookie exists and the extension picks it up on next open (no copy-paste).
+- All content scripts (`gmail.js`, `linear.js`, `notion.js`, `slack.js`) use the stored token via `chrome.storage.local.get`.
 
-- Per-source mute (don't capture this thread / this channel / this Notion page again).
-- Daily digest email via the existing email infra to remind on the day's promises.
-- Optional Gmail OAuth for users who want passive background capture without keeping the tab open — additive, not required.
+Note: Supabase JS stores the session in `localStorage`, not a cookie, by default. To make this work we add a small shim on the web app (`__root.tsx`) that mirrors the access token into a non-HttpOnly cookie `nyvlo-at` scoped to the app domain on every auth state change. The cookie is readable by the extension via `chrome.cookies` but not by other origins (SameSite=Lax, Secure). Acceptable for our threat model since it's the same token already in localStorage.
+
+## 4. Settings cleanup
+
+`src/components/nyvlo/ExtensionSection.tsx`:
+- Remove generate/copy/revoke token UI entirely.
+- Keep: "Download desktop app", "Install browser extension", and the muted-sources list.
+- Add a "Linked devices" list backed by `device_link_codes` (label, last seen, revoke).
+
+## 5. Out of scope this turn
+
+- Native macOS calendar auto-detect (priority 4 from earlier — separate turn).
+- Founder demo seed mode (separate turn).
+- Removing the legacy extension token tables — keep them dormant until all clients are migrated, then drop in a follow-up.
 
 ## Technical notes
 
-- Phase 1 touches: `src/lib/nyvlo/extension.functions.ts` (extraction prompt + guards), new `supabase/migrations/*_evidence_required.sql`, `src/components/nyvlo/PromiseRow.tsx`, new `extraction_feedback` table with GRANTs + RLS.
-- Phase 2 touches: new `extension/content/` directory with `gmail.js`, `slack.js`, `notion.js`, `linear.js`, shared `core.js`; `extension/manifest.json` gets `content_scripts` + `host_permissions`; rebuild zip.
-- Phase 3 touches: new `desktop/` directory with `main.cjs`, `renderer/`, `whisper-wasm/`; new `package.json` scripts; output to `/mnt/documents/Nyvlo-{platform}.zip`.
-- No new secrets needed. No per-user OAuth in this roadmap.
-- Cost shape: Phase 1 same as today. Phase 2 increases extraction calls — mitigated by the `null` guard and per-thread debounce. Phase 3 transcription is free (local Whisper).
-
-## What I'll do after you approve
-
-Build Phase 1 end-to-end, verify it, then start Phase 2 in the same session without stopping for confirmation between sub-steps. I'll check in when Phase 1 is shippable and again when the Gmail content script is working — those are the two moments where you'd want to course-correct.
+- All new server routes under `/api/public/auth/*` — verify nothing returns PII beyond the signed-in user's own email/id.
+- `device_link_codes`: anon insert + select-by-code only (no list); authenticated update only own pending row via RLS using a per-code claim approach (we'll use a `claim_code(code)` SECURITY DEFINER RPC instead of granting broad UPDATE).
+- Electron deep link: register `nyvlo://` in `main.cjs` via `app.setAsDefaultProtocolClient` + `second-instance` handler.
+- Extension cookie shim: ~10 lines in `__root.tsx` inside the existing `onAuthStateChange` listener.
