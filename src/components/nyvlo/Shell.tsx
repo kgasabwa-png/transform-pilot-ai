@@ -94,6 +94,20 @@ export function Shell({ children, title, subtitle }: { children: ReactNode; titl
                 </Link>
               );
             })}
+            {adminStatus?.isAdmin && (
+              <Link
+                to="/admin"
+                className={[
+                  "mt-2 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13.5px] transition-colors",
+                  pathname.startsWith("/admin")
+                    ? "bg-foreground/[0.06] text-foreground"
+                    : "text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground",
+                ].join(" ")}
+              >
+                <ShieldCheck className="h-4 w-4" strokeWidth={1.75} />
+                <span>Operator</span>
+              </Link>
+            )}
           </nav>
 
           <div className="mt-auto rounded-lg border border-border bg-background p-3">
