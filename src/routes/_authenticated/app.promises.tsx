@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Shell } from "@/components/nyvlo/Shell";
 import { PromiseRow } from "@/components/nyvlo/PromiseRow";
+import { Skeleton } from "@/components/ui/skeleton";
 import { listPromises } from "@/lib/nyvlo/data.functions";
 
 export const Route = createFileRoute("/_authenticated/app/promises")({
@@ -67,7 +68,16 @@ function PromisesPage() {
 
       <div className="flex flex-col gap-2">
         {isLoading ? (
-          <div className="rounded-lg border border-border p-10 text-center text-[13px] text-muted-foreground">Loading…</div>
+          Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3.5">
+              <Skeleton className="h-2 w-2 shrink-0 rounded-full" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-3.5 w-2/3" />
+                <Skeleton className="h-3 w-1/3" />
+              </div>
+              <Skeleton className="h-6 w-14" />
+            </div>
+          ))
         ) : list.length === 0 ? (
           <div className="rounded-lg border border-dashed border-border p-10 text-center text-[13px] text-muted-foreground">
             Nothing here. Connect Google in Settings to start.

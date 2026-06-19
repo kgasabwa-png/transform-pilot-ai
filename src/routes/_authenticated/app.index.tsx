@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Shell } from "@/components/nyvlo/Shell";
 import { PromiseRow } from "@/components/nyvlo/PromiseRow";
+import { Skeleton } from "@/components/ui/skeleton";
 import { listPromises, getTodayStats } from "@/lib/nyvlo/data.functions";
 import { getProfile } from "@/lib/nyvlo/profile.functions";
 import { ArrowRight, Sparkles, PlugZap } from "lucide-react";
@@ -17,8 +18,8 @@ function TodayPage() {
   const fetchStats = useServerFn(getTodayStats);
   const fetchProfile = useServerFn(getProfile);
 
-  const { data: promises = [] } = useQuery({ queryKey: ["promises"], queryFn: () => fetchPromises() });
-  const { data: stats } = useQuery({ queryKey: ["todayStats"], queryFn: () => fetchStats() });
+  const { data: promises = [], isLoading: promisesLoading } = useQuery({ queryKey: ["promises"], queryFn: () => fetchPromises() });
+  const { data: stats, isLoading: statsLoading } = useQuery({ queryKey: ["todayStats"], queryFn: () => fetchStats() });
   const { data: profileData } = useQuery({ queryKey: ["profile"], queryFn: () => fetchProfile() });
 
   const name = profileData?.profile?.full_name?.split(" ")[0] ?? "there";
@@ -54,19 +55,31 @@ function TodayPage() {
       )}
 
       <section className="mb-8 grid gap-4 md:grid-cols-3">
-        <StatTile label="Needs attention" value={String(attention.length)} hint="overdue + today" />
-        <StatTile label="Open promises" value={String(stats?.open ?? 0)} hint="across the inbox" />
-        <StatTile
-          label="Reliability"
-          value={stats?.reliability != null ? `${Math.round(Number(stats.reliability) * 100)}%` : "—"}
-          hint={stats ? `${stats.kept} kept · ${stats.missed} missed` : "Building history"}
-        />
+        {statsLoading ? (
+          <>
+            <StatSkeleton />
+            <StatSkeleton />
+            <StatSkeleton />
+          </>
+        ) : (
+          <>
+            <StatTile label="Needs attention" value={String(attention.length)} hint="overdue + today" />
+            <StatTile label="Open promises" value={String(stats?.open ?? 0)} hint="across the inbox" />
+            <StatTile
+              label="Reliability"
+              value={stats?.reliability != null ? `${Math.round(Number(stats.reliability) * 100)}%` : "—"}
+              hint={stats ? `${stats.kept} kept · ${stats.missed} missed` : "Building history"}
+            />
+          </>
+        )}
       </section>
 
       <section className="mb-10">
         <SectionHeader title="Things needing attention" link={{ to: "/app/promises", label: "All promises" }} />
         <div className="flex flex-col gap-2">
-          {attention.length === 0 ? (
+          {promisesLoading ? (
+            <RowSkeletons count={3} />
+          ) : attention.length === 0 ? (
             <EmptyCard message={isConnected ? "Inbox zero. Nothing slipping right now." : "Connect Google to populate this."} />
           ) : (
             attention.map((p) => <PromiseRow key={p.id} item={p} />)
@@ -77,7 +90,9 @@ function TodayPage() {
       <section>
         <SectionHeader title="Coming up" />
         <div className="flex flex-col gap-2">
-          {upcoming.length === 0 ? (
+          {promisesLoading ? (
+            <RowSkeletons count={3} />
+          ) : upcoming.length === 0 ? (
             <EmptyCard message="No upcoming commitments yet." />
           ) : (
             upcoming.map((p) => <PromiseRow key={p.id} item={p} />)
@@ -85,6 +100,33 @@ function TodayPage() {
         </div>
       </section>
     </Shell>
+  );
+}
+
+function StatSkeleton() {
+  return (
+    <div className="rounded-lg border border-border bg-card p-5">
+      <Skeleton className="h-3 w-24" />
+      <Skeleton className="mt-3 h-9 w-16" />
+      <Skeleton className="mt-3 h-3 w-32" />
+    </div>
+  );
+}
+
+function RowSkeletons({ count }: { count: number }) {
+  return (
+    <>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3.5">
+          <Skeleton className="h-2 w-2 shrink-0 rounded-full" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-3.5 w-2/3" />
+            <Skeleton className="h-3 w-1/3" />
+          </div>
+          <Skeleton className="h-6 w-14" />
+        </div>
+      ))}
+    </>
   );
 }
 
