@@ -24,10 +24,15 @@ import { Route as AuthenticatedAppPromisesRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAppMemoryRouteImport } from './routes/_authenticated/app.memory'
 import { Route as AuthenticatedAppLinkRouteImport } from './routes/_authenticated/app.link'
 import { Route as AuthenticatedAppCommandRouteImport } from './routes/_authenticated/app.command'
+import { Route as AuthenticatedAppCaptureRouteImport } from './routes/_authenticated/app.capture'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
 import { Route as AuthenticatedAdminOpsRouteImport } from './routes/_authenticated/admin.ops'
 import { Route as AuthenticatedAdminEventsRouteImport } from './routes/_authenticated/admin.events'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as ApiPublicIngestSessionStartRouteImport } from './routes/api/public/ingest/session-start'
+import { Route as ApiPublicIngestSessionEndRouteImport } from './routes/api/public/ingest/session-end'
+import { Route as ApiPublicIngestScreenFrameRouteImport } from './routes/api/public/ingest/screen-frame'
+import { Route as ApiPublicIngestAudioChunkRouteImport } from './routes/api/public/ingest/audio-chunk'
 import { Route as ApiPublicHooksSyncAllRouteImport } from './routes/api/public/hooks/sync-all'
 import { Route as ApiPublicHooksGenerateRemindersRouteImport } from './routes/api/public/hooks/generate-reminders'
 import { Route as ApiPublicHooksDailyDigestRouteImport } from './routes/api/public/hooks/daily-digest'
@@ -114,6 +119,11 @@ const AuthenticatedAppCommandRoute = AuthenticatedAppCommandRouteImport.update({
   path: '/command',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppCaptureRoute = AuthenticatedAppCaptureRouteImport.update({
+  id: '/capture',
+  path: '/capture',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -134,6 +144,30 @@ const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
     id: '/lovable/email/queue/process',
     path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicIngestSessionStartRoute =
+  ApiPublicIngestSessionStartRouteImport.update({
+    id: '/api/public/ingest/session-start',
+    path: '/api/public/ingest/session-start',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicIngestSessionEndRoute =
+  ApiPublicIngestSessionEndRouteImport.update({
+    id: '/api/public/ingest/session-end',
+    path: '/api/public/ingest/session-end',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicIngestScreenFrameRoute =
+  ApiPublicIngestScreenFrameRouteImport.update({
+    id: '/api/public/ingest/screen-frame',
+    path: '/api/public/ingest/screen-frame',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicIngestAudioChunkRoute =
+  ApiPublicIngestAudioChunkRouteImport.update({
+    id: '/api/public/ingest/audio-chunk',
+    path: '/api/public/ingest/audio-chunk',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicHooksSyncAllRoute = ApiPublicHooksSyncAllRouteImport.update({
@@ -198,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/admin/events': typeof AuthenticatedAdminEventsRoute
   '/admin/ops': typeof AuthenticatedAdminOpsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/app/capture': typeof AuthenticatedAppCaptureRoute
   '/app/command': typeof AuthenticatedAppCommandRoute
   '/app/link': typeof AuthenticatedAppLinkRoute
   '/app/memory': typeof AuthenticatedAppMemoryRoute
@@ -214,6 +249,10 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/generate-reminders': typeof ApiPublicHooksGenerateRemindersRoute
   '/api/public/hooks/sync-all': typeof ApiPublicHooksSyncAllRoute
+  '/api/public/ingest/audio-chunk': typeof ApiPublicIngestAudioChunkRoute
+  '/api/public/ingest/screen-frame': typeof ApiPublicIngestScreenFrameRoute
+  '/api/public/ingest/session-end': typeof ApiPublicIngestSessionEndRoute
+  '/api/public/ingest/session-start': typeof ApiPublicIngestSessionStartRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesByTo {
@@ -225,6 +264,7 @@ export interface FileRoutesByTo {
   '/admin/events': typeof AuthenticatedAdminEventsRoute
   '/admin/ops': typeof AuthenticatedAdminOpsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/app/capture': typeof AuthenticatedAppCaptureRoute
   '/app/command': typeof AuthenticatedAppCommandRoute
   '/app/link': typeof AuthenticatedAppLinkRoute
   '/app/memory': typeof AuthenticatedAppMemoryRoute
@@ -241,6 +281,10 @@ export interface FileRoutesByTo {
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/generate-reminders': typeof ApiPublicHooksGenerateRemindersRoute
   '/api/public/hooks/sync-all': typeof ApiPublicHooksSyncAllRoute
+  '/api/public/ingest/audio-chunk': typeof ApiPublicIngestAudioChunkRoute
+  '/api/public/ingest/screen-frame': typeof ApiPublicIngestScreenFrameRoute
+  '/api/public/ingest/session-end': typeof ApiPublicIngestSessionEndRoute
+  '/api/public/ingest/session-start': typeof ApiPublicIngestSessionStartRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesById {
@@ -256,6 +300,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/events': typeof AuthenticatedAdminEventsRoute
   '/_authenticated/admin/ops': typeof AuthenticatedAdminOpsRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/_authenticated/app/capture': typeof AuthenticatedAppCaptureRoute
   '/_authenticated/app/command': typeof AuthenticatedAppCommandRoute
   '/_authenticated/app/link': typeof AuthenticatedAppLinkRoute
   '/_authenticated/app/memory': typeof AuthenticatedAppMemoryRoute
@@ -272,6 +317,10 @@ export interface FileRoutesById {
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/generate-reminders': typeof ApiPublicHooksGenerateRemindersRoute
   '/api/public/hooks/sync-all': typeof ApiPublicHooksSyncAllRoute
+  '/api/public/ingest/audio-chunk': typeof ApiPublicIngestAudioChunkRoute
+  '/api/public/ingest/screen-frame': typeof ApiPublicIngestScreenFrameRoute
+  '/api/public/ingest/session-end': typeof ApiPublicIngestSessionEndRoute
+  '/api/public/ingest/session-start': typeof ApiPublicIngestSessionStartRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRouteTypes {
@@ -287,6 +336,7 @@ export interface FileRouteTypes {
     | '/admin/events'
     | '/admin/ops'
     | '/admin/users'
+    | '/app/capture'
     | '/app/command'
     | '/app/link'
     | '/app/memory'
@@ -303,6 +353,10 @@ export interface FileRouteTypes {
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/generate-reminders'
     | '/api/public/hooks/sync-all'
+    | '/api/public/ingest/audio-chunk'
+    | '/api/public/ingest/screen-frame'
+    | '/api/public/ingest/session-end'
+    | '/api/public/ingest/session-start'
     | '/lovable/email/queue/process'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -314,6 +368,7 @@ export interface FileRouteTypes {
     | '/admin/events'
     | '/admin/ops'
     | '/admin/users'
+    | '/app/capture'
     | '/app/command'
     | '/app/link'
     | '/app/memory'
@@ -330,6 +385,10 @@ export interface FileRouteTypes {
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/generate-reminders'
     | '/api/public/hooks/sync-all'
+    | '/api/public/ingest/audio-chunk'
+    | '/api/public/ingest/screen-frame'
+    | '/api/public/ingest/session-end'
+    | '/api/public/ingest/session-start'
     | '/lovable/email/queue/process'
   id:
     | '__root__'
@@ -344,6 +403,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/events'
     | '/_authenticated/admin/ops'
     | '/_authenticated/admin/users'
+    | '/_authenticated/app/capture'
     | '/_authenticated/app/command'
     | '/_authenticated/app/link'
     | '/_authenticated/app/memory'
@@ -360,6 +420,10 @@ export interface FileRouteTypes {
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/generate-reminders'
     | '/api/public/hooks/sync-all'
+    | '/api/public/ingest/audio-chunk'
+    | '/api/public/ingest/screen-frame'
+    | '/api/public/ingest/session-end'
+    | '/api/public/ingest/session-start'
     | '/lovable/email/queue/process'
   fileRoutesById: FileRoutesById
 }
@@ -379,6 +443,10 @@ export interface RootRouteChildren {
   ApiPublicHooksDailyDigestRoute: typeof ApiPublicHooksDailyDigestRoute
   ApiPublicHooksGenerateRemindersRoute: typeof ApiPublicHooksGenerateRemindersRoute
   ApiPublicHooksSyncAllRoute: typeof ApiPublicHooksSyncAllRoute
+  ApiPublicIngestAudioChunkRoute: typeof ApiPublicIngestAudioChunkRoute
+  ApiPublicIngestScreenFrameRoute: typeof ApiPublicIngestScreenFrameRoute
+  ApiPublicIngestSessionEndRoute: typeof ApiPublicIngestSessionEndRoute
+  ApiPublicIngestSessionStartRoute: typeof ApiPublicIngestSessionStartRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
 }
 
@@ -489,6 +557,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppCommandRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/capture': {
+      id: '/_authenticated/app/capture'
+      path: '/capture'
+      fullPath: '/app/capture'
+      preLoaderRoute: typeof AuthenticatedAppCaptureRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/admin/users': {
       id: '/_authenticated/admin/users'
       path: '/users'
@@ -515,6 +590,34 @@ declare module '@tanstack/react-router' {
       path: '/lovable/email/queue/process'
       fullPath: '/lovable/email/queue/process'
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/ingest/session-start': {
+      id: '/api/public/ingest/session-start'
+      path: '/api/public/ingest/session-start'
+      fullPath: '/api/public/ingest/session-start'
+      preLoaderRoute: typeof ApiPublicIngestSessionStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/ingest/session-end': {
+      id: '/api/public/ingest/session-end'
+      path: '/api/public/ingest/session-end'
+      fullPath: '/api/public/ingest/session-end'
+      preLoaderRoute: typeof ApiPublicIngestSessionEndRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/ingest/screen-frame': {
+      id: '/api/public/ingest/screen-frame'
+      path: '/api/public/ingest/screen-frame'
+      fullPath: '/api/public/ingest/screen-frame'
+      preLoaderRoute: typeof ApiPublicIngestScreenFrameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/ingest/audio-chunk': {
+      id: '/api/public/ingest/audio-chunk'
+      path: '/api/public/ingest/audio-chunk'
+      fullPath: '/api/public/ingest/audio-chunk'
+      preLoaderRoute: typeof ApiPublicIngestAudioChunkRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/sync-all': {
@@ -601,6 +704,7 @@ const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
 interface AuthenticatedAppRouteChildren {
+  AuthenticatedAppCaptureRoute: typeof AuthenticatedAppCaptureRoute
   AuthenticatedAppCommandRoute: typeof AuthenticatedAppCommandRoute
   AuthenticatedAppLinkRoute: typeof AuthenticatedAppLinkRoute
   AuthenticatedAppMemoryRoute: typeof AuthenticatedAppMemoryRoute
@@ -610,6 +714,7 @@ interface AuthenticatedAppRouteChildren {
 }
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
+  AuthenticatedAppCaptureRoute: AuthenticatedAppCaptureRoute,
   AuthenticatedAppCommandRoute: AuthenticatedAppCommandRoute,
   AuthenticatedAppLinkRoute: AuthenticatedAppLinkRoute,
   AuthenticatedAppMemoryRoute: AuthenticatedAppMemoryRoute,
@@ -650,6 +755,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksDailyDigestRoute: ApiPublicHooksDailyDigestRoute,
   ApiPublicHooksGenerateRemindersRoute: ApiPublicHooksGenerateRemindersRoute,
   ApiPublicHooksSyncAllRoute: ApiPublicHooksSyncAllRoute,
+  ApiPublicIngestAudioChunkRoute: ApiPublicIngestAudioChunkRoute,
+  ApiPublicIngestScreenFrameRoute: ApiPublicIngestScreenFrameRoute,
+  ApiPublicIngestSessionEndRoute: ApiPublicIngestSessionEndRoute,
+  ApiPublicIngestSessionStartRoute: ApiPublicIngestSessionStartRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
 }
 export const routeTree = rootRouteImport

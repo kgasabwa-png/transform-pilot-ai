@@ -1,0 +1,44 @@
+import { createFileRoute } from "@tanstack/react-router";
+
+const cors = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+export const Route = createFileRoute("/api/public/ingest/session-start")({
+  server: {
+    handlers: {
+      OPTIONS: async () => new Response(null, { status: 204, headers: cors }),
+      POST: async ({ request }) => {
+        const { resolveExtensionAuth } = await import("@/lib/nyvlo/extension-auth.server");
+        const auth = await resolveExtensionAuth(request.headers.get("authorization"));
+        if (!auth) return Response.json({ error: "Not signed in" }, { status: 401, headers: cors });
+
+        const body = (await request.json().catch(() => ({}))) as {
+          label?: string;
+          source?: string;
+          metadata?: Record<string, unknown>;
+        };
+
+        const { adminClient } = await import("@/lib/nyvlo/google.server");
+        const supabase = adminClient();
+        const { data, error } = await supabase
+          .from("capture_sessions")
+          .insert({
+            user_id: auth.userId,
+            label: body.label ?? null,
+            source: body.source ?? "desktop",
+            status: "active",
+            metadata: (body.metadata ?? {}) as any,
+          })
+          .select("id, started_at")
+          .single();
+        if (error || !data) {
+          return Response.json({ error: error?.message ?? "insert failed" }, { status: 500, headers: cors });
+        }
+        return Response.json({ session: data }, { headers: cors });
+      },
+    },
+  },
+});

@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
-import { Inbox, Clock, Sparkles, Settings, Command, Search, BookMarked, LogOut, ShieldCheck } from "lucide-react";
+import { Inbox, Clock, Sparkles, Settings, Command, Search, BookMarked, LogOut, ShieldCheck, Radio } from "lucide-react";
 import { CommandPalette } from "./CommandPalette";
 import { NotificationBell } from "./NotificationBell";
 import { useQuery } from "@tanstack/react-query";
@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 const nav = [
   { to: "/app", label: "Today", icon: Sparkles, exact: true },
   { to: "/app/promises", label: "Promises", icon: Inbox },
+  { to: "/app/capture", label: "Live Capture", icon: Radio },
   { to: "/app/memory", label: "Memory", icon: Clock },
   { to: "/app/command", label: "Command Center", icon: BookMarked },
   { to: "/app/settings", label: "Settings", icon: Settings },
