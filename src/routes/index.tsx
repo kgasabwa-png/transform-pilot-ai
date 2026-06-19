@@ -5,10 +5,10 @@ import { ArrowRight, Calendar, ShieldCheck, Sparkles, Mail, FileText, StickyNote
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Nyvlo · The AI that catches what you forgot" },
+      { title: "Nyvlo | The AI that catches what you forgot" },
       { name: "description", content: "Nyvlo finds the follow-ups, promises, and loose ends slipping through your week, and drafts the reply for you." },
-      { property: "og:title", content: "Nyvlo · The AI that catches what you forgot" },
-      { property: "og:description", content: "Nyvlo finds the follow-ups, promises, and loose ends slipping through your week." },
+      { property: "og:title", content: "Nyvlo | The AI that catches what you forgot" },
+      { property: "og:description", content: "Nyvlo finds the follow-ups, promises, and loose ends slipping through your week" },
     ],
   }),
   component: Landing,
