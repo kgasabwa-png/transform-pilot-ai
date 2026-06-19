@@ -1,11 +1,12 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
-import { Inbox, Clock, Sparkles, Settings, Command, Search, BookMarked, LogOut } from "lucide-react";
+import { Inbox, Clock, Sparkles, Settings, Command, Search, BookMarked, LogOut, ShieldCheck } from "lucide-react";
 import { CommandPalette } from "./CommandPalette";
 import { NotificationBell } from "./NotificationBell";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getProfile } from "@/lib/nyvlo/profile.functions";
+import { getMyAdminStatus } from "@/lib/admin/admin.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 const nav = [
