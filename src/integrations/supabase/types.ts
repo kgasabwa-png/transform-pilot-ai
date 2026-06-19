@@ -372,6 +372,36 @@ export type Database = {
           },
         ]
       }
+      ingestion_errors: {
+        Row: {
+          context: Json | null
+          created_at: string
+          endpoint: string
+          error_message: string | null
+          id: string
+          status_code: number | null
+          user_id: string | null
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string
+          endpoint: string
+          error_message?: string | null
+          id?: string
+          status_code?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string
+          endpoint?: string
+          error_message?: string | null
+          id?: string
+          status_code?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       memory_items: {
         Row: {
           created_at: string
