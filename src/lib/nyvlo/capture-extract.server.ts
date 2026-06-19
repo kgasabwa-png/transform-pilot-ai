@@ -8,7 +8,11 @@ type ExtractedPromise = {
   due_at?: string | null;
   owner?: "self" | "other" | null;
   confidence?: number;
+  draft_reply?: string | null;
+  owed_to_name?: string | null;
+  evidence_snippet?: string | null;
 };
+
 
 export async function extractPromisesFromSession(
   sessionId: string,
