@@ -153,7 +153,7 @@ const ExtractionSchema = z.object({
 });
 
 export async function extractFromSource(source: {
-  kind: "calendar_event";
+  kind: "calendar_event" | "web_capture";
   subject: string | null;
   participants: string[] | null;
   body: string | null;
@@ -164,7 +164,11 @@ export async function extractFromSource(source: {
   const gateway = createLovableAiGatewayProvider(key);
   const model = gateway("google/gemini-3-flash-preview");
 
-  const prompt = `You analyze a single ${source.kind === "calendar_event" ? "calendar event" : "sent email"} from the user's day and extract any explicit promises or commitments the user made to other people.
+  const sourceLabel =
+    source.kind === "calendar_event"
+      ? "calendar event"
+      : "snippet of text the user explicitly captured from a webpage (could be an email thread, doc, Slack, etc.)";
+  const prompt = `You analyze a single ${sourceLabel} from the user's day and extract any explicit promises, commitments, follow-ups, or unanswered asks.
 
 Context:
 - Subject/Title: ${source.subject ?? "(none)"}
@@ -293,7 +297,7 @@ async function runExtractAndPersist(
 ) {
   try {
     const result = await extractFromSource({
-      kind: src.kind as "calendar_event",
+      kind: (src.kind === "web_capture" ? "web_capture" : "calendar_event"),
       subject: src.subject,
       participants: src.participants,
       body: src.body,
@@ -306,7 +310,7 @@ async function runExtractAndPersist(
         source_id: src.id,
         summary: p.summary,
         owed_to: p.owed_to,
-        channel: src.kind === "calendar_event" ? "meeting" : "email",
+        channel: src.kind === "calendar_event" ? "meeting" : src.kind === "web_capture" ? "web" : "email",
         due_at: p.due_at,
         confidence: p.confidence,
         draft_reply: p.draft_reply,
@@ -321,7 +325,7 @@ async function runExtractAndPersist(
       const { error } = await admin.from("memory_items").insert({
         user_id: userId,
         source_id: src.id,
-        kind: src.kind === "calendar_event" ? "meeting" : "email",
+        kind: src.kind === "calendar_event" ? "meeting" : src.kind === "web_capture" ? "web" : "email",
         title: result.memory.title,
         snippet: result.memory.snippet,
         occurred_at: src.occurred_at ?? new Date().toISOString(),
@@ -358,5 +362,59 @@ export async function getUserContext(userId: string) {
   return {
     promises: promises ?? [],
     memory: memory ?? [],
+  };
+}
+
+// --- Manual web capture from Chrome extension --------------------------------
+export async function captureWebSnippet(
+  userId: string,
+  input: {
+    url: string;
+    title: string | null;
+    selected_text: string;
+    note: string | null;
+  },
+) {
+  const admin = adminClient();
+  const occurred = new Date().toISOString();
+  const body = input.note
+    ? `${input.selected_text}\n\n[User note: ${input.note}]`
+    : input.selected_text;
+
+  // Each capture is unique — use timestamp + url hash as external_id
+  const externalId = `${Date.now()}_${input.url.slice(0, 200)}`;
+
+  const { data: src, error: srcErr } = await admin
+    .from("sources")
+    .insert({
+      user_id: userId,
+      kind: "web_capture",
+      external_id: externalId,
+      subject: input.title ?? input.url,
+      participants: [],
+      body,
+      raw: { url: input.url, note: input.note } as never,
+      occurred_at: occurred,
+    })
+    .select("id, kind, subject, participants, body, occurred_at")
+    .single();
+
+  if (srcErr || !src) throw new Error(srcErr?.message ?? "Failed to save capture");
+
+  const stats = { promises: 0, memories: 0, errors: 0 };
+  await runExtractAndPersist(admin, userId, src, stats);
+
+  // Return the newly created promises for the extension to show
+  const { data: newPromises } = await admin
+    .from("promises")
+    .select("id, summary, owed_to, due_at, confidence, evidence_snippet")
+    .eq("user_id", userId)
+    .eq("source_id", src.id)
+    .order("created_at", { ascending: false });
+
+  return {
+    source_id: src.id,
+    promises: newPromises ?? [],
+    stats,
   };
 }

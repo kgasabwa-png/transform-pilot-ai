@@ -23,6 +23,7 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 import { Route as ApiPublicHooksSyncAllRouteImport } from './routes/api/public/hooks/sync-all'
 import { Route as ApiPublicHooksGenerateRemindersRouteImport } from './routes/api/public/hooks/generate-reminders'
 import { Route as ApiPublicExtensionTodayRouteImport } from './routes/api/public/extension/today'
+import { Route as ApiPublicExtensionCaptureRouteImport } from './routes/api/public/extension/capture'
 import { Route as ApiOauthGoogleCallbackRouteImport } from './routes/api/oauth.google.callback'
 
 const AuthRoute = AuthRouteImport.update({
@@ -98,6 +99,12 @@ const ApiPublicExtensionTodayRoute = ApiPublicExtensionTodayRouteImport.update({
   path: '/api/public/extension/today',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicExtensionCaptureRoute =
+  ApiPublicExtensionCaptureRouteImport.update({
+    id: '/api/public/extension/capture',
+    path: '/api/public/extension/capture',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiOauthGoogleCallbackRoute = ApiOauthGoogleCallbackRouteImport.update({
   id: '/api/oauth/google/callback',
   path: '/api/oauth/google/callback',
@@ -115,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/app/settings': typeof AuthenticatedAppSettingsRoute
   '/app/': typeof AuthenticatedAppIndexRoute
   '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
+  '/api/public/extension/capture': typeof ApiPublicExtensionCaptureRoute
   '/api/public/extension/today': typeof ApiPublicExtensionTodayRoute
   '/api/public/hooks/generate-reminders': typeof ApiPublicHooksGenerateRemindersRoute
   '/api/public/hooks/sync-all': typeof ApiPublicHooksSyncAllRoute
@@ -130,6 +138,7 @@ export interface FileRoutesByTo {
   '/app/settings': typeof AuthenticatedAppSettingsRoute
   '/app': typeof AuthenticatedAppIndexRoute
   '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
+  '/api/public/extension/capture': typeof ApiPublicExtensionCaptureRoute
   '/api/public/extension/today': typeof ApiPublicExtensionTodayRoute
   '/api/public/hooks/generate-reminders': typeof ApiPublicHooksGenerateRemindersRoute
   '/api/public/hooks/sync-all': typeof ApiPublicHooksSyncAllRoute
@@ -148,6 +157,7 @@ export interface FileRoutesById {
   '/_authenticated/app/settings': typeof AuthenticatedAppSettingsRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
   '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
+  '/api/public/extension/capture': typeof ApiPublicExtensionCaptureRoute
   '/api/public/extension/today': typeof ApiPublicExtensionTodayRoute
   '/api/public/hooks/generate-reminders': typeof ApiPublicHooksGenerateRemindersRoute
   '/api/public/hooks/sync-all': typeof ApiPublicHooksSyncAllRoute
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app/'
     | '/api/oauth/google/callback'
+    | '/api/public/extension/capture'
     | '/api/public/extension/today'
     | '/api/public/hooks/generate-reminders'
     | '/api/public/hooks/sync-all'
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app'
     | '/api/oauth/google/callback'
+    | '/api/public/extension/capture'
     | '/api/public/extension/today'
     | '/api/public/hooks/generate-reminders'
     | '/api/public/hooks/sync-all'
@@ -198,6 +210,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/settings'
     | '/_authenticated/app/'
     | '/api/oauth/google/callback'
+    | '/api/public/extension/capture'
     | '/api/public/extension/today'
     | '/api/public/hooks/generate-reminders'
     | '/api/public/hooks/sync-all'
@@ -210,6 +223,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiOauthGoogleCallbackRoute: typeof ApiOauthGoogleCallbackRoute
+  ApiPublicExtensionCaptureRoute: typeof ApiPublicExtensionCaptureRoute
   ApiPublicExtensionTodayRoute: typeof ApiPublicExtensionTodayRoute
   ApiPublicHooksGenerateRemindersRoute: typeof ApiPublicHooksGenerateRemindersRoute
   ApiPublicHooksSyncAllRoute: typeof ApiPublicHooksSyncAllRoute
@@ -316,6 +330,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicExtensionTodayRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/extension/capture': {
+      id: '/api/public/extension/capture'
+      path: '/api/public/extension/capture'
+      fullPath: '/api/public/extension/capture'
+      preLoaderRoute: typeof ApiPublicExtensionCaptureRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/oauth/google/callback': {
       id: '/api/oauth/google/callback'
       path: '/api/oauth/google/callback'
@@ -362,6 +383,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ApiChatRoute: ApiChatRoute,
   ApiOauthGoogleCallbackRoute: ApiOauthGoogleCallbackRoute,
+  ApiPublicExtensionCaptureRoute: ApiPublicExtensionCaptureRoute,
   ApiPublicExtensionTodayRoute: ApiPublicExtensionTodayRoute,
   ApiPublicHooksGenerateRemindersRoute: ApiPublicHooksGenerateRemindersRoute,
   ApiPublicHooksSyncAllRoute: ApiPublicHooksSyncAllRoute,
