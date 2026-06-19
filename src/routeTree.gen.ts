@@ -20,6 +20,7 @@ import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAppSettingsRouteImport } from './routes/_authenticated/app.settings'
 import { Route as AuthenticatedAppPromisesRouteImport } from './routes/_authenticated/app.promises'
 import { Route as AuthenticatedAppMemoryRouteImport } from './routes/_authenticated/app.memory'
+import { Route as AuthenticatedAppLinkRouteImport } from './routes/_authenticated/app.link'
 import { Route as AuthenticatedAppCommandRouteImport } from './routes/_authenticated/app.command'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicHooksSyncAllRouteImport } from './routes/api/public/hooks/sync-all'
@@ -28,6 +29,8 @@ import { Route as ApiPublicHooksDailyDigestRouteImport } from './routes/api/publ
 import { Route as ApiPublicExtensionTranscribeRouteImport } from './routes/api/public/extension/transcribe'
 import { Route as ApiPublicExtensionTodayRouteImport } from './routes/api/public/extension/today'
 import { Route as ApiPublicExtensionCaptureRouteImport } from './routes/api/public/extension/capture'
+import { Route as ApiPublicAuthDeviceStartRouteImport } from './routes/api/public/auth/device-start'
+import { Route as ApiPublicAuthDevicePollRouteImport } from './routes/api/public/auth/device-poll'
 import { Route as ApiOauthGoogleCallbackRouteImport } from './routes/api/oauth.google.callback'
 
 const TryRoute = TryRouteImport.update({
@@ -86,6 +89,11 @@ const AuthenticatedAppMemoryRoute = AuthenticatedAppMemoryRouteImport.update({
   path: '/memory',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppLinkRoute = AuthenticatedAppLinkRouteImport.update({
+  id: '/link',
+  path: '/link',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAppCommandRoute = AuthenticatedAppCommandRouteImport.update({
   id: '/command',
   path: '/command',
@@ -131,6 +139,17 @@ const ApiPublicExtensionCaptureRoute =
     path: '/api/public/extension/capture',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicAuthDeviceStartRoute =
+  ApiPublicAuthDeviceStartRouteImport.update({
+    id: '/api/public/auth/device-start',
+    path: '/api/public/auth/device-start',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicAuthDevicePollRoute = ApiPublicAuthDevicePollRouteImport.update({
+  id: '/api/public/auth/device-poll',
+  path: '/api/public/auth/device-poll',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiOauthGoogleCallbackRoute = ApiOauthGoogleCallbackRouteImport.update({
   id: '/api/oauth/google/callback',
   path: '/api/oauth/google/callback',
@@ -145,11 +164,14 @@ export interface FileRoutesByFullPath {
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/app/command': typeof AuthenticatedAppCommandRoute
+  '/app/link': typeof AuthenticatedAppLinkRoute
   '/app/memory': typeof AuthenticatedAppMemoryRoute
   '/app/promises': typeof AuthenticatedAppPromisesRoute
   '/app/settings': typeof AuthenticatedAppSettingsRoute
   '/app/': typeof AuthenticatedAppIndexRoute
   '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
+  '/api/public/auth/device-poll': typeof ApiPublicAuthDevicePollRoute
+  '/api/public/auth/device-start': typeof ApiPublicAuthDeviceStartRoute
   '/api/public/extension/capture': typeof ApiPublicExtensionCaptureRoute
   '/api/public/extension/today': typeof ApiPublicExtensionTodayRoute
   '/api/public/extension/transcribe': typeof ApiPublicExtensionTranscribeRoute
@@ -165,11 +187,14 @@ export interface FileRoutesByTo {
   '/try': typeof TryRoute
   '/api/chat': typeof ApiChatRoute
   '/app/command': typeof AuthenticatedAppCommandRoute
+  '/app/link': typeof AuthenticatedAppLinkRoute
   '/app/memory': typeof AuthenticatedAppMemoryRoute
   '/app/promises': typeof AuthenticatedAppPromisesRoute
   '/app/settings': typeof AuthenticatedAppSettingsRoute
   '/app': typeof AuthenticatedAppIndexRoute
   '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
+  '/api/public/auth/device-poll': typeof ApiPublicAuthDevicePollRoute
+  '/api/public/auth/device-start': typeof ApiPublicAuthDeviceStartRoute
   '/api/public/extension/capture': typeof ApiPublicExtensionCaptureRoute
   '/api/public/extension/today': typeof ApiPublicExtensionTodayRoute
   '/api/public/extension/transcribe': typeof ApiPublicExtensionTranscribeRoute
@@ -188,11 +213,14 @@ export interface FileRoutesById {
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/_authenticated/app/command': typeof AuthenticatedAppCommandRoute
+  '/_authenticated/app/link': typeof AuthenticatedAppLinkRoute
   '/_authenticated/app/memory': typeof AuthenticatedAppMemoryRoute
   '/_authenticated/app/promises': typeof AuthenticatedAppPromisesRoute
   '/_authenticated/app/settings': typeof AuthenticatedAppSettingsRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
   '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
+  '/api/public/auth/device-poll': typeof ApiPublicAuthDevicePollRoute
+  '/api/public/auth/device-start': typeof ApiPublicAuthDeviceStartRoute
   '/api/public/extension/capture': typeof ApiPublicExtensionCaptureRoute
   '/api/public/extension/today': typeof ApiPublicExtensionTodayRoute
   '/api/public/extension/transcribe': typeof ApiPublicExtensionTranscribeRoute
@@ -211,11 +239,14 @@ export interface FileRouteTypes {
     | '/app'
     | '/api/chat'
     | '/app/command'
+    | '/app/link'
     | '/app/memory'
     | '/app/promises'
     | '/app/settings'
     | '/app/'
     | '/api/oauth/google/callback'
+    | '/api/public/auth/device-poll'
+    | '/api/public/auth/device-start'
     | '/api/public/extension/capture'
     | '/api/public/extension/today'
     | '/api/public/extension/transcribe'
@@ -231,11 +262,14 @@ export interface FileRouteTypes {
     | '/try'
     | '/api/chat'
     | '/app/command'
+    | '/app/link'
     | '/app/memory'
     | '/app/promises'
     | '/app/settings'
     | '/app'
     | '/api/oauth/google/callback'
+    | '/api/public/auth/device-poll'
+    | '/api/public/auth/device-start'
     | '/api/public/extension/capture'
     | '/api/public/extension/today'
     | '/api/public/extension/transcribe'
@@ -253,11 +287,14 @@ export interface FileRouteTypes {
     | '/_authenticated/app'
     | '/api/chat'
     | '/_authenticated/app/command'
+    | '/_authenticated/app/link'
     | '/_authenticated/app/memory'
     | '/_authenticated/app/promises'
     | '/_authenticated/app/settings'
     | '/_authenticated/app/'
     | '/api/oauth/google/callback'
+    | '/api/public/auth/device-poll'
+    | '/api/public/auth/device-start'
     | '/api/public/extension/capture'
     | '/api/public/extension/today'
     | '/api/public/extension/transcribe'
@@ -275,6 +312,8 @@ export interface RootRouteChildren {
   TryRoute: typeof TryRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiOauthGoogleCallbackRoute: typeof ApiOauthGoogleCallbackRoute
+  ApiPublicAuthDevicePollRoute: typeof ApiPublicAuthDevicePollRoute
+  ApiPublicAuthDeviceStartRoute: typeof ApiPublicAuthDeviceStartRoute
   ApiPublicExtensionCaptureRoute: typeof ApiPublicExtensionCaptureRoute
   ApiPublicExtensionTodayRoute: typeof ApiPublicExtensionTodayRoute
   ApiPublicExtensionTranscribeRoute: typeof ApiPublicExtensionTranscribeRoute
@@ -363,6 +402,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppMemoryRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/link': {
+      id: '/_authenticated/app/link'
+      path: '/link'
+      fullPath: '/app/link'
+      preLoaderRoute: typeof AuthenticatedAppLinkRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/app/command': {
       id: '/_authenticated/app/command'
       path: '/command'
@@ -419,6 +465,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicExtensionCaptureRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/auth/device-start': {
+      id: '/api/public/auth/device-start'
+      path: '/api/public/auth/device-start'
+      fullPath: '/api/public/auth/device-start'
+      preLoaderRoute: typeof ApiPublicAuthDeviceStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/auth/device-poll': {
+      id: '/api/public/auth/device-poll'
+      path: '/api/public/auth/device-poll'
+      fullPath: '/api/public/auth/device-poll'
+      preLoaderRoute: typeof ApiPublicAuthDevicePollRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/oauth/google/callback': {
       id: '/api/oauth/google/callback'
       path: '/api/oauth/google/callback'
@@ -431,6 +491,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAppRouteChildren {
   AuthenticatedAppCommandRoute: typeof AuthenticatedAppCommandRoute
+  AuthenticatedAppLinkRoute: typeof AuthenticatedAppLinkRoute
   AuthenticatedAppMemoryRoute: typeof AuthenticatedAppMemoryRoute
   AuthenticatedAppPromisesRoute: typeof AuthenticatedAppPromisesRoute
   AuthenticatedAppSettingsRoute: typeof AuthenticatedAppSettingsRoute
@@ -439,6 +500,7 @@ interface AuthenticatedAppRouteChildren {
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppCommandRoute: AuthenticatedAppCommandRoute,
+  AuthenticatedAppLinkRoute: AuthenticatedAppLinkRoute,
   AuthenticatedAppMemoryRoute: AuthenticatedAppMemoryRoute,
   AuthenticatedAppPromisesRoute: AuthenticatedAppPromisesRoute,
   AuthenticatedAppSettingsRoute: AuthenticatedAppSettingsRoute,
@@ -467,6 +529,8 @@ const rootRouteChildren: RootRouteChildren = {
   TryRoute: TryRoute,
   ApiChatRoute: ApiChatRoute,
   ApiOauthGoogleCallbackRoute: ApiOauthGoogleCallbackRoute,
+  ApiPublicAuthDevicePollRoute: ApiPublicAuthDevicePollRoute,
+  ApiPublicAuthDeviceStartRoute: ApiPublicAuthDeviceStartRoute,
   ApiPublicExtensionCaptureRoute: ApiPublicExtensionCaptureRoute,
   ApiPublicExtensionTodayRoute: ApiPublicExtensionTodayRoute,
   ApiPublicExtensionTranscribeRoute: ApiPublicExtensionTranscribeRoute,

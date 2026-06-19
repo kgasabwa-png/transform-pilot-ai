@@ -10,7 +10,7 @@ export const approveDeviceLink = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.rpc("approve_device_link", {
       _code: data.code,
-      _label: data.label ?? null,
+      _label: data.label ?? "",
     });
     if (error) throw new Error(error.message);
     return { ok: true };
