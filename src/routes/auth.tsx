@@ -79,10 +79,11 @@ function AuthPage() {
     <div className="grid min-h-dvh bg-background md:grid-cols-2">
       <div className="hidden flex-col justify-between border-r border-border bg-secondary p-12 md:flex">
         <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded-[7px] bg-foreground">
-            <div className="h-2 w-2 rounded-full bg-primary" />
-          </div>
-          <span className="text-sm font-semibold">Nyvlo</span>
+          <img
+            src="/__l5e/assets-v1/6211f021-75b1-484a-8d96-f59fda81e71b/nyvlo-logo-transparent.png"
+            alt="Nyvlo"
+            className="h-10 w-auto"
+          />
         </Link>
         <div className="max-w-md space-y-6">
           <h2 className="text-3xl font-semibold tracking-tight">
