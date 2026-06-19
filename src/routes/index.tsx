@@ -53,9 +53,9 @@ function Landing() {
               <Link to="/auth" className="inline-flex items-center gap-2 rounded-md bg-foreground px-4 py-2.5 text-[14px] font-medium text-background hover:opacity-90">
                 Get started free <ArrowRight className="h-4 w-4" />
               </Link>
-              <a href="#how" className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-4 py-2.5 text-[14px] font-medium text-foreground hover:bg-muted">
-                How it works →
-              </a>
+              <Link to="/try" className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-4 py-2.5 text-[14px] font-medium text-foreground hover:bg-muted">
+                Try the demo →
+              </Link>
             </div>
             <div className="mt-3 text-[11.5px] text-muted-foreground">Free during beta · connect Google in 30 seconds · no credit card</div>
           </div>
