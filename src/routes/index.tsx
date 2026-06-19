@@ -72,10 +72,10 @@ function Landing() {
         <div className="mx-auto max-w-5xl px-6 py-20">
           <p className="text-center text-[11px] uppercase tracking-[0.18em] text-muted-foreground">The Nyvlo moment</p>
           <h2 className="mx-auto mt-3 max-w-2xl text-center text-[30px] font-semibold leading-tight tracking-tight md:text-[40px]">
-            "Oh shit — I told Sarah I'd send that two days ago."
+            "Oh shit, I told Sarah I'd send that two days ago."
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-center text-[15px] leading-relaxed text-muted-foreground">
-            Everyone has felt this. Nyvlo is the moment <em className="not-italic text-foreground">before</em> it — when something quietly nudges you with the promise you made, the person waiting, and the draft already written.
+            Everyone has felt this. Nyvlo is the moment <em className="not-italic text-foreground">before</em> it, when something quietly nudges you with the promise you made, the person waiting, and the draft already written.
           </p>
         </div>
       </section>
