@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Check, Sparkles, X, ChevronDown, Mail, CalendarDays, StickyNote } from "lucide-react";
+import { Check, Sparkles, X, ChevronDown, Mail, CalendarDays, StickyNote, ExternalLink, Flag } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updatePromiseStatus } from "@/lib/nyvlo/data.functions";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { updatePromiseStatus, reportNotAPromise, getPromiseSource } from "@/lib/nyvlo/data.functions";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
@@ -23,16 +23,38 @@ export function PromiseRow({ item }: { item: PromiseRowData }) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const update = useServerFn(updatePromiseStatus);
+  const flag = useServerFn(reportNotAPromise);
+  const fetchSource = useServerFn(getPromiseSource);
+
+  const sourceQ = useQuery({
+    queryKey: ["promise-source", item.id],
+    queryFn: () => fetchSource({ data: { id: item.id } }),
+    enabled: open,
+    staleTime: 60_000,
+  });
+
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ["promises"] });
+    queryClient.invalidateQueries({ queryKey: ["todayStats"] });
+  };
 
   const mutation = useMutation({
     mutationFn: (status: "kept" | "missed" | "dismissed") =>
       update({ data: { id: item.id, status } }),
     onSuccess: (_, status) => {
       toast.success(status === "kept" ? "Marked done" : status === "dismissed" ? "Dismissed" : "Updated");
-      queryClient.invalidateQueries({ queryKey: ["promises"] });
-      queryClient.invalidateQueries({ queryKey: ["todayStats"] });
+      invalidate();
     },
     onError: () => toast.error("Couldn't update"),
+  });
+
+  const notAPromise = useMutation({
+    mutationFn: () => flag({ data: { id: item.id } }),
+    onSuccess: () => {
+      toast.success("Thanks — Nyvlo will be more careful next time");
+      invalidate();
+    },
+    onError: () => toast.error("Couldn't submit feedback"),
   });
 
   const SrcIcon = item.channel === "email" ? Mail : item.channel === "meeting" ? CalendarDays : StickyNote;
@@ -68,6 +90,11 @@ export function PromiseRow({ item }: { item: PromiseRowData }) {
               </>
             )}
           </div>
+          {item.evidence_snippet && (
+            <p className="mt-2 border-l-2 border-border pl-2 text-[12.5px] italic leading-snug text-muted-foreground line-clamp-2">
+              "{item.evidence_snippet}"
+            </p>
+          )}
         </div>
 
         <div className="flex items-center gap-1">
@@ -88,15 +115,34 @@ export function PromiseRow({ item }: { item: PromiseRowData }) {
 
       {open && (
         <div className="mt-4 grid gap-4 border-t border-border pt-4 md:grid-cols-[1fr,1fr]">
-          {item.evidence_snippet && (
-            <div>
-              <div className="mb-1 text-[11px] uppercase tracking-wider text-muted-foreground">Why Nyvlo flagged this</div>
-              <p className="text-[13px] italic leading-relaxed text-foreground/90">"{item.evidence_snippet}"</p>
-              <div className="mt-2 text-[11.5px] text-muted-foreground">
-                Captured {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+          <div className="space-y-2">
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Source</div>
+            {sourceQ.data?.url ? (
+              <a
+                href={sourceQ.data.url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex max-w-full items-center gap-1.5 truncate rounded-md border border-border bg-secondary/40 px-2.5 py-1.5 text-[12.5px] hover:bg-muted"
+              >
+                <ExternalLink className="h-3 w-3 shrink-0" />
+                <span className="truncate">{sourceQ.data.title ?? sourceQ.data.url}</span>
+              </a>
+            ) : (
+              <div className="text-[12px] text-muted-foreground">
+                {sourceQ.isLoading ? "Loading…" : "No external source link"}
               </div>
+            )}
+            <div className="text-[11.5px] text-muted-foreground">
+              Captured {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
             </div>
-          )}
+            <button
+              onClick={() => notAPromise.mutate()}
+              disabled={notAPromise.isPending}
+              className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-[11.5px] text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40"
+            >
+              <Flag className="h-3 w-3" /> Not a promise
+            </button>
+          </div>
           {item.draft_reply && (
             <div>
               <div className="mb-1 flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">
@@ -152,5 +198,3 @@ function dueTone_(d: string | null) {
   if (diff < 86400000) return { dot: "bg-amber-500", label: "text-amber-600" };
   return { dot: "bg-primary", label: "text-primary" };
 }
-
-
