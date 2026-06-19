@@ -28,10 +28,10 @@ function Landing() {
           <a href="#pricing" className="hover:text-foreground">Pricing</a>
         </nav>
         <div className="flex items-center gap-2">
-          <Link to="/app" className="hidden text-[13px] text-muted-foreground hover:text-foreground md:inline">Open app</Link>
-          <a href="#install" className="inline-flex items-center gap-1.5 rounded-md bg-foreground px-3 py-1.5 text-[13px] font-medium text-background hover:opacity-90">
-            Add to Chrome
-          </a>
+          <Link to="/auth" className="hidden text-[13px] text-muted-foreground hover:text-foreground md:inline">Sign in</Link>
+          <Link to="/auth" className="inline-flex items-center gap-1.5 rounded-md bg-foreground px-3 py-1.5 text-[13px] font-medium text-background hover:opacity-90">
+            Get started
+          </Link>
         </div>
       </header>
 
@@ -51,14 +51,14 @@ function Landing() {
               Nyvlo finds the follow-ups, promises, and loose ends slipping through your week — and drafts the reply for you.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <a href="#install" className="inline-flex items-center gap-2 rounded-md bg-foreground px-4 py-2.5 text-[14px] font-medium text-background hover:opacity-90">
-                Add to Chrome <ArrowRight className="h-4 w-4" />
-              </a>
-              <Link to="/app" className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-4 py-2.5 text-[14px] font-medium text-foreground hover:bg-muted">
-                See it live →
+              <Link to="/auth" className="inline-flex items-center gap-2 rounded-md bg-foreground px-4 py-2.5 text-[14px] font-medium text-background hover:opacity-90">
+                Get started free <ArrowRight className="h-4 w-4" />
               </Link>
+              <a href="#how" className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-4 py-2.5 text-[14px] font-medium text-foreground hover:bg-muted">
+                How it works →
+              </a>
             </div>
-            <div className="mt-3 text-[11.5px] text-muted-foreground">Free during beta · 30 second install · no credit card</div>
+            <div className="mt-3 text-[11.5px] text-muted-foreground">Free during beta · connect Google in 30 seconds · no credit card</div>
           </div>
 
           {/* product preview card */}
@@ -131,13 +131,10 @@ function Landing() {
       <section id="install" className="border-t border-border">
         <div className="mx-auto max-w-3xl px-6 py-20 text-center">
           <h2 className="text-[34px] font-semibold tracking-tight md:text-[44px]">Never drop the ball again.</h2>
-          <p className="mx-auto mt-4 max-w-md text-[15px] text-muted-foreground">Install Nyvlo. Connect Google. You're set in under a minute.</p>
+          <p className="mx-auto mt-4 max-w-md text-[15px] text-muted-foreground">Sign up. Connect Google. You're set in under a minute.</p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-            <a href="#" className="inline-flex items-center gap-2 rounded-md bg-foreground px-4 py-2.5 text-[14px] font-medium text-background hover:opacity-90">
-              Add to Chrome <ArrowRight className="h-4 w-4" />
-            </a>
-            <Link to="/app" className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-4 py-2.5 text-[14px] font-medium text-foreground hover:bg-muted">
-              Open Nyvlo
+            <Link to="/auth" className="inline-flex items-center gap-2 rounded-md bg-foreground px-4 py-2.5 text-[14px] font-medium text-background hover:opacity-90">
+              Get started free <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </div>
