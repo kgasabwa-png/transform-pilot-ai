@@ -525,58 +525,101 @@ function PrivacySection() {
   );
 }
 
-/* ----------------------------- Pricing teaser ---------------------------- */
+/* ----------------------- Your week, rewritten ---------------------- */
 
-function PricingTeaser() {
+function RewrittenSection() {
+  const without = [
+    { t: "Reply to David, Luma", s: "still in drafts" },
+    { t: "Send Sarah the pricing deck", s: "promised Monday" },
+    { t: "Q3 roadmap for Maria", s: "Slack DM, lost" },
+    { t: "Intro Alex ↔ Priya", s: "you forgot you offered" },
+    { t: "Refund for Chen", s: "second email in inbox" },
+  ];
+  const withN = [
+    { t: "Replied to David", s: "draft auto-prepared · sent Tue 9:12" },
+    { t: "Pricing deck sent to Sarah", s: "nudged after meeting · 1 click" },
+    { t: "Roadmap shared with Maria", s: "Nyvlo caught the Slack promise" },
+    { t: "Intro sent · Alex ↔ Priya", s: "drafted from your own words" },
+    { t: "Refund processed for Chen", s: "before the third email" },
+  ];
   return (
-    <section className="relative border-t border-border/60 bg-gradient-to-b from-card/40 to-background">
-      <div className="mx-auto max-w-5xl px-6 py-24 md:py-28">
-        <div className="text-center">
-          <p className="text-[10.5px] uppercase tracking-[0.22em] text-primary/80">Pricing</p>
-          <h2 className="mt-3 font-display text-[32px] font-semibold tracking-[-0.02em] md:text-[42px]">
-            Start free. Upgrade when Nyvlo earns it.
+    <section id="rewritten" className="relative border-t border-border/60 bg-gradient-to-b from-background via-card/20 to-background">
+      <div className="mx-auto max-w-6xl px-6 py-24 md:py-32">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-[10.5px] uppercase tracking-[0.22em] text-primary/80">The change</p>
+          <h2 className="mt-3 font-display text-[34px] font-semibold leading-tight tracking-[-0.02em] md:text-[48px]">
+            Your week, <span className="nyvlo-shimmer">rewritten</span>
           </h2>
+          <p className="mt-5 text-[15.5px] leading-relaxed text-muted-foreground">
+            Same calendar, same inbox, same chaos. One quiet layer between you and the things slipping through.
+          </p>
         </div>
 
-        <div className="mt-12 grid gap-4 md:grid-cols-2">
-          <div className="nyvlo-card relative p-7">
-            <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Free</div>
-            <div className="mt-2 flex items-baseline gap-1">
-              <span className="font-display text-[44px] font-semibold tracking-tight">$0</span>
-              <span className="text-[13px] text-muted-foreground">forever</span>
+        <div className="mt-14 grid gap-5 md:grid-cols-2">
+          {/* WITHOUT */}
+          <div className="relative overflow-hidden rounded-2xl border border-border bg-card/40 p-6">
+            <div className="mb-5 flex items-center justify-between">
+              <div className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
+                Without Nyvlo
+              </div>
+              <span className="rounded-full border border-danger/30 bg-danger/10 px-2 py-0.5 text-[10.5px] font-medium text-danger">
+                5 dropped
+              </span>
             </div>
-            <ul className="mt-5 space-y-2 text-[13.5px] text-foreground/90">
-              <li>10 captures per month</li>
-              <li>30-min sessions</li>
-              <li>7-day memory · browser only</li>
+            <ul className="space-y-2.5">
+              {without.map((r) => (
+                <li
+                  key={r.t}
+                  className="flex items-start gap-3 rounded-lg border border-border/60 bg-background/40 px-3.5 py-2.5"
+                >
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-danger" />
+                  <div className="min-w-0">
+                    <div className="truncate text-[13.5px] text-foreground/60 line-through decoration-foreground/30">
+                      {r.t}
+                    </div>
+                    <div className="truncate text-[11.5px] text-muted-foreground/80">{r.s}</div>
+                  </div>
+                </li>
+              ))}
             </ul>
-            <Link to="/auth" className="btn-ghost mt-7 inline-flex w-full items-center justify-center rounded-full px-4 py-2.5 text-[13.5px] font-medium">
-              Start free
-            </Link>
           </div>
 
-          <div className="nyvlo-card relative overflow-hidden p-7 ring-1 ring-primary/30">
-            <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-primary/20 blur-3xl" />
-            <div className="flex items-center justify-between">
-              <div className="text-[11px] uppercase tracking-[0.18em] text-primary">Pro · yearly</div>
-              <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10.5px] font-medium text-primary">Save $72</span>
+          {/* WITH */}
+          <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-card p-6 shadow-[0_30px_90px_-30px_oklch(0.66_0.18_250_/_50%)]">
+            <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-primary/20 blur-3xl" />
+            <div className="mb-5 flex items-center justify-between">
+              <div className="text-[10.5px] uppercase tracking-[0.18em] text-primary">
+                With Nyvlo
+              </div>
+              <span className="rounded-full border border-success/30 bg-success/10 px-2 py-0.5 text-[10.5px] font-medium text-success">
+                5 caught · 5 shipped
+              </span>
             </div>
-            <div className="mt-2 flex items-baseline gap-1">
-              <span className="font-display text-[44px] font-semibold tracking-tight">$12</span>
-              <span className="text-[13px] text-muted-foreground">/ month, billed yearly</span>
-            </div>
-            <ul className="mt-5 space-y-2 text-[13.5px] text-foreground/90">
-              <li>Unlimited captures &amp; memory</li>
-              <li>Desktop + browser + mobile</li>
-              <li>Friday reliability score</li>
-              <li>Priority support</li>
+            <ul className="space-y-2.5">
+              {withN.map((r, i) => (
+                <li
+                  key={r.t}
+                  className="flex items-start gap-3 rounded-lg border border-border bg-background/40 px-3.5 py-2.5 transition-colors hover:border-primary/40"
+                  style={{ animation: `nyvlo-rise 0.7s var(--ease-out-expo) ${i * 70}ms both` }}
+                >
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={2} />
+                  <div className="min-w-0">
+                    <div className="truncate text-[13.5px] font-medium text-foreground">{r.t}</div>
+                    <div className="truncate text-[11.5px] text-muted-foreground">{r.s}</div>
+                  </div>
+                </li>
+              ))}
             </ul>
-            <Link to="/pricing" className="btn-ion mt-7 inline-flex w-full items-center justify-center rounded-full px-4 py-2.5 text-[13.5px] font-semibold">
-              See full pricing
-            </Link>
-            <div className="mt-3 text-center text-[11px] text-muted-foreground">
-              Use code <span className="font-mono text-primary">EARLY50</span> · 50% off 3 months
-            </div>
+          </div>
+        </div>
+
+        {/* Quote strip */}
+        <div className="mx-auto mt-14 max-w-3xl rounded-2xl border border-border bg-card/60 p-6 text-center md:p-8">
+          <p className="font-display text-[20px] leading-snug text-foreground md:text-[24px]">
+            "It's the first AI tool I forgot was running. Then I noticed I'd stopped dropping things. That's the magic."
+          </p>
+          <div className="mt-3 text-[12px] text-muted-foreground">
+            Daniel R. · Founder, Northwind · YC W25
           </div>
         </div>
       </div>
