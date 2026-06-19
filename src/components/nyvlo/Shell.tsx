@@ -173,13 +173,58 @@ export function Shell({ children, title, subtitle }: { children: ReactNode; titl
   );
 }
 
-export function NyvloMark({ className = "", size = "md" }: { className?: string; size?: "sm" | "md" | "lg" }) {
-  const dims = size === "sm" ? "h-8" : size === "lg" ? "h-14" : "h-11";
+export function NyvloMark({
+  className = "",
+  size = "md",
+  animated = false,
+  withWordmark = false,
+}: {
+  className?: string;
+  size?: "sm" | "md" | "lg" | "xl";
+  animated?: boolean;
+  withWordmark?: boolean;
+}) {
+  const px = size === "sm" ? 22 : size === "lg" ? 40 : size === "xl" ? 64 : 28;
   return (
-    <img
-      src="/__l5e/assets-v1/6211f021-75b1-484a-8d96-f59fda81e71b/nyvlo-logo-transparent.png"
-      alt="Nyvlo"
-      className={[dims, "w-auto shrink-0", className].join(" ")}
-    />
+    <span className={["inline-flex items-center gap-2.5 shrink-0", className].join(" ")}>
+      <svg
+        width={px}
+        height={px}
+        viewBox="0 0 64 64"
+        fill="none"
+        aria-label="Nyvlo"
+        className="shrink-0"
+      >
+        <defs>
+          <radialGradient id="nyvlo-core" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="oklch(0.95 0.06 245)" />
+            <stop offset="60%" stopColor="oklch(0.75 0.16 245)" />
+            <stop offset="100%" stopColor="oklch(0.55 0.18 250)" />
+          </radialGradient>
+          <linearGradient id="nyvlo-ring" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="oklch(0.85 0.12 245)" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="oklch(0.55 0.18 250)" stopOpacity="0.2" />
+          </linearGradient>
+        </defs>
+        {/* Outer orbit */}
+        <g className={animated ? "nyvlo-orbit-slow" : ""} style={{ transformOrigin: "32px 32px" }}>
+          <ellipse cx="32" cy="32" rx="26" ry="10" stroke="url(#nyvlo-ring)" strokeWidth="1.25" fill="none" />
+          <circle cx="58" cy="32" r="1.8" fill="oklch(0.85 0.12 245)" />
+        </g>
+        {/* Inner orbit, counter-rotating */}
+        <g className={animated ? "nyvlo-orbit-rev" : ""} style={{ transformOrigin: "32px 32px" }} transform="rotate(60 32 32)">
+          <ellipse cx="32" cy="32" rx="20" ry="7.5" stroke="oklch(0.75 0.16 245)" strokeOpacity="0.55" strokeWidth="1" fill="none" />
+          <circle cx="12" cy="32" r="1.4" fill="oklch(0.95 0.05 245)" />
+        </g>
+        {/* Nucleus */}
+        <circle cx="32" cy="32" r="6.5" fill="url(#nyvlo-core)" />
+        <circle cx="32" cy="32" r="11" fill="oklch(0.75 0.16 245)" opacity="0.18" />
+      </svg>
+      {withWordmark && (
+        <span className="font-display text-[17px] font-semibold tracking-[-0.02em] text-foreground">
+          Nyvlo
+        </span>
+      )}
+    </span>
   );
 }
