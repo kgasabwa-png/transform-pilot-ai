@@ -201,15 +201,16 @@ export function NyvloMark({
         role="img"
         className={["shrink-0", animated ? "nyvlo-spark-pulse" : ""].join(" ")}
       >
-        {/* nyvlo mark: a single upward arch — a single breath, no descender */}
+        {/* nyvlo mark: asymmetric arch lifting off — one breath that breaks its own baseline, with a spark of awareness above */}
         <path
-          d="M18 72 C 30 40, 42 24, 50 20 C 58 24, 70 40, 82 72"
+          d="M14 78 C 26 50, 38 28, 52 24 C 64 28, 72 36, 80 44"
           stroke="oklch(0.70 0.21 28)"
-          strokeWidth="14"
+          strokeWidth="13"
           strokeLinecap="round"
           strokeLinejoin="round"
           fill="none"
         />
+        <circle cx="86" cy="28" r="6.5" fill="oklch(0.70 0.21 28)" />
       </svg>
 
       {withWordmark && (
