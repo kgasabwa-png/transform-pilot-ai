@@ -146,13 +146,24 @@ export function PromiseRow({ item }: { item: PromiseRowData }) {
             <div className="text-[11.5px] text-muted-foreground">
               Captured {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
             </div>
-            <button
-              onClick={() => notAPromise.mutate()}
-              disabled={notAPromise.isPending}
-              className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-[11.5px] text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40"
-            >
-              <Flag className="h-3 w-3" /> Not a promise
-            </button>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <button
+                onClick={() => notAPromise.mutate()}
+                disabled={notAPromise.isPending}
+                className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-[11.5px] text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40"
+              >
+                <Flag className="h-3 w-3" /> Not a promise
+              </button>
+              {sourceQ.data?.url && (
+                <button
+                  onClick={() => muteSource.mutate(sourceQ.data!.url!)}
+                  disabled={muteSource.isPending}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-[11.5px] text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40"
+                >
+                  <VolumeX className="h-3 w-3" /> Mute source
+                </button>
+              )}
+            </div>
           </div>
           {item.draft_reply && (
             <div>
