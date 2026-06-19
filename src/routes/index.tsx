@@ -47,7 +47,7 @@ function Landing() {
 
       <PrivacySection />
 
-      <PricingTeaser />
+      <RewrittenSection />
 
       <FinalCta />
 
