@@ -28,6 +28,10 @@ import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminOpsRouteImport } from './routes/_authenticated/admin.ops'
 import { Route as AuthenticatedAdminEventsRouteImport } from './routes/_authenticated/admin.events'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as ApiPublicIngestSessionStartRouteImport } from './routes/api/public/ingest/session-start'
+import { Route as ApiPublicIngestSessionEndRouteImport } from './routes/api/public/ingest/session-end'
+import { Route as ApiPublicIngestScreenFrameRouteImport } from './routes/api/public/ingest/screen-frame'
+import { Route as ApiPublicIngestAudioChunkRouteImport } from './routes/api/public/ingest/audio-chunk'
 import { Route as ApiPublicHooksSyncAllRouteImport } from './routes/api/public/hooks/sync-all'
 import { Route as ApiPublicHooksGenerateRemindersRouteImport } from './routes/api/public/hooks/generate-reminders'
 import { Route as ApiPublicHooksDailyDigestRouteImport } from './routes/api/public/hooks/daily-digest'
@@ -136,6 +140,30 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicIngestSessionStartRoute =
+  ApiPublicIngestSessionStartRouteImport.update({
+    id: '/api/public/ingest/session-start',
+    path: '/api/public/ingest/session-start',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicIngestSessionEndRoute =
+  ApiPublicIngestSessionEndRouteImport.update({
+    id: '/api/public/ingest/session-end',
+    path: '/api/public/ingest/session-end',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicIngestScreenFrameRoute =
+  ApiPublicIngestScreenFrameRouteImport.update({
+    id: '/api/public/ingest/screen-frame',
+    path: '/api/public/ingest/screen-frame',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicIngestAudioChunkRoute =
+  ApiPublicIngestAudioChunkRouteImport.update({
+    id: '/api/public/ingest/audio-chunk',
+    path: '/api/public/ingest/audio-chunk',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksSyncAllRoute = ApiPublicHooksSyncAllRouteImport.update({
   id: '/api/public/hooks/sync-all',
   path: '/api/public/hooks/sync-all',
@@ -214,6 +242,10 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/generate-reminders': typeof ApiPublicHooksGenerateRemindersRoute
   '/api/public/hooks/sync-all': typeof ApiPublicHooksSyncAllRoute
+  '/api/public/ingest/audio-chunk': typeof ApiPublicIngestAudioChunkRoute
+  '/api/public/ingest/screen-frame': typeof ApiPublicIngestScreenFrameRoute
+  '/api/public/ingest/session-end': typeof ApiPublicIngestSessionEndRoute
+  '/api/public/ingest/session-start': typeof ApiPublicIngestSessionStartRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesByTo {
@@ -241,6 +273,10 @@ export interface FileRoutesByTo {
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/generate-reminders': typeof ApiPublicHooksGenerateRemindersRoute
   '/api/public/hooks/sync-all': typeof ApiPublicHooksSyncAllRoute
+  '/api/public/ingest/audio-chunk': typeof ApiPublicIngestAudioChunkRoute
+  '/api/public/ingest/screen-frame': typeof ApiPublicIngestScreenFrameRoute
+  '/api/public/ingest/session-end': typeof ApiPublicIngestSessionEndRoute
+  '/api/public/ingest/session-start': typeof ApiPublicIngestSessionStartRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesById {
@@ -272,6 +308,10 @@ export interface FileRoutesById {
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/generate-reminders': typeof ApiPublicHooksGenerateRemindersRoute
   '/api/public/hooks/sync-all': typeof ApiPublicHooksSyncAllRoute
+  '/api/public/ingest/audio-chunk': typeof ApiPublicIngestAudioChunkRoute
+  '/api/public/ingest/screen-frame': typeof ApiPublicIngestScreenFrameRoute
+  '/api/public/ingest/session-end': typeof ApiPublicIngestSessionEndRoute
+  '/api/public/ingest/session-start': typeof ApiPublicIngestSessionStartRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRouteTypes {
@@ -303,6 +343,10 @@ export interface FileRouteTypes {
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/generate-reminders'
     | '/api/public/hooks/sync-all'
+    | '/api/public/ingest/audio-chunk'
+    | '/api/public/ingest/screen-frame'
+    | '/api/public/ingest/session-end'
+    | '/api/public/ingest/session-start'
     | '/lovable/email/queue/process'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -330,6 +374,10 @@ export interface FileRouteTypes {
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/generate-reminders'
     | '/api/public/hooks/sync-all'
+    | '/api/public/ingest/audio-chunk'
+    | '/api/public/ingest/screen-frame'
+    | '/api/public/ingest/session-end'
+    | '/api/public/ingest/session-start'
     | '/lovable/email/queue/process'
   id:
     | '__root__'
@@ -360,6 +408,10 @@ export interface FileRouteTypes {
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/generate-reminders'
     | '/api/public/hooks/sync-all'
+    | '/api/public/ingest/audio-chunk'
+    | '/api/public/ingest/screen-frame'
+    | '/api/public/ingest/session-end'
+    | '/api/public/ingest/session-start'
     | '/lovable/email/queue/process'
   fileRoutesById: FileRoutesById
 }
@@ -379,6 +431,10 @@ export interface RootRouteChildren {
   ApiPublicHooksDailyDigestRoute: typeof ApiPublicHooksDailyDigestRoute
   ApiPublicHooksGenerateRemindersRoute: typeof ApiPublicHooksGenerateRemindersRoute
   ApiPublicHooksSyncAllRoute: typeof ApiPublicHooksSyncAllRoute
+  ApiPublicIngestAudioChunkRoute: typeof ApiPublicIngestAudioChunkRoute
+  ApiPublicIngestScreenFrameRoute: typeof ApiPublicIngestScreenFrameRoute
+  ApiPublicIngestSessionEndRoute: typeof ApiPublicIngestSessionEndRoute
+  ApiPublicIngestSessionStartRoute: typeof ApiPublicIngestSessionStartRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
 }
 
@@ -517,6 +573,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/ingest/session-start': {
+      id: '/api/public/ingest/session-start'
+      path: '/api/public/ingest/session-start'
+      fullPath: '/api/public/ingest/session-start'
+      preLoaderRoute: typeof ApiPublicIngestSessionStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/ingest/session-end': {
+      id: '/api/public/ingest/session-end'
+      path: '/api/public/ingest/session-end'
+      fullPath: '/api/public/ingest/session-end'
+      preLoaderRoute: typeof ApiPublicIngestSessionEndRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/ingest/screen-frame': {
+      id: '/api/public/ingest/screen-frame'
+      path: '/api/public/ingest/screen-frame'
+      fullPath: '/api/public/ingest/screen-frame'
+      preLoaderRoute: typeof ApiPublicIngestScreenFrameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/ingest/audio-chunk': {
+      id: '/api/public/ingest/audio-chunk'
+      path: '/api/public/ingest/audio-chunk'
+      fullPath: '/api/public/ingest/audio-chunk'
+      preLoaderRoute: typeof ApiPublicIngestAudioChunkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/sync-all': {
       id: '/api/public/hooks/sync-all'
       path: '/api/public/hooks/sync-all'
@@ -650,6 +734,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksDailyDigestRoute: ApiPublicHooksDailyDigestRoute,
   ApiPublicHooksGenerateRemindersRoute: ApiPublicHooksGenerateRemindersRoute,
   ApiPublicHooksSyncAllRoute: ApiPublicHooksSyncAllRoute,
+  ApiPublicIngestAudioChunkRoute: ApiPublicIngestAudioChunkRoute,
+  ApiPublicIngestScreenFrameRoute: ApiPublicIngestScreenFrameRoute,
+  ApiPublicIngestSessionEndRoute: ApiPublicIngestSessionEndRoute,
+  ApiPublicIngestSessionStartRoute: ApiPublicIngestSessionStartRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
 }
 export const routeTree = rootRouteImport
