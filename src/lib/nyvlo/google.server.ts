@@ -168,7 +168,11 @@ export async function extractFromSource(source: {
     source.kind === "calendar_event"
       ? "calendar event"
       : "snippet of text the user explicitly captured from a webpage (could be an email thread, doc, Slack, etc.)";
-  const prompt = `You analyze a single ${sourceLabel} from the user's day and extract any explicit promises, commitments, follow-ups, or unanswered asks.
+  const prompt = `You analyze a single ${sourceLabel} from the user's day.
+
+Your ONLY job is to extract EXPLICIT commitments the USER made — statements where they said they would send, do, deliver, follow up, or get back to someone. Be conservative. If the text is vague, agenda-only, descriptive, or contains no first-person commitment, return promises: [].
+
+DO NOT invent promises. DO NOT infer from titles alone. DO NOT extract promises made TO the user. DO NOT extract things that "could be done" — only things explicitly committed to.
 
 Context:
 - Subject/Title: ${source.subject ?? "(none)"}
@@ -179,17 +183,15 @@ Context:
 ${(source.body ?? "").slice(0, 3500)}
 """
 
-A "promise" is a statement where the user said they would send something, do something, follow up, deliver, or get back to someone. Only extract things the USER promised — not promises made TO them.
-
-If there are no promises, return promises: []. Always return a brief memory entry summarizing what happened (title + 1-sentence snippet) so the user can search it later.
-
 For each promise:
 - summary: 1 short sentence ("Send pricing deck to Sarah")
 - owed_to: the person (or null)
 - due_at: ISO timestamp if a deadline was mentioned (else null)
-- confidence: 0-1 (how clearly was this promised?)
-- draft_reply: a 2-3 sentence draft message the user could send to fulfill the promise (or null if not applicable)
-- evidence_snippet: the exact phrase from the body that grounds this promise (<=200 chars)`;
+- confidence: 0-1. Only above 0.55 if the commitment is unambiguous and first-person.
+- draft_reply: a 2-3 sentence draft message the user could send (or null)
+- evidence_snippet: a VERBATIM substring copied from the body above that grounds the promise (<=200 chars). It MUST appear in the body word-for-word. If you cannot quote it verbatim, do not include the promise.
+
+Also return a brief memory entry (title + 1-sentence snippet) summarizing what happened, or null if the text was too thin.`;
 
   try {
     const { experimental_output } = await generateText({
@@ -197,7 +199,19 @@ For each promise:
       prompt,
       experimental_output: Output.object({ schema: ExtractionSchema }),
     });
-    return experimental_output;
+
+    // Anti-hallucination guard: drop low-confidence and quote-less promises.
+    const haystack = (source.body ?? "").toLowerCase();
+    const filtered = (experimental_output.promises ?? []).filter((p) => {
+      if (!p.summary || !p.evidence_snippet) return false;
+      if ((p.confidence ?? 0) < 0.55) return false;
+      const needle = p.evidence_snippet.trim().toLowerCase();
+      if (needle.length < 6) return false;
+      const probe = needle.slice(0, Math.min(40, needle.length));
+      return haystack.includes(probe);
+    });
+
+    return { promises: filtered, memory: experimental_output.memory };
   } catch (err) {
     console.error("[extractFromSource]", err);
     return { promises: [], memory: null };

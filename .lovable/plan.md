@@ -1,117 +1,62 @@
+# Nyvlo capture roadmap
 
-# Nyvlo MVP — Real Product Build
+Goal: make Nyvlo trustworthy first, then make capture effortless without per‑user OAuth gymnastics. Everything below ships as one queued backlog — I'll work top-down and check in after each phase.
 
-Goal: a logged-in user connects Google Calendar + Gmail, and Nyvlo automatically surfaces forgotten promises, drafts replies, tracks reliability, and sends an end-of-day recap. Everything below replaces the current seeded demo.
+## Phase 1 — Trust (this turn)
 
-## What ships
+The product can't be useful if users don't believe the promises it shows. Fix this before adding more capture surfaces.
 
-1. **Auth** — Email/password + Google sign-in (Lovable-managed). Per-user data with RLS.
-2. **Connect Google Calendar + Gmail** — per-user OAuth (Test mode, no Google verification needed for ≤100 testers). Read-only scopes.
-3. **Ingestion** — pull last 30 days of calendar events + sent Gmail messages on first connect; incremental sync after.
-4. **AI extraction loop** — Gemini reads each event/email and extracts structured commitments: who, what, when promised, due date, source, confidence.
-5. **Persistence** — `promises`, `memory_items`, `connections`, `agent_runs`, `reliability_snapshots`, `profiles` tables with RLS.
-6. **Surfaces wired to real data** — Today, Promises, Memory, Command Center, Settings all read from DB.
-7. **Drafted replies** — AI generates an email draft per promise (copy-to-clipboard for v1; "Send via Gmail" later).
-8. **Reliability Score** — computed from kept vs. missed promises.
-9. **Nightly agent (pg_cron)** — re-syncs sources, ages stale promises, recomputes score, generates end-of-day recap.
-10. **Command Center chat** — RAG over the user's promises + memory items, streaming.
+1. **Anti-hallucination guard in extraction**
+   - Change the Gemini prompt to return `null` (and nothing else) when the source text contains no concrete commitment from the user.
+   - Reject low-confidence extractions (< 0.55) server-side instead of saving them.
+   - Require every promise to carry a verbatim `evidence_snippet` copied from the source — if the model can't quote it, we don't save it.
+2. **Show the source on every promise**
+   - `PromiseRow` already has an evidence area; surface it inline (not only in Details) and add a "Source" link to the originating `sources` row (email, page URL, transcript).
+   - Add a "Not a promise" button → marks `status='dismissed'` + writes a `feedback` row we can use to tune extraction later.
+3. **Migration**: `promises.evidence_required = true` default; `extraction_feedback` table (promise_id, verdict, user_id).
 
-Out of scope for v1: Chrome extension, Slack/Notion/Linear, sending email through Gmail, billing.
+Exit criteria: I can paste a vague paragraph and Nyvlo refuses to invent a promise; every shown promise has a visible quote.
 
-## Architecture
+## Phase 2 — Browser extension auto-capture (broadscope)
 
-```text
-Browser (TanStack)
-  ├─ /auth                  → Lovable Cloud auth (Google + email)
-  ├─ /app/* (gated)         → reads via createServerFn → Supabase (RLS as user)
-  └─ /app/command           → useChat → /api/chat (RAG over user's data)
+One extension, content scripts per site, no OAuth, no admin approval. Each script watches the DOM of a page the user already has open and POSTs structured text to `/api/public/extension/capture` (already built) with the existing token auth.
 
-Server (TanStack)
-  ├─ createServerFn handlers  app-internal reads/writes
-  ├─ /api/chat                streaming Command Center
-  ├─ /api/oauth/google/start  per-user Google OAuth (Calendar+Gmail scopes)
-  ├─ /api/oauth/google/callback  exchange code → store refresh_token (encrypted) in connections
-  └─ /api/public/cron/*       pg_cron-triggered: sync, recap, score
+- **Gmail web** (`mail.google.com`): when a thread view opens, read sender/subject/body of the focused message, debounce, send once per thread-open. User sees a small Nyvlo pill in the thread header — click to confirm or mute that thread.
+- **Slack web** (`app.slack.com`): on message hover, show a "Capture" affordance; auto-capture DMs sent *by* the user (those are the promises that matter) with channel + recipient context.
+- **Notion** (`www.notion.so`): capture the current page title + selected block on a hotkey (⌘⇧K). Full-page auto-capture is too noisy.
+- **Linear** (`linear.app`): on issue open, capture title + description + assignee; on comment-by-user, capture the comment.
+- **Generic fallback**: existing "capture selection" already works everywhere else.
 
-AI: Lovable AI Gateway, model google/gemini-3-flash-preview
-```
+All five share one content-script framework + per-site adapter. Manifest gets `host_permissions` for those four domains. No background polling — strictly reactive to what the user is already looking at, which is what makes it not creepy and not an admin problem.
 
-## Database (one migration)
+Exit criteria: open a Gmail thread → promise appears in inbox within 5s, with the email body as evidence and a link back to the thread.
 
-- `profiles` (id=auth.uid, full_name, email, timezone)
-- `connections` (user_id, provider='google', access_token, refresh_token, expiry, scopes, email)
-- `sources` (user_id, kind='calendar_event'|'gmail_message', external_id unique per user, raw jsonb, occurred_at, processed_at)
-- `promises` (user_id, summary, owed_to, channel, source_id, due_at, status='open'|'kept'|'missed'|'dismissed', confidence, draft_reply, created_at, last_nudged_at)
-- `memory_items` (user_id, source_id, title, snippet, occurred_at, kind)
-- `agent_runs` (user_id, kind='sync'|'extract'|'recap', started_at, finished_at, stats jsonb, error)
-- `reliability_snapshots` (user_id, date, score, kept, missed, open)
+## Phase 3 — Desktop app for meeting audio (Electron + local Whisper)
 
-All tables: `GRANT` to authenticated + service_role, RLS enabled, policies scoped to `auth.uid() = user_id`. Refresh tokens accessed only via service-role server fns.
+Browser extensions can't reliably capture system/mic audio across Zoom/Meet/Teams/Granola/in-person. A small Electron app can.
 
-## OAuth (per-user Google) — the honest constraint
+- **Electron shell** packaged via `@electron/packager` (per the desktop-app knowledge).
+- **Audio capture**: `navigator.mediaDevices.getDisplayMedia({ audio: true })` for system audio + `getUserMedia` for mic, mixed locally. User picks "start recording" before a call.
+- **Local transcription**: bundle `whisper.cpp` WASM (no cloud, no per-minute cost, runs on the user's machine). Falls back to Lovable AI `openai/gpt-4o-mini-transcribe` if WASM init fails.
+- **Promise extraction**: transcript → existing extraction server function → promises appear in the same inbox tagged `channel='meeting'`.
+- **Auth**: same extension token model; the desktop app is just another client.
 
-We register a Google Cloud OAuth client (Web app) with scopes:
-`openid email profile`, `calendar.readonly`, `gmail.readonly`.
+Exit criteria: record a 5-minute call, get a transcript and 0–N promises with timestamped evidence.
 
-- App in **Testing** status → works immediately, no Google review, but capped at 100 test users (you add their emails as testers). Perfect for demo + early beta.
-- Going to Production later requires Google's OAuth verification (security assessment for Gmail scopes, 2–6 weeks).
-- We store `client_id` + `client_secret` as Lovable secrets; UI in Settings shows "Connect Google" button → `/api/oauth/google/start` → consent → callback stores tokens.
+## Phase 4 — Polish (after the above land)
 
-## Sync + extraction pipeline
-
-On connect, and then on nightly cron:
-
-1. **Sync**: pull new Calendar events (`updatedMin`) and sent Gmail messages (`q=in:sent newer_than:30d`) → upsert `sources`.
-2. **Extract** (batched, ~20 items/run): for each unprocessed source, Gemini returns structured JSON: `{ promises: [{summary, owed_to, due_at, confidence, draft_reply}], memory: {title, snippet} }`. Use AI SDK `Output.object` + Zod schema.
-3. **Persist** promises + memory_items. Mark source `processed_at`.
-4. **Age**: promises with `due_at < now() - 24h` and still `open` → flagged "forgotten" in UI.
-5. **Recap** (nightly): generate an end-of-day summary per user → store as a memory_item; later surface via email/push.
-6. **Score**: `reliability = kept / (kept + missed)`, snapshotted daily.
-
-## Surfaces (wired to real data)
-
-- **Today** — open promises due today, today's meetings with AI prep, stat tiles from `reliability_snapshots`.
-- **Promises** — filterable list from `promises`, expandable to show `draft_reply` + source quote.
-- **Memory** — `memory_items` timeline, searchable.
-- **Command Center** — streaming chat. Server fetches top-N relevant promises + memory items by keyword/recency (simple v1, not vector), injects into prompt, streams answer.
-- **Settings** — Connect Google (status, last sync, disconnect), timezone, sign out.
-
-## Cron (pg_cron → /api/public/cron/*)
-
-- `*/15 * * * *` — incremental sync for users connected in last 24h or with stale `last_synced_at`.
-- `0 23 * * *` (user tz approximated server-side) — end-of-day recap + reliability snapshot.
-
-Endpoints require `apikey` header (Supabase anon). Bodies empty.
-
-## What you need to do (the only manual step)
-
-Create a Google Cloud OAuth client and give me 3 things via the secret prompt:
-- `GOOGLE_OAUTH_CLIENT_ID`
-- `GOOGLE_OAUTH_CLIENT_SECRET`
-- (I'll auto-fill the redirect URI for you to paste back into Google Cloud)
-
-I'll provide step-by-step instructions when we get there.
-
-## Build order (so you can demo at each checkpoint)
-
-1. Migration: tables + RLS + GRANTs.
-2. Auth: Google + email/password, `_authenticated` gate, profile auto-create trigger.
-3. Settings page + OAuth flow + connection storage.
-4. Sync server fns + initial backfill on connect.
-5. AI extraction server fn + wire into sync.
-6. Today / Promises / Memory pages on real data.
-7. Command Center streaming chat with RAG.
-8. pg_cron jobs + recap + reliability score.
-9. Landing page CTA → `/auth`.
+- Per-source mute (don't capture this thread / this channel / this Notion page again).
+- Daily digest email via the existing email infra to remind on the day's promises.
+- Optional Gmail OAuth for users who want passive background capture without keeping the tab open — additive, not required.
 
 ## Technical notes
 
-- AI SDK with `createLovableAiGatewayProvider` (already exists in `src/lib/ai-gateway.server.ts`).
-- `requireSupabaseAuth` middleware on all app-internal server fns.
-- Refresh-token handling: server fn `getGoogleAccessToken(userId)` refreshes if expired, updates row.
-- Gmail body parsing: use `messages.get?format=metadata` for the list, `format=full` for ones we extract from (cheaper).
-- Calendar: `events.list?singleEvents=true&orderBy=startTime`.
-- Lovable AI model: `google/gemini-3-flash-preview` everywhere.
-- Public landing remains SSR; `/app/*` lives under `_authenticated/`.
+- Phase 1 touches: `src/lib/nyvlo/extension.functions.ts` (extraction prompt + guards), new `supabase/migrations/*_evidence_required.sql`, `src/components/nyvlo/PromiseRow.tsx`, new `extraction_feedback` table with GRANTs + RLS.
+- Phase 2 touches: new `extension/content/` directory with `gmail.js`, `slack.js`, `notion.js`, `linear.js`, shared `core.js`; `extension/manifest.json` gets `content_scripts` + `host_permissions`; rebuild zip.
+- Phase 3 touches: new `desktop/` directory with `main.cjs`, `renderer/`, `whisper-wasm/`; new `package.json` scripts; output to `/mnt/documents/Nyvlo-{platform}.zip`.
+- No new secrets needed. No per-user OAuth in this roadmap.
+- Cost shape: Phase 1 same as today. Phase 2 increases extraction calls — mitigated by the `null` guard and per-thread debounce. Phase 3 transcription is free (local Whisper).
 
-Approve and I'll start with the migration.
+## What I'll do after you approve
+
+Build Phase 1 end-to-end, verify it, then start Phase 2 in the same session without stopping for confirmation between sub-steps. I'll check in when Phase 1 is shippable and again when the Gmail content script is working — those are the two moments where you'd want to course-correct.

@@ -203,6 +203,41 @@ export type Database = {
         }
         Relationships: []
       }
+      extraction_feedback: {
+        Row: {
+          created_at: string
+          id: string
+          note: string | null
+          promise_id: string
+          user_id: string
+          verdict: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          promise_id: string
+          user_id: string
+          verdict: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          promise_id?: string
+          user_id?: string
+          verdict?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "extraction_feedback_promise_id_fkey"
+            columns: ["promise_id"]
+            isOneToOne: false
+            referencedRelation: "promises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       memory_items: {
         Row: {
           created_at: string

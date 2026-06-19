@@ -1,16 +1,42 @@
 {
   "manifest_version": 3,
   "name": "Nyvlo",
-  "version": "0.2.0",
-  "description": "See today's promises, your reliability score, and capture commitments from any page.",
+  "version": "0.3.0",
+  "description": "Auto-capture promises from Gmail, Slack, Notion, and Linear — and any selection anywhere.",
   "permissions": ["storage", "activeTab", "scripting"],
   "host_permissions": [
     "https://transform-pilot-ai.lovable.app/*",
+    "https://mail.google.com/*",
+    "https://app.slack.com/*",
+    "https://www.notion.so/*",
+    "https://linear.app/*",
     "<all_urls>"
   ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": { "48": "icon.png", "128": "icon.png" }
   },
-  "icons": { "48": "icon.png", "128": "icon.png" }
+  "icons": { "48": "icon.png", "128": "icon.png" },
+  "content_scripts": [
+    {
+      "matches": ["https://mail.google.com/*"],
+      "js": ["content/core.js", "content/gmail.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://app.slack.com/*"],
+      "js": ["content/core.js", "content/slack.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://www.notion.so/*"],
+      "js": ["content/core.js", "content/notion.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://linear.app/*"],
+      "js": ["content/core.js", "content/linear.js"],
+      "run_at": "document_idle"
+    }
+  ]
 }
