@@ -9,6 +9,8 @@ import {
   createExtensionToken,
   deleteExtensionToken,
 } from "@/lib/nyvlo/extension.functions";
+import { listMutes, removeMute } from "@/lib/nyvlo/mutes.functions";
+import { VolumeX } from "lucide-react";
 
 export function ExtensionSection() {
   const queryClient = useQueryClient();
