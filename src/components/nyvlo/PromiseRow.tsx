@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Clock3, Sparkles, X, ChevronDown, Mail, CalendarDays, StickyNote } from "lucide-react";
+import { Check, Sparkles, X, ChevronDown, Mail, CalendarDays, StickyNote } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updatePromiseStatus } from "@/lib/nyvlo/data.functions";
@@ -152,5 +152,5 @@ function dueTone_(d: string | null) {
   if (diff < 86400000) return { dot: "bg-amber-500", label: "text-amber-600" };
   return { dot: "bg-primary", label: "text-primary" };
 }
-void Clock3;
+
 
