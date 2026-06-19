@@ -22,10 +22,16 @@ export function Shell({ children, title, subtitle }: { children: ReactNode; titl
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const fetchProfile = useServerFn(getProfile);
+  const fetchAdmin = useServerFn(getMyAdminStatus);
 
   const { data } = useQuery({
     queryKey: ["profile"],
     queryFn: () => fetchProfile(),
+    staleTime: 60_000,
+  });
+  const { data: adminStatus } = useQuery({
+    queryKey: ["admin-status"],
+    queryFn: () => fetchAdmin(),
     staleTime: 60_000,
   });
 
