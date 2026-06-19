@@ -13,7 +13,10 @@
   async function getToken() {
     return new Promise((resolve) => {
       try {
-        chrome.storage.local.get(["nyvloToken"], (r) => resolve(r?.nyvloToken || null));
+        chrome.runtime.sendMessage({ type: "nyvlo:getToken" }, (r) => {
+          if (chrome.runtime.lastError) return resolve(null);
+          resolve(r && r.token ? r.token : null);
+        });
       } catch {
         resolve(null);
       }
