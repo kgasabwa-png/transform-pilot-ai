@@ -153,7 +153,7 @@ const ExtractionSchema = z.object({
 });
 
 export async function extractFromSource(source: {
-  kind: "calendar_event" | "gmail_message";
+  kind: "calendar_event";
   subject: string | null;
   participants: string[] | null;
   body: string | null;
@@ -204,7 +204,7 @@ For each promise:
 export async function syncAndExtractForUser(userId: string) {
   const admin = adminClient();
   const runStarted = new Date().toISOString();
-  const stats = { calendar: 0, gmail: 0, promises: 0, memories: 0, errors: 0 };
+  const stats = { calendar: 0, promises: 0, memories: 0, errors: 0 };
 
   try {
     const accessToken = await getValidAccessToken(userId);
