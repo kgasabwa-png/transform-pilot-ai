@@ -364,3 +364,57 @@ export async function getUserContext(userId: string) {
     memory: memory ?? [],
   };
 }
+
+// --- Manual web capture from Chrome extension --------------------------------
+export async function captureWebSnippet(
+  userId: string,
+  input: {
+    url: string;
+    title: string | null;
+    selected_text: string;
+    note: string | null;
+  },
+) {
+  const admin = adminClient();
+  const occurred = new Date().toISOString();
+  const body = input.note
+    ? `${input.selected_text}\n\n[User note: ${input.note}]`
+    : input.selected_text;
+
+  // Each capture is unique — use timestamp + url hash as external_id
+  const externalId = `${Date.now()}_${input.url.slice(0, 200)}`;
+
+  const { data: src, error: srcErr } = await admin
+    .from("sources")
+    .insert({
+      user_id: userId,
+      kind: "web_capture",
+      external_id: externalId,
+      subject: input.title ?? input.url,
+      participants: [],
+      body,
+      raw: { url: input.url, note: input.note } as never,
+      occurred_at: occurred,
+    })
+    .select("id, kind, subject, participants, body, occurred_at")
+    .single();
+
+  if (srcErr || !src) throw new Error(srcErr?.message ?? "Failed to save capture");
+
+  const stats = { promises: 0, memories: 0, errors: 0 };
+  await runExtractAndPersist(admin, userId, src, stats);
+
+  // Return the newly created promises for the extension to show
+  const { data: newPromises } = await admin
+    .from("promises")
+    .select("id, summary, owed_to, due_at, confidence, evidence_snippet")
+    .eq("user_id", userId)
+    .eq("source_id", src.id)
+    .order("created_at", { ascending: false });
+
+  return {
+    source_id: src.id,
+    promises: newPromises ?? [],
+    stats,
+  };
+}
