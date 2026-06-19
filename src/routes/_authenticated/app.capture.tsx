@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Shell } from "@/components/nyvlo/Shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { BrowserRecorder } from "@/components/nyvlo/BrowserRecorder";
 import {
   listCaptureSessions,
   getCaptureSession,
@@ -13,6 +14,7 @@ import {
 } from "@/lib/nyvlo/capture.functions";
 import { Mic, Monitor, Sparkles, Trash2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated/app/capture")({
   component: CapturePage,
@@ -30,8 +32,17 @@ function CapturePage() {
   const sessions = list.data ?? [];
   const activeId = selectedId ?? sessions[0]?.id ?? null;
 
+  const qc = useQueryClient();
   return (
     <Shell title="Live Capture" subtitle="Meeting + screen sessions feeding the agent.">
+      <div className="mb-6">
+        <BrowserRecorder
+          onSessionChange={(id) => {
+            if (id) setSelectedId(id);
+            qc.invalidateQueries({ queryKey: ["capture-sessions"] });
+          }}
+        />
+      </div>
       <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
         <Card className="p-3">
           <div className="mb-2 px-1 text-[11px] uppercase tracking-wider text-muted-foreground">
