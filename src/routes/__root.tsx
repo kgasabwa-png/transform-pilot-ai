@@ -4,10 +4,12 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { trackPageview } from "@/lib/track";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -135,6 +137,13 @@ function RootComponent() {
     })();
     return () => unsub?.();
   }, []);
+
+  // Pageview tracking on every route change.
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  useEffect(() => {
+    trackPageview();
+  }, [pathname]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />

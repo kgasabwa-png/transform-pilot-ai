@@ -1,11 +1,12 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
-import { Inbox, Clock, Sparkles, Settings, Command, Search, BookMarked, LogOut } from "lucide-react";
+import { Inbox, Clock, Sparkles, Settings, Command, Search, BookMarked, LogOut, ShieldCheck } from "lucide-react";
 import { CommandPalette } from "./CommandPalette";
 import { NotificationBell } from "./NotificationBell";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getProfile } from "@/lib/nyvlo/profile.functions";
+import { getMyAdminStatus } from "@/lib/admin/admin.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 const nav = [
@@ -21,10 +22,16 @@ export function Shell({ children, title, subtitle }: { children: ReactNode; titl
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const fetchProfile = useServerFn(getProfile);
+  const fetchAdmin = useServerFn(getMyAdminStatus);
 
   const { data } = useQuery({
     queryKey: ["profile"],
     queryFn: () => fetchProfile(),
+    staleTime: 60_000,
+  });
+  const { data: adminStatus } = useQuery({
+    queryKey: ["admin-status"],
+    queryFn: () => fetchAdmin(),
     staleTime: 60_000,
   });
 
@@ -87,6 +94,20 @@ export function Shell({ children, title, subtitle }: { children: ReactNode; titl
                 </Link>
               );
             })}
+            {adminStatus?.isAdmin && (
+              <Link
+                to="/admin"
+                className={[
+                  "mt-2 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13.5px] transition-colors",
+                  pathname.startsWith("/admin")
+                    ? "bg-foreground/[0.06] text-foreground"
+                    : "text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground",
+                ].join(" ")}
+              >
+                <ShieldCheck className="h-4 w-4" strokeWidth={1.75} />
+                <span>Operator</span>
+              </Link>
+            )}
           </nav>
 
           <div className="mt-auto rounded-lg border border-border bg-background p-3">
