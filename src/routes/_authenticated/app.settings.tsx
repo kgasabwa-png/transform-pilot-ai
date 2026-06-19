@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Shell } from "@/components/nyvlo/Shell";
+import { ExtensionSection } from "@/components/nyvlo/ExtensionSection";
 import { getProfile } from "@/lib/nyvlo/profile.functions";
 import { startGoogleOAuth, disconnectGoogle, runSyncNow } from "@/lib/nyvlo/google.functions";
 import { Check, ShieldCheck, Globe, LogOut, RefreshCw } from "lucide-react";
@@ -126,6 +127,8 @@ function SettingsPage() {
             )}
           </div>
         </Section>
+
+        <ExtensionSection />
 
         <Section title="Privacy">
           <Info
