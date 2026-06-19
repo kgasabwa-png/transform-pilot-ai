@@ -50,9 +50,9 @@ export function Shell({ children, title, subtitle }: { children: ReactNode; titl
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <div className="mx-auto flex max-w-[1400px]">
-        <aside className="sticky top-0 hidden h-screen w-[244px] shrink-0 flex-col border-r border-border/80 bg-[oklch(0.985_0.003_95)] px-4 py-6 md:flex">
+        <aside className="sticky top-0 hidden h-dvh w-[244px] shrink-0 flex-col border-r border-border/80 bg-secondary px-4 py-6 md:flex">
           <Link to="/" className="mb-7 flex items-center gap-2 px-2">
             <img
               src="/__l5e/assets-v1/6211f021-75b1-484a-8d96-f59fda81e71b/nyvlo-logo-transparent.png"
@@ -105,12 +105,12 @@ export function Shell({ children, title, subtitle }: { children: ReactNode; titl
             <div className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
               {connection ? (
                 <>
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-success" />
                   Google connected
                 </>
               ) : (
                 <>
-                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-warning" />
                   <Link to="/app/settings" className="hover:underline">Not connected</Link>
                 </>
               )}

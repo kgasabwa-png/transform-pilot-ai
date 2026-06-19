@@ -34,19 +34,19 @@ function TodayPage() {
   return (
     <Shell title={`Hi ${name}.`} subtitle="Here's what Nyvlo caught for you.">
       {!isConnected && (
-        <div className="mb-8 flex items-start justify-between gap-4 rounded-xl border border-amber-200 bg-amber-50 p-5">
+        <div className="mb-8 flex items-start justify-between gap-4 rounded-xl border border-warning/30 bg-warning/10 p-5">
           <div className="flex items-start gap-3">
-            <PlugZap className="mt-0.5 h-5 w-5 text-amber-600" />
+            <PlugZap className="mt-0.5 h-5 w-5 text-warning" />
             <div>
-              <div className="text-[14px] font-medium text-amber-900">Connect Google to start catching promises</div>
-              <p className="mt-1 text-[12.5px] text-amber-800">
+              <div className="text-[14px] font-medium text-foreground">Connect Google to start catching promises</div>
+              <p className="mt-1 text-[12.5px] text-muted-foreground">
                 Nyvlo reads your calendar and sent email (read-only) to find commitments you might forget.
               </p>
             </div>
           </div>
           <Link
             to="/app/settings"
-            className="shrink-0 rounded-md bg-amber-900 px-3 py-1.5 text-[12.5px] font-medium text-amber-50 hover:opacity-90"
+            className="shrink-0 rounded-md bg-foreground px-3 py-1.5 text-[12.5px] font-medium text-background hover:opacity-90"
           >
             Connect Google
           </Link>

@@ -112,7 +112,7 @@ function SettingsPage() {
                 >
                   Disconnect
                 </button>
-                <span className="inline-flex items-center gap-1 rounded-md bg-emerald-100 px-2 py-0.5 text-[11.5px] font-medium text-emerald-700">
+                <span className="inline-flex items-center gap-1 rounded-md bg-success/15 px-2 py-0.5 text-[11.5px] font-medium text-success">
                   <Check className="h-3 w-3" /> Connected
                 </span>
               </div>
