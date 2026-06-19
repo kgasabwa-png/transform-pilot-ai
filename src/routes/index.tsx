@@ -63,12 +63,12 @@ function Nav() {
     <header className="relative z-20">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
         <Link to="/" className="flex items-center">
-          <NyvloMark size="md" animated withWordmark />
+          <NyvloMark size="lg" animated withWordmark />
         </Link>
         <nav className="hidden items-center gap-8 text-[13px] text-muted-foreground md:flex">
           <a href="#how" className="transition-colors hover:text-foreground">How it works</a>
           <a href="#bento" className="transition-colors hover:text-foreground">Product</a>
-          <Link to="/pricing" className="transition-colors hover:text-foreground">Pricing</Link>
+          <a href="#rewritten" className="transition-colors hover:text-foreground">The change</a>
           <Link to="/privacy" className="transition-colors hover:text-foreground">Privacy</Link>
         </nav>
         <div className="flex items-center gap-2.5">
