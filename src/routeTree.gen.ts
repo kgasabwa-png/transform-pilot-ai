@@ -22,6 +22,7 @@ import { Route as AuthenticatedAppCommandRouteImport } from './routes/_authentic
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicHooksSyncAllRouteImport } from './routes/api/public/hooks/sync-all'
 import { Route as ApiPublicHooksGenerateRemindersRouteImport } from './routes/api/public/hooks/generate-reminders'
+import { Route as ApiPublicHooksDailyDigestRouteImport } from './routes/api/public/hooks/daily-digest'
 import { Route as ApiPublicExtensionTranscribeRouteImport } from './routes/api/public/extension/transcribe'
 import { Route as ApiPublicExtensionTodayRouteImport } from './routes/api/public/extension/today'
 import { Route as ApiPublicExtensionCaptureRouteImport } from './routes/api/public/extension/capture'
@@ -95,6 +96,12 @@ const ApiPublicHooksGenerateRemindersRoute =
     path: '/api/public/hooks/generate-reminders',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksDailyDigestRoute =
+  ApiPublicHooksDailyDigestRouteImport.update({
+    id: '/api/public/hooks/daily-digest',
+    path: '/api/public/hooks/daily-digest',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicExtensionTranscribeRoute =
   ApiPublicExtensionTranscribeRouteImport.update({
     id: '/api/public/extension/transcribe',
@@ -132,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/api/public/extension/capture': typeof ApiPublicExtensionCaptureRoute
   '/api/public/extension/today': typeof ApiPublicExtensionTodayRoute
   '/api/public/extension/transcribe': typeof ApiPublicExtensionTranscribeRoute
+  '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/generate-reminders': typeof ApiPublicHooksGenerateRemindersRoute
   '/api/public/hooks/sync-all': typeof ApiPublicHooksSyncAllRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -149,6 +157,7 @@ export interface FileRoutesByTo {
   '/api/public/extension/capture': typeof ApiPublicExtensionCaptureRoute
   '/api/public/extension/today': typeof ApiPublicExtensionTodayRoute
   '/api/public/extension/transcribe': typeof ApiPublicExtensionTranscribeRoute
+  '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/generate-reminders': typeof ApiPublicHooksGenerateRemindersRoute
   '/api/public/hooks/sync-all': typeof ApiPublicHooksSyncAllRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -169,6 +178,7 @@ export interface FileRoutesById {
   '/api/public/extension/capture': typeof ApiPublicExtensionCaptureRoute
   '/api/public/extension/today': typeof ApiPublicExtensionTodayRoute
   '/api/public/extension/transcribe': typeof ApiPublicExtensionTranscribeRoute
+  '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/generate-reminders': typeof ApiPublicHooksGenerateRemindersRoute
   '/api/public/hooks/sync-all': typeof ApiPublicHooksSyncAllRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -189,6 +199,7 @@ export interface FileRouteTypes {
     | '/api/public/extension/capture'
     | '/api/public/extension/today'
     | '/api/public/extension/transcribe'
+    | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/generate-reminders'
     | '/api/public/hooks/sync-all'
     | '/lovable/email/queue/process'
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '/api/public/extension/capture'
     | '/api/public/extension/today'
     | '/api/public/extension/transcribe'
+    | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/generate-reminders'
     | '/api/public/hooks/sync-all'
     | '/lovable/email/queue/process'
@@ -225,6 +237,7 @@ export interface FileRouteTypes {
     | '/api/public/extension/capture'
     | '/api/public/extension/today'
     | '/api/public/extension/transcribe'
+    | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/generate-reminders'
     | '/api/public/hooks/sync-all'
     | '/lovable/email/queue/process'
@@ -239,6 +252,7 @@ export interface RootRouteChildren {
   ApiPublicExtensionCaptureRoute: typeof ApiPublicExtensionCaptureRoute
   ApiPublicExtensionTodayRoute: typeof ApiPublicExtensionTodayRoute
   ApiPublicExtensionTranscribeRoute: typeof ApiPublicExtensionTranscribeRoute
+  ApiPublicHooksDailyDigestRoute: typeof ApiPublicHooksDailyDigestRoute
   ApiPublicHooksGenerateRemindersRoute: typeof ApiPublicHooksGenerateRemindersRoute
   ApiPublicHooksSyncAllRoute: typeof ApiPublicHooksSyncAllRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -337,6 +351,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksGenerateRemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/daily-digest': {
+      id: '/api/public/hooks/daily-digest'
+      path: '/api/public/hooks/daily-digest'
+      fullPath: '/api/public/hooks/daily-digest'
+      preLoaderRoute: typeof ApiPublicHooksDailyDigestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/extension/transcribe': {
       id: '/api/public/extension/transcribe'
       path: '/api/public/extension/transcribe'
@@ -407,6 +428,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicExtensionCaptureRoute: ApiPublicExtensionCaptureRoute,
   ApiPublicExtensionTodayRoute: ApiPublicExtensionTodayRoute,
   ApiPublicExtensionTranscribeRoute: ApiPublicExtensionTranscribeRoute,
+  ApiPublicHooksDailyDigestRoute: ApiPublicHooksDailyDigestRoute,
   ApiPublicHooksGenerateRemindersRoute: ApiPublicHooksGenerateRemindersRoute,
   ApiPublicHooksSyncAllRoute: ApiPublicHooksSyncAllRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
