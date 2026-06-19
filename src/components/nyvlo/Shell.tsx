@@ -156,11 +156,12 @@ export function Shell({ children, title, subtitle }: { children: ReactNode; titl
 }
 
 export function NyvloMark({ className = "", size = "md" }: { className?: string; size?: "sm" | "md" }) {
-  const dims = size === "sm" ? "h-4 w-4 rounded-[5px]" : "h-6 w-6 rounded-[7px]";
-  const dot = size === "sm" ? "h-1.5 w-1.5" : "h-2 w-2";
+  const dims = size === "sm" ? "h-5" : "h-7";
   return (
-    <div className={["flex items-center justify-center bg-foreground", dims, className].join(" ")}>
-      <div className={["rounded-full bg-primary", dot].join(" ")} />
-    </div>
+    <img
+      src="/__l5e/assets-v1/6211f021-75b1-484a-8d96-f59fda81e71b/nyvlo-logo-transparent.png"
+      alt="Nyvlo"
+      className={[dims, "w-auto", className].join(" ")}
+    />
   );
 }
