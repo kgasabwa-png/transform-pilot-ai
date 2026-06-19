@@ -20,6 +20,7 @@ import { Route as AuthenticatedAppPromisesRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAppMemoryRouteImport } from './routes/_authenticated/app.memory'
 import { Route as AuthenticatedAppCommandRouteImport } from './routes/_authenticated/app.command'
 import { Route as ApiPublicHooksSyncAllRouteImport } from './routes/api/public/hooks/sync-all'
+import { Route as ApiPublicHooksGenerateRemindersRouteImport } from './routes/api/public/hooks/generate-reminders'
 import { Route as ApiOauthGoogleCallbackRouteImport } from './routes/api/oauth.google.callback'
 
 const AuthRoute = AuthRouteImport.update({
@@ -78,6 +79,12 @@ const ApiPublicHooksSyncAllRoute = ApiPublicHooksSyncAllRouteImport.update({
   path: '/api/public/hooks/sync-all',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksGenerateRemindersRoute =
+  ApiPublicHooksGenerateRemindersRouteImport.update({
+    id: '/api/public/hooks/generate-reminders',
+    path: '/api/public/hooks/generate-reminders',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiOauthGoogleCallbackRoute = ApiOauthGoogleCallbackRouteImport.update({
   id: '/api/oauth/google/callback',
   path: '/api/oauth/google/callback',
@@ -95,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/app/settings': typeof AuthenticatedAppSettingsRoute
   '/app/': typeof AuthenticatedAppIndexRoute
   '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
+  '/api/public/hooks/generate-reminders': typeof ApiPublicHooksGenerateRemindersRoute
   '/api/public/hooks/sync-all': typeof ApiPublicHooksSyncAllRoute
 }
 export interface FileRoutesByTo {
@@ -107,6 +115,7 @@ export interface FileRoutesByTo {
   '/app/settings': typeof AuthenticatedAppSettingsRoute
   '/app': typeof AuthenticatedAppIndexRoute
   '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
+  '/api/public/hooks/generate-reminders': typeof ApiPublicHooksGenerateRemindersRoute
   '/api/public/hooks/sync-all': typeof ApiPublicHooksSyncAllRoute
 }
 export interface FileRoutesById {
@@ -122,6 +131,7 @@ export interface FileRoutesById {
   '/_authenticated/app/settings': typeof AuthenticatedAppSettingsRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
   '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
+  '/api/public/hooks/generate-reminders': typeof ApiPublicHooksGenerateRemindersRoute
   '/api/public/hooks/sync-all': typeof ApiPublicHooksSyncAllRoute
 }
 export interface FileRouteTypes {
@@ -137,6 +147,7 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app/'
     | '/api/oauth/google/callback'
+    | '/api/public/hooks/generate-reminders'
     | '/api/public/hooks/sync-all'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app'
     | '/api/oauth/google/callback'
+    | '/api/public/hooks/generate-reminders'
     | '/api/public/hooks/sync-all'
   id:
     | '__root__'
@@ -163,6 +175,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/settings'
     | '/_authenticated/app/'
     | '/api/oauth/google/callback'
+    | '/api/public/hooks/generate-reminders'
     | '/api/public/hooks/sync-all'
   fileRoutesById: FileRoutesById
 }
@@ -172,6 +185,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiOauthGoogleCallbackRoute: typeof ApiOauthGoogleCallbackRoute
+  ApiPublicHooksGenerateRemindersRoute: typeof ApiPublicHooksGenerateRemindersRoute
   ApiPublicHooksSyncAllRoute: typeof ApiPublicHooksSyncAllRoute
 }
 
@@ -254,6 +268,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksSyncAllRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/generate-reminders': {
+      id: '/api/public/hooks/generate-reminders'
+      path: '/api/public/hooks/generate-reminders'
+      fullPath: '/api/public/hooks/generate-reminders'
+      preLoaderRoute: typeof ApiPublicHooksGenerateRemindersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/oauth/google/callback': {
       id: '/api/oauth/google/callback'
       path: '/api/oauth/google/callback'
@@ -300,6 +321,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ApiChatRoute: ApiChatRoute,
   ApiOauthGoogleCallbackRoute: ApiOauthGoogleCallbackRoute,
+  ApiPublicHooksGenerateRemindersRoute: ApiPublicHooksGenerateRemindersRoute,
   ApiPublicHooksSyncAllRoute: ApiPublicHooksSyncAllRoute,
 }
 export const routeTree = rootRouteImport
