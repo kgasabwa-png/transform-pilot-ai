@@ -153,7 +153,7 @@ const ExtractionSchema = z.object({
 });
 
 export async function extractFromSource(source: {
-  kind: "calendar_event";
+  kind: "calendar_event" | "web_capture";
   subject: string | null;
   participants: string[] | null;
   body: string | null;
@@ -164,7 +164,11 @@ export async function extractFromSource(source: {
   const gateway = createLovableAiGatewayProvider(key);
   const model = gateway("google/gemini-3-flash-preview");
 
-  const prompt = `You analyze a single ${source.kind === "calendar_event" ? "calendar event" : "sent email"} from the user's day and extract any explicit promises or commitments the user made to other people.
+  const sourceLabel =
+    source.kind === "calendar_event"
+      ? "calendar event"
+      : "snippet of text the user explicitly captured from a webpage (could be an email thread, doc, Slack, etc.)";
+  const prompt = `You analyze a single ${sourceLabel} from the user's day and extract any explicit promises, commitments, follow-ups, or unanswered asks.
 
 Context:
 - Subject/Title: ${source.subject ?? "(none)"}
