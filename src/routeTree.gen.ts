@@ -17,6 +17,7 @@ import { Route as FounderRouteImport } from './routes/founder'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
@@ -34,6 +35,7 @@ import { Route as AuthenticatedAdminOpsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAdminIngestionRouteImport } from './routes/_authenticated/admin.ingestion'
 import { Route as AuthenticatedAdminEventsRouteImport } from './routes/_authenticated/admin.events'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicIngestSessionStartRouteImport } from './routes/api/public/ingest/session-start'
 import { Route as ApiPublicIngestSessionEndRouteImport } from './routes/api/public/ingest/session-end'
 import { Route as ApiPublicIngestScreenFrameRouteImport } from './routes/api/public/ingest/screen-frame'
@@ -85,6 +87,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
+  id: '/checkout/return',
+  path: '/checkout/return',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -177,6 +184,12 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicPaymentsWebhookRoute =
+  ApiPublicPaymentsWebhookRouteImport.update({
+    id: '/api/public/payments/webhook',
+    path: '/api/public/payments/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicIngestSessionStartRoute =
   ApiPublicIngestSessionStartRouteImport.update({
     id: '/api/public/ingest/session-start',
@@ -264,6 +277,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/api/chat': typeof ApiChatRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/admin/events': typeof AuthenticatedAdminEventsRoute
   '/admin/ingestion': typeof AuthenticatedAdminIngestionRoute
   '/admin/ops': typeof AuthenticatedAdminOpsRoute
@@ -289,6 +303,7 @@ export interface FileRoutesByFullPath {
   '/api/public/ingest/screen-frame': typeof ApiPublicIngestScreenFrameRoute
   '/api/public/ingest/session-end': typeof ApiPublicIngestSessionEndRoute
   '/api/public/ingest/session-start': typeof ApiPublicIngestSessionStartRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesByTo {
@@ -301,6 +316,7 @@ export interface FileRoutesByTo {
   '/try': typeof TryRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/api/chat': typeof ApiChatRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/admin/events': typeof AuthenticatedAdminEventsRoute
   '/admin/ingestion': typeof AuthenticatedAdminIngestionRoute
   '/admin/ops': typeof AuthenticatedAdminOpsRoute
@@ -326,6 +342,7 @@ export interface FileRoutesByTo {
   '/api/public/ingest/screen-frame': typeof ApiPublicIngestScreenFrameRoute
   '/api/public/ingest/session-end': typeof ApiPublicIngestSessionEndRoute
   '/api/public/ingest/session-start': typeof ApiPublicIngestSessionStartRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesById {
@@ -342,6 +359,7 @@ export interface FileRoutesById {
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/api/chat': typeof ApiChatRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/_authenticated/admin/events': typeof AuthenticatedAdminEventsRoute
   '/_authenticated/admin/ingestion': typeof AuthenticatedAdminIngestionRoute
   '/_authenticated/admin/ops': typeof AuthenticatedAdminOpsRoute
@@ -367,6 +385,7 @@ export interface FileRoutesById {
   '/api/public/ingest/screen-frame': typeof ApiPublicIngestScreenFrameRoute
   '/api/public/ingest/session-end': typeof ApiPublicIngestSessionEndRoute
   '/api/public/ingest/session-start': typeof ApiPublicIngestSessionStartRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRouteTypes {
@@ -383,6 +402,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/onboarding'
     | '/api/chat'
+    | '/checkout/return'
     | '/admin/events'
     | '/admin/ingestion'
     | '/admin/ops'
@@ -408,6 +428,7 @@ export interface FileRouteTypes {
     | '/api/public/ingest/screen-frame'
     | '/api/public/ingest/session-end'
     | '/api/public/ingest/session-start'
+    | '/api/public/payments/webhook'
     | '/lovable/email/queue/process'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -420,6 +441,7 @@ export interface FileRouteTypes {
     | '/try'
     | '/onboarding'
     | '/api/chat'
+    | '/checkout/return'
     | '/admin/events'
     | '/admin/ingestion'
     | '/admin/ops'
@@ -445,6 +467,7 @@ export interface FileRouteTypes {
     | '/api/public/ingest/screen-frame'
     | '/api/public/ingest/session-end'
     | '/api/public/ingest/session-start'
+    | '/api/public/payments/webhook'
     | '/lovable/email/queue/process'
   id:
     | '__root__'
@@ -460,6 +483,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app'
     | '/_authenticated/onboarding'
     | '/api/chat'
+    | '/checkout/return'
     | '/_authenticated/admin/events'
     | '/_authenticated/admin/ingestion'
     | '/_authenticated/admin/ops'
@@ -485,6 +509,7 @@ export interface FileRouteTypes {
     | '/api/public/ingest/screen-frame'
     | '/api/public/ingest/session-end'
     | '/api/public/ingest/session-start'
+    | '/api/public/payments/webhook'
     | '/lovable/email/queue/process'
   fileRoutesById: FileRoutesById
 }
@@ -498,6 +523,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   TryRoute: typeof TryRoute
   ApiChatRoute: typeof ApiChatRoute
+  CheckoutReturnRoute: typeof CheckoutReturnRoute
   ApiOauthGoogleCallbackRoute: typeof ApiOauthGoogleCallbackRoute
   ApiPublicAuthDevicePollRoute: typeof ApiPublicAuthDevicePollRoute
   ApiPublicAuthDeviceStartRoute: typeof ApiPublicAuthDeviceStartRoute
@@ -511,6 +537,7 @@ export interface RootRouteChildren {
   ApiPublicIngestScreenFrameRoute: typeof ApiPublicIngestScreenFrameRoute
   ApiPublicIngestSessionEndRoute: typeof ApiPublicIngestSessionEndRoute
   ApiPublicIngestSessionStartRoute: typeof ApiPublicIngestSessionStartRoute
+  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
 }
 
@@ -570,6 +597,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout/return': {
+      id: '/checkout/return'
+      path: '/checkout/return'
+      fullPath: '/checkout/return'
+      preLoaderRoute: typeof CheckoutReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -689,6 +723,13 @@ declare module '@tanstack/react-router' {
       path: '/lovable/email/queue/process'
       fullPath: '/lovable/email/queue/process'
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/payments/webhook': {
+      id: '/api/public/payments/webhook'
+      path: '/api/public/payments/webhook'
+      fullPath: '/api/public/payments/webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/ingest/session-start': {
@@ -852,6 +893,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   TryRoute: TryRoute,
   ApiChatRoute: ApiChatRoute,
+  CheckoutReturnRoute: CheckoutReturnRoute,
   ApiOauthGoogleCallbackRoute: ApiOauthGoogleCallbackRoute,
   ApiPublicAuthDevicePollRoute: ApiPublicAuthDevicePollRoute,
   ApiPublicAuthDeviceStartRoute: ApiPublicAuthDeviceStartRoute,
@@ -865,6 +907,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicIngestScreenFrameRoute: ApiPublicIngestScreenFrameRoute,
   ApiPublicIngestSessionEndRoute: ApiPublicIngestSessionEndRoute,
   ApiPublicIngestSessionStartRoute: ApiPublicIngestSessionStartRoute,
+  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
 }
 export const routeTree = rootRouteImport
