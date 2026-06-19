@@ -87,20 +87,23 @@ function Pricing() {
             <button
               onClick={() => setCadence("yearly")}
               className={`rounded-full px-4 py-1.5 ${cadence === "yearly" ? "bg-foreground text-background" : "text-muted-foreground"}`}
-            >Yearly · save 17%</button>
+            >Yearly · save 33%</button>
           </div>
+          <p className="mt-3 text-[12px] text-muted-foreground">
+            On the waitlist? Use code <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-foreground">EARLY50</span> for 50% off your first 3 months.
+          </p>
         </div>
 
         <div className="mt-14 grid gap-6 md:grid-cols-2">
           <div className="rounded-2xl border border-border bg-card/60 p-7">
             <h2 className="text-[20px] font-semibold">Free</h2>
-            <p className="mt-1 text-[13.5px] text-muted-foreground">For trying Nyvlo and lightweight use.</p>
+            <p className="mt-1 text-[13.5px] text-muted-foreground">Try Nyvlo and use it for light weeks.</p>
             <div className="mt-5 flex items-baseline gap-1.5">
               <span className="text-[42px] font-semibold tracking-tight">$0</span>
               <span className="text-[13px] text-muted-foreground">forever</span>
             </div>
             <ul className="mt-6 space-y-2.5">
-              {["5 hours of capture / month", "Chrome extension + browser recorder", "Up to 100 promises tracked", "Daily digest email"].map(f => (
+              {["10 captures / month, 30 min each", "Browser recorder (mic)", "Up to 25 promises tracked", "7-day memory history", "Daily digest email"].map(f => (
                 <li key={f} className="flex items-start gap-2.5 text-[14px]">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{f}
                 </li>
