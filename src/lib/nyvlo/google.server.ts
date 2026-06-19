@@ -293,7 +293,7 @@ async function runExtractAndPersist(
 ) {
   try {
     const result = await extractFromSource({
-      kind: src.kind as "calendar_event" | "gmail_message",
+      kind: src.kind as "calendar_event",
       subject: src.subject,
       participants: src.participants,
       body: src.body,

@@ -36,7 +36,7 @@ export const runSyncNow = createServerFn({ method: "POST" })
     const { syncAndExtractForUser } = await import("./google.server");
     const stats = await syncAndExtractForUser(context.userId);
     return {
-      synced: stats.calendar + stats.gmail,
+      synced: stats.calendar,
       promises: stats.promises,
       memories: stats.memories,
     };
