@@ -184,7 +184,12 @@ export function NyvloMark({
   animated?: boolean;
   withWordmark?: boolean;
 }) {
-  const px = size === "sm" ? 22 : size === "lg" ? 40 : size === "xl" ? 64 : 28;
+  const px = size === "sm" ? 24 : size === "lg" ? 44 : size === "xl" ? 88 : 32;
+  const wordSize =
+    size === "sm" ? "text-[15px]" :
+    size === "lg" ? "text-[22px]" :
+    size === "xl" ? "text-[40px]" :
+    "text-[18px]";
   return (
     <span className={["inline-flex items-center gap-2.5 shrink-0", className].join(" ")}>
       <svg
@@ -194,34 +199,51 @@ export function NyvloMark({
         fill="none"
         aria-label="Nyvlo"
         className="shrink-0"
+        style={{ filter: "drop-shadow(0 0 14px oklch(0.70 0.18 245 / 55%))" }}
       >
         <defs>
-          <radialGradient id="nyvlo-core" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="oklch(0.95 0.06 245)" />
-            <stop offset="60%" stopColor="oklch(0.75 0.16 245)" />
-            <stop offset="100%" stopColor="oklch(0.55 0.18 250)" />
+          <radialGradient id="nyvlo-core" cx="50%" cy="42%" r="55%">
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="35%" stopColor="oklch(0.92 0.10 245)" />
+            <stop offset="75%" stopColor="oklch(0.70 0.18 245)" />
+            <stop offset="100%" stopColor="oklch(0.45 0.20 255)" />
           </radialGradient>
           <linearGradient id="nyvlo-ring" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="oklch(0.85 0.12 245)" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="oklch(0.55 0.18 250)" stopOpacity="0.2" />
+            <stop offset="0%" stopColor="oklch(0.92 0.10 245)" stopOpacity="1" />
+            <stop offset="50%" stopColor="oklch(0.75 0.18 245)" stopOpacity="0.85" />
+            <stop offset="100%" stopColor="oklch(0.55 0.20 255)" stopOpacity="0.25" />
           </linearGradient>
+          <radialGradient id="nyvlo-halo" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="oklch(0.75 0.18 245)" stopOpacity="0.55" />
+            <stop offset="60%" stopColor="oklch(0.65 0.20 250)" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="transparent" />
+          </radialGradient>
         </defs>
-        {/* Outer orbit */}
+
+        {/* Soft halo */}
+        <circle cx="32" cy="32" r="28" fill="url(#nyvlo-halo)" />
+
+        {/* Outer ring with satellite */}
         <g className={animated ? "nyvlo-orbit-slow" : ""} style={{ transformOrigin: "32px 32px" }}>
-          <ellipse cx="32" cy="32" rx="26" ry="10" stroke="url(#nyvlo-ring)" strokeWidth="1.25" fill="none" />
-          <circle cx="58" cy="32" r="1.8" fill="oklch(0.85 0.12 245)" />
+          <circle cx="32" cy="32" r="24" stroke="url(#nyvlo-ring)" strokeWidth="1.5" fill="none" />
+          <circle cx="56" cy="32" r="2.4" fill="#ffffff" />
+          <circle cx="56" cy="32" r="4" fill="oklch(0.75 0.18 245)" opacity="0.45" />
         </g>
-        {/* Inner orbit, counter-rotating */}
-        <g className={animated ? "nyvlo-orbit-rev" : ""} style={{ transformOrigin: "32px 32px" }} transform="rotate(60 32 32)">
-          <ellipse cx="32" cy="32" rx="20" ry="7.5" stroke="oklch(0.75 0.16 245)" strokeOpacity="0.55" strokeWidth="1" fill="none" />
-          <circle cx="12" cy="32" r="1.4" fill="oklch(0.95 0.05 245)" />
+
+        {/* Inner ring counter-rotating */}
+        <g className={animated ? "nyvlo-orbit-rev" : ""} style={{ transformOrigin: "32px 32px" }}>
+          <circle cx="32" cy="32" r="16" stroke="oklch(0.85 0.14 245)" strokeOpacity="0.5" strokeWidth="1" fill="none" strokeDasharray="2 3" />
+          <circle cx="16" cy="32" r="1.8" fill="oklch(0.95 0.05 245)" />
         </g>
-        {/* Nucleus */}
-        <circle cx="32" cy="32" r="6.5" fill="url(#nyvlo-core)" />
-        <circle cx="32" cy="32" r="11" fill="oklch(0.75 0.16 245)" opacity="0.18" />
+
+        {/* Glowing core */}
+        <circle cx="32" cy="32" r="14" fill="oklch(0.70 0.18 245)" opacity="0.22" />
+        <circle cx="32" cy="32" r="8.5" fill="url(#nyvlo-core)" />
+        {/* Specular highlight */}
+        <ellipse cx="29" cy="29" rx="2.6" ry="1.6" fill="#ffffff" opacity="0.85" />
       </svg>
       {withWordmark && (
-        <span className="font-display text-[17px] font-semibold tracking-[-0.02em] text-foreground">
+        <span className={`font-display ${wordSize} font-semibold tracking-[-0.025em] text-foreground`}>
           Nyvlo
         </span>
       )}
