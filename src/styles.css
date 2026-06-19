@@ -30,9 +30,10 @@
   --color-surface: var(--surface);
   --color-ink: var(--ink);
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Instrument Serif", ui-serif, Georgia, serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
   --radius-sm: 0.5rem;
   --radius-md: 0.625rem;
@@ -103,11 +104,13 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
-  font-feature-settings: "cv11", "ss01", "ss03";
+  font-feature-settings: "ss01", "ss02", "cv11";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
+
+.font-serif { font-family: var(--font-serif); }
 
 ::selection {
   background: oklch(0.5 0.22 280 / 18%);
@@ -119,6 +122,20 @@ body {
   background-image:
     radial-gradient(oklch(0.18 0.01 270 / 4%) 1px, transparent 1px);
   background-size: 22px 22px;
+}
+
+/* soft aurora glow behind hero — AI-native ambient lighting */
+.nyvlo-aurora {
+  position: absolute;
+  inset: -20% -10% auto -10%;
+  height: 720px;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 50% at 20% 30%, oklch(0.78 0.16 280 / 28%), transparent 60%),
+    radial-gradient(50% 50% at 80% 20%, oklch(0.82 0.12 220 / 22%), transparent 60%),
+    radial-gradient(45% 45% at 60% 70%, oklch(0.85 0.14 320 / 18%), transparent 60%);
+  filter: blur(40px);
+  z-index: 0;
 }
 
 .nyvlo-card {
