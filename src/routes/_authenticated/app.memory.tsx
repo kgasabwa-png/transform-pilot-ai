@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Shell } from "@/components/nyvlo/Shell";
+import { Skeleton } from "@/components/ui/skeleton";
 import { listMemory } from "@/lib/nyvlo/data.functions";
 import { CalendarDays, Mail, StickyNote } from "lucide-react";
 
@@ -23,7 +24,18 @@ function MemoryPage() {
   return (
     <Shell title="Memory" subtitle="Everything Nyvlo has noticed across your sources.">
       {isLoading ? (
-        <div className="text-[13px] text-muted-foreground">Loading…</div>
+        <div className="flex flex-col gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-start gap-3 md:gap-5">
+              <Skeleton className="hidden h-3 w-[90px] shrink-0 md:block" />
+              <Skeleton className="mt-1.5 h-4 w-4 shrink-0 rounded-full" />
+              <div className="flex-1 rounded-lg border border-border bg-card p-3.5">
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="mt-2 h-3 w-3/4" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : items.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border p-10 text-center text-[13px] text-muted-foreground">
           Memory is empty. Connect Google in Settings — Nyvlo will start saving meetings and emails it learns from.
