@@ -16,12 +16,17 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAppSettingsRouteImport } from './routes/_authenticated/app.settings'
 import { Route as AuthenticatedAppPromisesRouteImport } from './routes/_authenticated/app.promises'
 import { Route as AuthenticatedAppMemoryRouteImport } from './routes/_authenticated/app.memory'
 import { Route as AuthenticatedAppLinkRouteImport } from './routes/_authenticated/app.link'
 import { Route as AuthenticatedAppCommandRouteImport } from './routes/_authenticated/app.command'
+import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
+import { Route as AuthenticatedAdminOpsRouteImport } from './routes/_authenticated/admin.ops'
+import { Route as AuthenticatedAdminEventsRouteImport } from './routes/_authenticated/admin.events'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicHooksSyncAllRouteImport } from './routes/api/public/hooks/sync-all'
 import { Route as ApiPublicHooksGenerateRemindersRouteImport } from './routes/api/public/hooks/generate-reminders'
@@ -67,10 +72,20 @@ const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   path: '/app',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
 const AuthenticatedAppSettingsRoute =
   AuthenticatedAppSettingsRouteImport.update({
@@ -99,6 +114,22 @@ const AuthenticatedAppCommandRoute = AuthenticatedAppCommandRouteImport.update({
   path: '/command',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminOpsRoute = AuthenticatedAdminOpsRouteImport.update({
+  id: '/ops',
+  path: '/ops',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminEventsRoute =
+  AuthenticatedAdminEventsRouteImport.update({
+    id: '/events',
+    path: '/events',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
     id: '/lovable/email/queue/process',
@@ -161,13 +192,18 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/founder': typeof FounderRoute
   '/try': typeof TryRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/admin/events': typeof AuthenticatedAdminEventsRoute
+  '/admin/ops': typeof AuthenticatedAdminOpsRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/app/command': typeof AuthenticatedAppCommandRoute
   '/app/link': typeof AuthenticatedAppLinkRoute
   '/app/memory': typeof AuthenticatedAppMemoryRoute
   '/app/promises': typeof AuthenticatedAppPromisesRoute
   '/app/settings': typeof AuthenticatedAppSettingsRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
   '/app/': typeof AuthenticatedAppIndexRoute
   '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
   '/api/public/auth/device-poll': typeof ApiPublicAuthDevicePollRoute
@@ -186,11 +222,15 @@ export interface FileRoutesByTo {
   '/founder': typeof FounderRoute
   '/try': typeof TryRoute
   '/api/chat': typeof ApiChatRoute
+  '/admin/events': typeof AuthenticatedAdminEventsRoute
+  '/admin/ops': typeof AuthenticatedAdminOpsRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/app/command': typeof AuthenticatedAppCommandRoute
   '/app/link': typeof AuthenticatedAppLinkRoute
   '/app/memory': typeof AuthenticatedAppMemoryRoute
   '/app/promises': typeof AuthenticatedAppPromisesRoute
   '/app/settings': typeof AuthenticatedAppSettingsRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
   '/app': typeof AuthenticatedAppIndexRoute
   '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
   '/api/public/auth/device-poll': typeof ApiPublicAuthDevicePollRoute
@@ -210,13 +250,18 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/founder': typeof FounderRoute
   '/try': typeof TryRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/_authenticated/admin/events': typeof AuthenticatedAdminEventsRoute
+  '/_authenticated/admin/ops': typeof AuthenticatedAdminOpsRoute
+  '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/app/command': typeof AuthenticatedAppCommandRoute
   '/_authenticated/app/link': typeof AuthenticatedAppLinkRoute
   '/_authenticated/app/memory': typeof AuthenticatedAppMemoryRoute
   '/_authenticated/app/promises': typeof AuthenticatedAppPromisesRoute
   '/_authenticated/app/settings': typeof AuthenticatedAppSettingsRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
   '/api/oauth/google/callback': typeof ApiOauthGoogleCallbackRoute
   '/api/public/auth/device-poll': typeof ApiPublicAuthDevicePollRoute
@@ -236,13 +281,18 @@ export interface FileRouteTypes {
     | '/auth'
     | '/founder'
     | '/try'
+    | '/admin'
     | '/app'
     | '/api/chat'
+    | '/admin/events'
+    | '/admin/ops'
+    | '/admin/users'
     | '/app/command'
     | '/app/link'
     | '/app/memory'
     | '/app/promises'
     | '/app/settings'
+    | '/admin/'
     | '/app/'
     | '/api/oauth/google/callback'
     | '/api/public/auth/device-poll'
@@ -261,11 +311,15 @@ export interface FileRouteTypes {
     | '/founder'
     | '/try'
     | '/api/chat'
+    | '/admin/events'
+    | '/admin/ops'
+    | '/admin/users'
     | '/app/command'
     | '/app/link'
     | '/app/memory'
     | '/app/promises'
     | '/app/settings'
+    | '/admin'
     | '/app'
     | '/api/oauth/google/callback'
     | '/api/public/auth/device-poll'
@@ -284,13 +338,18 @@ export interface FileRouteTypes {
     | '/auth'
     | '/founder'
     | '/try'
+    | '/_authenticated/admin'
     | '/_authenticated/app'
     | '/api/chat'
+    | '/_authenticated/admin/events'
+    | '/_authenticated/admin/ops'
+    | '/_authenticated/admin/users'
     | '/_authenticated/app/command'
     | '/_authenticated/app/link'
     | '/_authenticated/app/memory'
     | '/_authenticated/app/promises'
     | '/_authenticated/app/settings'
+    | '/_authenticated/admin/'
     | '/_authenticated/app/'
     | '/api/oauth/google/callback'
     | '/api/public/auth/device-poll'
@@ -374,12 +433,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/app/': {
       id: '/_authenticated/app/'
       path: '/'
       fullPath: '/app/'
       preLoaderRoute: typeof AuthenticatedAppIndexRouteImport
       parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/app/settings': {
       id: '/_authenticated/app/settings'
@@ -415,6 +488,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/command'
       preLoaderRoute: typeof AuthenticatedAppCommandRouteImport
       parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/admin/users': {
+      id: '/_authenticated/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/ops': {
+      id: '/_authenticated/admin/ops'
+      path: '/ops'
+      fullPath: '/admin/ops'
+      preLoaderRoute: typeof AuthenticatedAdminOpsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/events': {
+      id: '/_authenticated/admin/events'
+      path: '/events'
+      fullPath: '/admin/events'
+      preLoaderRoute: typeof AuthenticatedAdminEventsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/lovable/email/queue/process': {
       id: '/lovable/email/queue/process'
@@ -489,6 +583,23 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminEventsRoute: typeof AuthenticatedAdminEventsRoute
+  AuthenticatedAdminOpsRoute: typeof AuthenticatedAdminOpsRoute
+  AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminEventsRoute: AuthenticatedAdminEventsRoute,
+  AuthenticatedAdminOpsRoute: AuthenticatedAdminOpsRoute,
+  AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
 interface AuthenticatedAppRouteChildren {
   AuthenticatedAppCommandRoute: typeof AuthenticatedAppCommandRoute
   AuthenticatedAppLinkRoute: typeof AuthenticatedAppLinkRoute
@@ -511,10 +622,12 @@ const AuthenticatedAppRouteWithChildren =
   AuthenticatedAppRoute._addFileChildren(AuthenticatedAppRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
 }
 
