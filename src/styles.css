@@ -79,7 +79,7 @@
 
   --border: oklch(0.97 0.005 250 / 8%);
   --input:  oklch(0.97 0.005 250 / 12%);
-  --ring:   oklch(0.75 0.16 245 / 45%);
+  --ring:   oklch(0.74 0.17 30 / 45%);
 
   --success: oklch(0.78 0.16 155);
   --warning: oklch(0.82 0.15 80);
@@ -92,7 +92,7 @@
   --sidebar-accent:            oklch(0.23 0.014 260);
   --sidebar-accent-foreground: oklch(0.92 0.005 250);
   --sidebar-border:            oklch(0.97 0.005 250 / 8%);
-  --sidebar-ring:              oklch(0.75 0.16 245 / 45%);
+  --sidebar-ring:              oklch(0.74 0.17 30 / 45%);
 }
 
 * {
@@ -119,7 +119,7 @@ body {
 }
 
 ::selection {
-  background: oklch(0.75 0.16 245 / 28%);
+  background: oklch(0.74 0.17 30 / 28%);
   color: var(--foreground);
 }
 
@@ -146,7 +146,7 @@ body {
 /* Ion aurora glow */
 .nyvlo-aurora {
   background:
-    radial-gradient(60% 40% at 50% 0%, oklch(0.66 0.18 250 / 22%), transparent 70%),
+    radial-gradient(60% 40% at 50% 0%, oklch(0.66 0.20 25 / 22%), transparent 70%),
     radial-gradient(40% 30% at 80% 10%, oklch(0.75 0.16 200 / 14%), transparent 70%),
     radial-gradient(35% 25% at 20% 20%, oklch(0.75 0.16 280 / 12%), transparent 70%);
 }
@@ -167,8 +167,8 @@ body {
 .nyvlo-shimmer {
   background: linear-gradient(90deg,
     oklch(0.97 0.005 250) 0%,
-    oklch(0.75 0.16 245) 40%,
-    oklch(0.66 0.18 250) 60%,
+    oklch(0.74 0.17 30) 40%,
+    oklch(0.66 0.20 25) 60%,
     oklch(0.97 0.005 250) 100%);
   background-size: 200% 100%;
   -webkit-background-clip: text;
@@ -224,18 +224,18 @@ body {
 .nyvlo-beam::after {
   content: "";
   position: absolute; inset: 0;
-  background: linear-gradient(90deg, transparent, oklch(0.75 0.16 245 / 30%), transparent);
+  background: linear-gradient(90deg, transparent, oklch(0.74 0.17 30 / 30%), transparent);
   animation: nyvlo-beam 2.4s ease-in-out infinite;
   pointer-events: none;
 }
 
 /* Button — ion */
 .btn-ion {
-  background: linear-gradient(180deg, oklch(0.78 0.15 245), oklch(0.62 0.18 250));
+  background: linear-gradient(180deg, oklch(0.78 0.16 32), oklch(0.62 0.20 24));
   color: oklch(0.14 0.012 260);
   box-shadow:
-    0 0 0 1px oklch(0.95 0.04 245 / 25%) inset,
-    0 10px 40px -10px oklch(0.66 0.18 250 / 55%),
+    0 0 0 1px oklch(0.96 0.05 32 / 25%) inset,
+    0 10px 40px -10px oklch(0.66 0.20 25 / 55%),
     0 1px 0 oklch(0.97 0.005 250 / 25%) inset;
   transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
 }
@@ -243,8 +243,8 @@ body {
   transform: translateY(-1px);
   filter: brightness(1.05);
   box-shadow:
-    0 0 0 1px oklch(0.95 0.04 245 / 35%) inset,
-    0 16px 50px -10px oklch(0.66 0.18 250 / 70%),
+    0 0 0 1px oklch(0.96 0.05 32 / 35%) inset,
+    0 16px 50px -10px oklch(0.66 0.20 25 / 70%),
     0 1px 0 oklch(0.97 0.005 250 / 35%) inset;
 }
 
