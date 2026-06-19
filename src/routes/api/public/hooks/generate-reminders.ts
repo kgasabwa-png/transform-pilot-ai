@@ -20,7 +20,7 @@ export const Route = createFileRoute("/api/public/hooks/generate-reminders")({
         // Open promises that are due within 24h or overdue
         const { data: promises, error } = await supabase
           .from("promises")
-          .select("id, user_id, title, due_at, status")
+          .select("id, user_id, summary, due_at, status")
           .eq("status", "open")
           .not("due_at", "is", null)
           .lte("due_at", in24h);
