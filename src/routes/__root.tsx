@@ -137,6 +137,13 @@ function RootComponent() {
     })();
     return () => unsub?.();
   }, []);
+
+  // Pageview tracking on every route change.
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  useEffect(() => {
+    trackPageview();
+  }, [pathname]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
