@@ -902,6 +902,8 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          invite_email_id: string | null
+          invited_at: string | null
           note: string | null
           source: string | null
         }
@@ -909,6 +911,8 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          invite_email_id?: string | null
+          invited_at?: string | null
           note?: string | null
           source?: string | null
         }
@@ -916,6 +920,8 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          invite_email_id?: string | null
+          invited_at?: string | null
           note?: string | null
           source?: string | null
         }
@@ -945,6 +951,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_capture_quota: { Args: { _user_id: string }; Returns: Json }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }
         Returns: boolean

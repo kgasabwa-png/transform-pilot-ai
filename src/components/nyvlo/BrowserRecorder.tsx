@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
  * Chunks every 15s, POSTs each chunk to /api/public/ingest/audio-chunk
  * with the user's Supabase access token.
  */
-export function BrowserRecorder({ onSessionChange }: { onSessionChange?: (id: string | null) => void }) {
+export function BrowserRecorder({ onSessionChange, maxSeconds }: { onSessionChange?: (id: string | null) => void; maxSeconds?: number }) {
   const [state, setState] = useState<"idle" | "starting" | "recording" | "stopping">("idle");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [seconds, setSeconds] = useState(0);
@@ -62,6 +62,14 @@ export function BrowserRecorder({ onSessionChange }: { onSessionChange?: (id: st
         body: JSON.stringify({ source: "browser", label: `Browser capture — ${new Date().toLocaleTimeString()}` }),
       });
       const j = await res.json();
+      if (res.status === 402) {
+        cleanup();
+        setState("idle");
+        toast.error(j.message || "Free-tier limit reached", {
+          action: { label: "Upgrade", onClick: () => { window.location.href = "/pricing"; } },
+        });
+        return;
+      }
       if (!res.ok || !j.session?.id) throw new Error(j.error || "session-start failed");
       setSessionId(j.session.id);
       onSessionChange?.(j.session.id);
@@ -125,7 +133,19 @@ export function BrowserRecorder({ onSessionChange }: { onSessionChange?: (id: st
       };
 
       chunkTimerRef.current = window.setInterval(flush, 15_000);
-      tickRef.current = window.setInterval(() => setSeconds((s) => s + 1), 1000);
+      tickRef.current = window.setInterval(() => {
+        setSeconds((s) => {
+          const next = s + 1;
+          if (maxSeconds && next >= maxSeconds) {
+            toast.message(`Free-tier capture limit reached (${Math.floor(maxSeconds / 60)} min). Stopping…`, {
+              action: { label: "Upgrade", onClick: () => { window.location.href = "/pricing"; } },
+            });
+            // Schedule stop on next tick to avoid setState-during-render
+            queueMicrotask(() => stop());
+          }
+          return next;
+        });
+      }, 1000);
       setSeconds(0);
       setState("recording");
       toast.success("Recording — mic only. System audio needs the desktop app.");

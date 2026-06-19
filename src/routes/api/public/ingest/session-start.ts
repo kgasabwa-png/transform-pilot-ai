@@ -23,6 +23,21 @@ export const Route = createFileRoute("/api/public/ingest/session-start")({
 
         const { adminClient } = await import("@/lib/nyvlo/google.server");
         const supabase = adminClient();
+
+        // Free-tier quota gate
+        const { data: quota } = await supabase.rpc("get_capture_quota", { _user_id: auth.userId });
+        const q = quota as { allowed?: boolean; used?: number; limit?: number; is_pro?: boolean } | null;
+        if (q && q.allowed === false) {
+          return Response.json(
+            {
+              error: "free_tier_limit",
+              message: `You've used ${q.used}/${q.limit} captures this month. Upgrade to Pro for unlimited.`,
+              quota: q,
+            },
+            { status: 402, headers: cors },
+          );
+        }
+
         const { data, error } = await supabase
           .from("capture_sessions")
           .insert({
