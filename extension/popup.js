@@ -45,11 +45,7 @@ function fmtRel(iso) {
 function renderSetup(errorMsg) {
   app.innerHTML = "";
   app.appendChild(header());
-  const input = el("input", {
-    type: "text",
-    placeholder: "nyv_...",
-    autocomplete: "off",
-  });
+  const input = el("input", { type: "text", placeholder: "nyv_...", autocomplete: "off" });
   const errEl = el("div", { class: "error" }, errorMsg || "");
   const save = el(
     "button",
@@ -79,16 +75,74 @@ function renderSetup(errorMsg) {
   );
 }
 
-function renderDashboard(data) {
+async function getActiveTabSelection() {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab || !tab.id) return { tab: null, text: "" };
+  try {
+    const results = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => (window.getSelection ? String(window.getSelection() || "") : ""),
+    });
+    const text = (results && results[0] && results[0].result) || "";
+    return { tab, text };
+  } catch (e) {
+    return { tab, text: "" };
+  }
+}
+
+async function captureSelection(token, statusEl) {
+  statusEl.textContent = "Reading selection…";
+  statusEl.className = "stat-hint";
+  const { tab, text } = await getActiveTabSelection();
+  if (!text || text.trim().length < 3) {
+    statusEl.className = "error";
+    statusEl.textContent = "Select some text on the page first, then click Capture.";
+    return;
+  }
+  statusEl.className = "stat-hint";
+  statusEl.textContent = "Sending to Nyvlo…";
+  try {
+    const res = await fetch(`${API_BASE}/api/public/extension/capture`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        url: tab && tab.url ? tab.url : "",
+        title: tab && tab.title ? tab.title : null,
+        selected_text: text,
+        note: null,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      statusEl.className = "error";
+      statusEl.textContent = data.error || `Failed (${res.status})`;
+      return;
+    }
+    const n = data.extracted_count || 0;
+    statusEl.className = "stat-hint";
+    statusEl.textContent =
+      n > 0
+        ? `Saved · ${n} commitment${n === 1 ? "" : "s"} extracted.`
+        : "Saved to memory · no commitment found.";
+    // Reload dashboard after a moment to show new promises
+    setTimeout(load, 1200);
+  } catch (e) {
+    statusEl.className = "error";
+    statusEl.textContent = e.message || "Network error";
+  }
+}
+
+function renderDashboard(data, token) {
   app.innerHTML = "";
   app.appendChild(header());
 
   const main = el("main");
 
   const reliability = data.reliability;
-  const score = reliability && reliability.score != null
-    ? `${Math.round(Number(reliability.score) * 100)}%`
-    : "—";
+  const score =
+    reliability && reliability.score != null
+      ? `${Math.round(Number(reliability.score) * 100)}%`
+      : "—";
   const hint = reliability
     ? `${reliability.kept} kept · ${reliability.missed} missed`
     : "Building history";
@@ -100,6 +154,29 @@ function renderDashboard(data) {
         el("div", { class: "stat-hint" }, hint),
       ]),
       el("div", { class: "stat-value" }, score),
+    ]),
+  );
+
+  // Capture-selection card
+  const statusEl = el("div", { class: "stat-hint", style: "margin-top:6px; min-height:14px;" }, "");
+  const captureBtn = el(
+    "button",
+    {
+      style: "width:100%; margin-top:4px;",
+      onclick: () => captureSelection(token, statusEl),
+    },
+    "Remember selection on this page",
+  );
+  main.appendChild(
+    el("div", { class: "stat", style: "flex-direction:column; align-items:stretch; gap:4px;" }, [
+      el("div", { class: "stat-label" }, "Capture"),
+      el(
+        "div",
+        { class: "stat-hint", style: "margin-bottom:6px;" },
+        "Highlight text on any page, then click to extract a commitment.",
+      ),
+      captureBtn,
+      statusEl,
     ]),
   );
 
@@ -166,7 +243,7 @@ async function load() {
     }
     if (!res.ok) throw new Error(`Failed (${res.status})`);
     const data = await res.json();
-    renderDashboard(data);
+    renderDashboard(data, nyvlo_token);
   } catch (e) {
     app.innerHTML = "";
     app.appendChild(header());
