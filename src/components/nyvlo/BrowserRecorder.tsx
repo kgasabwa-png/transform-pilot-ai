@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
  * Chunks every 15s, POSTs each chunk to /api/public/ingest/audio-chunk
  * with the user's Supabase access token.
  */
-export function BrowserRecorder({ onSessionChange }: { onSessionChange?: (id: string | null) => void }) {
+export function BrowserRecorder({ onSessionChange, maxSeconds }: { onSessionChange?: (id: string | null) => void; maxSeconds?: number }) {
   const [state, setState] = useState<"idle" | "starting" | "recording" | "stopping">("idle");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [seconds, setSeconds] = useState(0);
