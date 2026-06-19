@@ -17,7 +17,8 @@ type ExtractedPromise = {
 export async function extractPromisesFromSession(
   sessionId: string,
   userId: string,
-): Promise<{ inserted: number; summary: string | null }> {
+): Promise<{ inserted: number; summary: string | null; notes_md: string | null }> {
+
   const supabase = adminClient();
   const key = process.env.LOVABLE_API_KEY;
   if (!key) throw new Error("LOVABLE_API_KEY missing");
