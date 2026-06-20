@@ -29,8 +29,9 @@ export function buildSystemPrompt(args: {
   userName: string;
   promises: AgentPromise[];
   memory: AgentMemory[];
+  totals?: { promises: number; memory: number };
 }): string {
-  const { userName, promises, memory } = args;
+  const { userName, promises, memory, totals } = args;
   const now = new Date();
   const today = now.toLocaleDateString("en-US", {
     weekday: "long",
