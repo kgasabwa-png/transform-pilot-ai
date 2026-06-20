@@ -6,6 +6,7 @@ import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { buildSystemPrompt, type AgentPromise, type AgentMemory } from "@/lib/agent/context";
 import { buildAgentTools } from "@/lib/agent/tools.server";
 import { selectRelevantContext, turnsFromUIMessages } from "@/lib/agent/retrieve";
+import { selectByEmbedding, queryFromTurns } from "@/lib/agent/embeddings.server";
 
 export const Route = createFileRoute("/api/agent")({
   server: {
@@ -81,18 +82,41 @@ export const Route = createFileRoute("/api/agent")({
           profileRes.data?.email?.split("@")[0] ||
           "there";
 
-        // Relevance pass: rank the workspace pool against the conversation so the
-        // system prompt stays focused even when the user has hundreds of items.
+        // Relevance pass: prefer semantic (embedding) retrieval; fall back to
+        // keyword scoring when the query is empty or embeddings are unavailable.
         const turns = turnsFromUIMessages(
           messages as Array<{ role: string; parts?: Array<{ type: string; text?: string }> }>,
         );
-        const selected = selectRelevantContext({
-          turns,
-          promises,
-          memory,
+        const totals = { promises: promises.length, memory: memory.length };
+        const query = queryFromTurns(turns);
+
+        let selectedPromises: AgentPromise[];
+        let selectedMemory: AgentMemory[];
+
+        const semantic = await selectByEmbedding({
+          supabase,
+          userId,
+          apiKey,
+          query,
           promiseLimit: 12,
           memoryLimit: 10,
+          totals,
         });
+
+        if (semantic && (semantic.promises.length || semantic.memory.length)) {
+          selectedPromises = semantic.promises;
+          selectedMemory = semantic.memory;
+        } else {
+          const keyword = selectRelevantContext({
+            turns,
+            promises,
+            memory,
+            promiseLimit: 12,
+            memoryLimit: 10,
+          });
+          selectedPromises = keyword.promises;
+          selectedMemory = keyword.memory;
+        }
 
         const gateway = createLovableAiGatewayProvider(apiKey);
         const model = gateway("google/gemini-3-flash-preview");
@@ -101,9 +125,9 @@ export const Route = createFileRoute("/api/agent")({
           model,
           system: buildSystemPrompt({
             userName,
-            promises: selected.promises,
-            memory: selected.memory,
-            totals: selected.totals,
+            promises: selectedPromises,
+            memory: selectedMemory,
+            totals,
           }),
           messages: await convertToModelMessages(messages),
           // Tools see the full pool so search_memory / research_person can find
