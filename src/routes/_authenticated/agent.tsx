@@ -28,7 +28,7 @@ import {
 import { NyvloMark } from "@/components/nyvlo/Shell";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/agent")({
+export const Route = createFileRoute("/_authenticated/agent")({
   head: () => ({
     meta: [
       { title: "Chief of Staff · Nyvlo" },
