@@ -3,6 +3,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, PenLine, Search, ClipboardList, BookMarked } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Conversation,
   ConversationContent,
@@ -103,7 +104,20 @@ function AgentChat({
   setInput: (v: string) => void;
   textareaRef: React.MutableRefObject<HTMLTextAreaElement | null>;
 }) {
-  const transport = useMemo(() => new DefaultChatTransport({ api: "/api/agent" }), []);
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: "/api/agent",
+        fetch: async (url, init) => {
+          const { data } = await supabase.auth.getSession();
+          const token = data.session?.access_token;
+          const headers = new Headers(init?.headers);
+          if (token) headers.set("Authorization", `Bearer ${token}`);
+          return fetch(url, { ...init, headers });
+        },
+      }),
+    [],
+  );
 
   const { messages, sendMessage, status, error } = useChat({
     id: CHAT_ID,
