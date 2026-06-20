@@ -47,7 +47,7 @@ export const Route = createFileRoute("/api/agent")({
             .from("promises")
             .select("id, summary, owed_to, channel, due_at, evidence_snippet, status")
             .eq("user_id", userId)
-            .in("status", ["open", "snoozed"])
+            .eq("status", "open")
             .order("due_at", { ascending: true, nullsFirst: false })
             .limit(40),
           supabase
