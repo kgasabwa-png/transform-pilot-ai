@@ -5,6 +5,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { buildSystemPrompt, type AgentPromise, type AgentMemory } from "@/lib/agent/context";
 import { buildAgentTools } from "@/lib/agent/tools.server";
+import { selectRelevantContext, turnsFromUIMessages } from "@/lib/agent/retrieve";
 
 export const Route = createFileRoute("/api/agent")({
   server: {
@@ -49,13 +50,13 @@ export const Route = createFileRoute("/api/agent")({
             .eq("user_id", userId)
             .eq("status", "open")
             .order("due_at", { ascending: true, nullsFirst: false })
-            .limit(40),
+            .limit(200),
           supabase
             .from("memory_items")
             .select("id, title, snippet, kind, occurred_at")
             .eq("user_id", userId)
             .order("occurred_at", { ascending: false })
-            .limit(40),
+            .limit(200),
           supabase.from("profiles").select("full_name, email").eq("id", userId).maybeSingle(),
         ]);
 
@@ -80,13 +81,33 @@ export const Route = createFileRoute("/api/agent")({
           profileRes.data?.email?.split("@")[0] ||
           "there";
 
+        // Relevance pass: rank the workspace pool against the conversation so the
+        // system prompt stays focused even when the user has hundreds of items.
+        const turns = turnsFromUIMessages(
+          messages as Array<{ role: string; parts?: Array<{ type: string; text?: string }> }>,
+        );
+        const selected = selectRelevantContext({
+          turns,
+          promises,
+          memory,
+          promiseLimit: 12,
+          memoryLimit: 10,
+        });
+
         const gateway = createLovableAiGatewayProvider(apiKey);
         const model = gateway("google/gemini-3-flash-preview");
 
         const result = streamText({
           model,
-          system: buildSystemPrompt({ userName, promises, memory }),
+          system: buildSystemPrompt({
+            userName,
+            promises: selected.promises,
+            memory: selected.memory,
+            totals: selected.totals,
+          }),
           messages: await convertToModelMessages(messages),
+          // Tools see the full pool so search_memory / research_person can find
+          // anything the system prompt didn't surface.
           tools: buildAgentTools({ supabase, userId, promises, memory }),
           stopWhen: stepCountIs(50),
         });
