@@ -274,19 +274,20 @@ function CommandView() {
           Your chief-of-staff surface. Ask Nyvlo to draft, research, or act.
         </p>
       </header>
-      <div className="rounded-xl border border-border bg-card p-8 text-center">
+      <Link
+        to="/agent"
+        className="block rounded-xl border border-border bg-card p-8 text-center transition-colors hover:bg-muted/30"
+      >
         <Wand2 className="mx-auto h-8 w-8 text-primary" />
-        <h3 className="mt-3 text-[16px] font-medium">Chief of Staff chat ships next</h3>
+        <h3 className="mt-3 text-[16px] font-medium">Open Chief of Staff chat</h3>
         <p className="mx-auto mt-2 max-w-md text-[13px] text-muted-foreground">
-          A persistent agent that sees your promises, memory, and sources — and can draft replies, run research,
-          prep meetings, and (with your permission) send and schedule.
+          A persistent agent that sees your promises and memory — drafts replies, runs research,
+          preps meetings. Try: <span className="italic">"What's most overdue?"</span>
         </p>
-        <p className="mt-4 text-[12px] text-muted-foreground">
-          In the meantime, try the <span className="font-medium text-foreground">Draft</span>,{" "}
-          <span className="font-medium text-foreground">Prep</span>, and{" "}
-          <span className="font-medium text-foreground">Research</span> buttons on any promise.
-        </p>
-      </div>
+        <span className="mt-4 inline-flex items-center gap-1 text-[12px] font-medium text-primary">
+          Launch chat <ArrowRight className="h-3 w-3" />
+        </span>
+      </Link>
     </>
   );
 }
