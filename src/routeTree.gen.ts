@@ -15,11 +15,13 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as FounderRouteImport } from './routes/founder'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AgentRouteImport } from './routes/agent'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiAgentRouteImport } from './routes/api/agent'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -87,6 +89,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AgentRoute = AgentRouteImport.update({
+  id: '/agent',
+  path: '/agent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -109,6 +116,11 @@ const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAgentRoute = ApiAgentRouteImport.update({
+  id: '/api/agent',
+  path: '/api/agent',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
@@ -312,6 +324,7 @@ const ApiOauthGoogleCallbackRoute = ApiOauthGoogleCallbackRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agent': typeof AgentRoute
   '/auth': typeof AuthRoute
   '/founder': typeof FounderRoute
   '/pricing': typeof PricingRoute
@@ -321,6 +334,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/api/agent': typeof ApiAgentRoute
   '/api/chat': typeof ApiChatRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -360,6 +374,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agent': typeof AgentRoute
   '/auth': typeof AuthRoute
   '/founder': typeof FounderRoute
   '/pricing': typeof PricingRoute
@@ -367,6 +382,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/try': typeof TryRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/api/agent': typeof ApiAgentRoute
   '/api/chat': typeof ApiChatRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -408,6 +424,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/agent': typeof AgentRoute
   '/auth': typeof AuthRoute
   '/founder': typeof FounderRoute
   '/pricing': typeof PricingRoute
@@ -417,6 +434,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/api/agent': typeof ApiAgentRoute
   '/api/chat': typeof ApiChatRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -458,6 +476,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/agent'
     | '/auth'
     | '/founder'
     | '/pricing'
@@ -467,6 +486,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/app'
     | '/onboarding'
+    | '/api/agent'
     | '/api/chat'
     | '/checkout/return'
     | '/email/unsubscribe'
@@ -506,6 +526,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/agent'
     | '/auth'
     | '/founder'
     | '/pricing'
@@ -513,6 +534,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/try'
     | '/onboarding'
+    | '/api/agent'
     | '/api/chat'
     | '/checkout/return'
     | '/email/unsubscribe'
@@ -553,6 +575,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/agent'
     | '/auth'
     | '/founder'
     | '/pricing'
@@ -562,6 +585,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/app'
     | '/_authenticated/onboarding'
+    | '/api/agent'
     | '/api/chat'
     | '/checkout/return'
     | '/email/unsubscribe'
@@ -603,12 +627,14 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AgentRoute: typeof AgentRoute
   AuthRoute: typeof AuthRoute
   FounderRoute: typeof FounderRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   TermsRoute: typeof TermsRoute
   TryRoute: typeof TryRoute
+  ApiAgentRoute: typeof ApiAgentRoute
   ApiChatRoute: typeof ApiChatRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
@@ -678,6 +704,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/agent': {
+      id: '/agent'
+      path: '/agent'
+      fullPath: '/agent'
+      preLoaderRoute: typeof AgentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -711,6 +744,13 @@ declare module '@tanstack/react-router' {
       path: '/api/chat'
       fullPath: '/api/chat'
       preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/agent': {
+      id: '/api/agent'
+      path: '/api/agent'
+      fullPath: '/api/agent'
+      preLoaderRoute: typeof ApiAgentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/onboarding': {
@@ -1030,12 +1070,14 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AgentRoute: AgentRoute,
   AuthRoute: AuthRoute,
   FounderRoute: FounderRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   TermsRoute: TermsRoute,
   TryRoute: TryRoute,
+  ApiAgentRoute: ApiAgentRoute,
   ApiChatRoute: ApiChatRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
