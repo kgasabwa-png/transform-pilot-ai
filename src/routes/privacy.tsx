@@ -56,7 +56,7 @@ function Privacy() {
           <ul className="mt-3 space-y-1.5">
             <li>Supabase — database, auth, file storage.</li>
             <li>Google — OAuth identity, Calendar API, Gmail API (read-only metadata).</li>
-            <li>Lovable AI Gateway — model inference for transcription, vision, and extraction.</li>
+            <li>AI inference providers — transcription, vision, and extraction models.</li>
             <li>Cloudflare — edge runtime for our backend functions.</li>
           </ul>
 
