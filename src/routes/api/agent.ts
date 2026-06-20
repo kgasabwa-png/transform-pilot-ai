@@ -1,15 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, stepCountIs, type UIMessage } from "ai";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
-import {
-  getLovableAiGatewayResponseHeaders,
-  getLovableAiGatewayRunId,
-  withLovableAiGatewayRunIdHeader,
-} from "@/lib/ai-gateway.server";
 import { buildSystemPrompt } from "@/lib/agent/context";
 import { buildAgentTools } from "@/lib/agent/tools.server";
-
-const LOVABLE_AIG_RUN_ID_HEADER = "X-Lovable-AIG-Run-ID";
 
 export const Route = createFileRoute("/api/agent")({
   server: {
@@ -25,8 +18,7 @@ export const Route = createFileRoute("/api/agent")({
           return new Response("Missing LOVABLE_API_KEY", { status: 500 });
         }
 
-        const initialRunId = getLovableAiGatewayRunId(request);
-        const gateway = createLovableAiGatewayProvider(key, initialRunId);
+        const gateway = createLovableAiGatewayProvider(key);
         const model = gateway("google/gemini-3-flash-preview");
 
         const result = streamText({
@@ -37,14 +29,9 @@ export const Route = createFileRoute("/api/agent")({
           stopWhen: stepCountIs(50),
         });
 
-        const response = result.toUIMessageStreamResponse({
+        return result.toUIMessageStreamResponse({
           originalMessages: messages,
-          headers: getLovableAiGatewayResponseHeaders(undefined, {
-            ...(initialRunId ? { [LOVABLE_AIG_RUN_ID_HEADER]: initialRunId } : {}),
-          }),
         });
-
-        return withLovableAiGatewayRunIdHeader(response, gateway);
       },
     },
   },
