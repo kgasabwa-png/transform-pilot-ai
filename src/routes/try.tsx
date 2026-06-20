@@ -1,7 +1,28 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
-import { ArrowRight, Sparkles, Inbox, Clock, BookMarked, Check, X, ChevronDown, Mail, CalendarDays, StickyNote, PlayCircle } from "lucide-react";
+import {
+  ArrowRight,
+  Sparkles,
+  Inbox,
+  Clock,
+  BookMarked,
+  Check,
+  X,
+  ChevronDown,
+  Mail,
+  CalendarDays,
+  StickyNote,
+  PlayCircle,
+  PenLine,
+  Search,
+  ClipboardList,
+  Loader2,
+  Wand2,
+} from "lucide-react";
 import { NyvloMark } from "@/components/nyvlo/Shell";
+import { runPromiseAction } from "@/lib/agent/actions.functions";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/try")({
   head: () => ({
@@ -26,9 +47,11 @@ type DemoPromise = {
   draft_reply?: string;
 };
 
-const now = () => new Date();
-const inHours = (h: number) => new Date(Date.now() + h * 3600_000).toISOString();
-const daysAgo = (d: number) => new Date(Date.now() - d * 86400_000).toISOString();
+// Use a STABLE epoch reference so SSR and client agree.
+// We compute relative bucket labels (Overdue / Today / Tomorrow / +Nd)
+// instead of locale weekdays — those caused hydration mismatch.
+const DEMO_EPOCH = Date.UTC(2026, 5, 20, 14, 0, 0); // June 20, 2026 14:00 UTC, fixed
+const inHours = (h: number) => new Date(DEMO_EPOCH + h * 3600_000).toISOString();
 
 const DEMO: DemoPromise[] = [
   {
@@ -39,7 +62,8 @@ const DEMO: DemoPromise[] = [
     due_at: inHours(-3),
     confidence: 0.94,
     evidence_snippet: "I'll have the updated forecast over to you by Thursday EOD.",
-    draft_reply: "Hi Priya — sending the Q3 forecast now. Two callouts: pipeline is up 14% QoQ, and the EU segment is the swing factor. Happy to walk through tomorrow.",
+    draft_reply:
+      "Hi Priya — sending the Q3 forecast now. Two callouts: pipeline is up 14% QoQ, and the EU segment is the swing factor. Happy to walk through tomorrow.",
   },
   {
     id: "2",
@@ -49,7 +73,8 @@ const DEMO: DemoPromise[] = [
     due_at: inHours(6),
     confidence: 0.88,
     evidence_snippet: "Let me revise the SOW and circle back later today.",
-    draft_reply: "Hey Marcus — revised SOW attached. Tightened scope on Phase 2 and pulled in the milestone dates we discussed.",
+    draft_reply:
+      "Hey Marcus — revised SOW attached. Tightened scope on Phase 2 and pulled in the milestone dates we discussed.",
   },
   {
     id: "3",
@@ -80,9 +105,22 @@ const DEMO: DemoPromise[] = [
   },
 ];
 
+const MEMORY_ITEMS = [
+  { id: "m1", text: "Priya prefers Thursday updates by 4pm PT.", source: "Email · 12 days ago" },
+  { id: "m2", text: "Acme renewal lands in October — Marcus is lead.", source: "Meeting note · 1 mo ago" },
+  { id: "m3", text: "Sara is between roles, open to early-stage intros.", source: "Note · 2 weeks ago" },
+  { id: "m4", text: "Design team channel is #design-launches, not #design.", source: "Slack pin · 3 days ago" },
+  { id: "m5", text: "Internal SLA on refunds is 3 business days.", source: "Doc · 6 months ago" },
+];
+
+type ViewKey = "today" | "promises" | "memory" | "command";
+
 function TryPage() {
-  const attention = useMemo(() => DEMO.filter((p) => new Date(p.due_at).getTime() < Date.now() + 86400_000), []);
-  const upcoming = DEMO.slice(0, 5);
+  const [view, setView] = useState<ViewKey>("today");
+  const attention = useMemo(
+    () => DEMO.filter((p) => new Date(p.due_at).getTime() < DEMO_EPOCH + 86400_000),
+    [],
+  );
   const stats = { open: DEMO.length, kept: 47, missed: 3, reliability: 0.94 };
 
   return (
@@ -93,7 +131,7 @@ function TryPage() {
           <div className="flex items-center gap-2">
             <PlayCircle className="h-4 w-4" />
             <span className="font-medium">You're in the live demo.</span>
-            <span className="hidden text-background/70 sm:inline">Sample data, no account needed.</span>
+            <span className="hidden text-background/70 sm:inline">Sample data — actions use real AI.</span>
           </div>
           <Link
             to="/auth"
@@ -111,44 +149,29 @@ function TryPage() {
             <NyvloMark size="lg" />
           </Link>
           <nav className="flex flex-col gap-0.5">
-            <DemoNav icon={Sparkles} label="Today" active />
-            <DemoNav icon={Inbox} label="Promises" />
-            <DemoNav icon={Clock} label="Memory" />
-            <DemoNav icon={BookMarked} label="Command Center" />
+            <DemoNav icon={Sparkles} label="Today" active={view === "today"} onClick={() => setView("today")} />
+            <DemoNav icon={Inbox} label="Promises" active={view === "promises"} onClick={() => setView("promises")} />
+            <DemoNav icon={Clock} label="Memory" active={view === "memory"} onClick={() => setView("memory")} />
+            <DemoNav
+              icon={BookMarked}
+              label="Command Center"
+              active={view === "command"}
+              onClick={() => setView("command")}
+            />
           </nav>
           <div className="mt-auto rounded-lg border border-border bg-background/40 p-3 text-[12px] text-muted-foreground">
-            This sidebar is interactive in the real app.
+            Try clicking <span className="font-medium text-foreground">Draft</span> on any promise — real AI runs.
           </div>
         </aside>
 
         {/* Main */}
         <main className="min-w-0 flex-1 px-5 py-8 md:px-10 md:py-12">
-          <header className="mb-8">
-            <h1 className="text-[28px] font-semibold tracking-tight">Hi Alex.</h1>
-            <p className="mt-1 text-[14px] text-muted-foreground">Here's what Nyvlo caught for you.</p>
-          </header>
+          {view === "today" && <TodayView attention={attention} stats={stats} />}
+          {view === "promises" && <PromisesView />}
+          {view === "memory" && <MemoryView />}
+          {view === "command" && <CommandView />}
 
-          <section className="mb-8 grid gap-4 md:grid-cols-3">
-            <StatTile label="Needs attention" value={String(attention.length)} hint="overdue + today" />
-            <StatTile label="Open promises" value={String(stats.open)} hint="across the inbox" />
-            <StatTile label="Reliability" value={`${Math.round(stats.reliability * 100)}%`} hint={`${stats.kept} kept · ${stats.missed} missed`} />
-          </section>
-
-          <section className="mb-10">
-            <SectionHeader title="Things needing attention" />
-            <div className="flex flex-col gap-2">
-              {attention.map((p) => <DemoRow key={p.id} item={p} />)}
-            </div>
-          </section>
-
-          <section className="mb-12">
-            <SectionHeader title="Coming up" />
-            <div className="flex flex-col gap-2">
-              {upcoming.map((p) => <DemoRow key={p.id} item={p} />)}
-            </div>
-          </section>
-
-          <div className="rounded-xl border border-border bg-card p-6">
+          <div className="mt-12 rounded-xl border border-border bg-card p-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <div className="text-[15px] font-medium">Ready to try with your real inbox?</div>
@@ -170,16 +193,128 @@ function TryPage() {
   );
 }
 
-function DemoNav({ icon: Icon, label, active }: { icon: any; label: string; active?: boolean }) {
+function TodayView({ attention, stats }: { attention: DemoPromise[]; stats: { open: number; kept: number; missed: number; reliability: number } }) {
+  const upcoming = DEMO.slice(0, 5);
   return (
-    <div
-      className={`flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[13.5px] ${
-        active ? "bg-background text-foreground" : "text-muted-foreground"
+    <>
+      <header className="mb-8">
+        <h1 className="text-[28px] font-semibold tracking-tight">Hi Alex.</h1>
+        <p className="mt-1 text-[14px] text-muted-foreground">Here's what Nyvlo caught for you.</p>
+      </header>
+      <section className="mb-8 grid gap-4 md:grid-cols-3">
+        <StatTile label="Needs attention" value={String(attention.length)} hint="overdue + today" />
+        <StatTile label="Open promises" value={String(stats.open)} hint="across the inbox" />
+        <StatTile
+          label="Reliability"
+          value={`${Math.round(stats.reliability * 100)}%`}
+          hint={`${stats.kept} kept · ${stats.missed} missed`}
+        />
+      </section>
+      <section className="mb-10">
+        <SectionHeader title="Things needing attention" />
+        <div className="flex flex-col gap-2">
+          {attention.map((p) => <DemoRow key={p.id} item={p} />)}
+        </div>
+      </section>
+      <section className="mb-4">
+        <SectionHeader title="Coming up" />
+        <div className="flex flex-col gap-2">
+          {upcoming.map((p) => <DemoRow key={p.id} item={p} />)}
+        </div>
+      </section>
+    </>
+  );
+}
+
+function PromisesView() {
+  return (
+    <>
+      <header className="mb-8">
+        <h1 className="text-[28px] font-semibold tracking-tight">Promises</h1>
+        <p className="mt-1 text-[14px] text-muted-foreground">
+          Every commitment Nyvlo caught from your inbox, calls, and notes.
+        </p>
+      </header>
+      <SectionHeader title={`${DEMO.length} open`} />
+      <div className="flex flex-col gap-2">
+        {DEMO.map((p) => <DemoRow key={p.id} item={p} />)}
+      </div>
+    </>
+  );
+}
+
+function MemoryView() {
+  return (
+    <>
+      <header className="mb-8">
+        <h1 className="text-[28px] font-semibold tracking-tight">Memory</h1>
+        <p className="mt-1 text-[14px] text-muted-foreground">
+          Facts and preferences Nyvlo learned about your people and projects.
+        </p>
+      </header>
+      <SectionHeader title={`${MEMORY_ITEMS.length} items`} />
+      <div className="flex flex-col gap-2">
+        {MEMORY_ITEMS.map((m) => (
+          <div key={m.id} className="rounded-lg border border-border bg-card p-4">
+            <p className="text-[14px] leading-relaxed">{m.text}</p>
+            <p className="mt-2 text-[11.5px] uppercase tracking-wider text-muted-foreground">{m.source}</p>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function CommandView() {
+  return (
+    <>
+      <header className="mb-8">
+        <h1 className="text-[28px] font-semibold tracking-tight">Command Center</h1>
+        <p className="mt-1 text-[14px] text-muted-foreground">
+          Your chief-of-staff surface. Ask Nyvlo to draft, research, or act.
+        </p>
+      </header>
+      <div className="rounded-xl border border-border bg-card p-8 text-center">
+        <Wand2 className="mx-auto h-8 w-8 text-primary" />
+        <h3 className="mt-3 text-[16px] font-medium">Chief of Staff chat ships next</h3>
+        <p className="mx-auto mt-2 max-w-md text-[13px] text-muted-foreground">
+          A persistent agent that sees your promises, memory, and sources — and can draft replies, run research,
+          prep meetings, and (with your permission) send and schedule.
+        </p>
+        <p className="mt-4 text-[12px] text-muted-foreground">
+          In the meantime, try the <span className="font-medium text-foreground">Draft</span>,{" "}
+          <span className="font-medium text-foreground">Prep</span>, and{" "}
+          <span className="font-medium text-foreground">Research</span> buttons on any promise.
+        </p>
+      </div>
+    </>
+  );
+}
+
+function DemoNav({
+  icon: Icon,
+  label,
+  active,
+  onClick,
+}: {
+  icon: any;
+  label: string;
+  active?: boolean;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[13.5px] transition-colors ${
+        active
+          ? "bg-background text-foreground"
+          : "text-muted-foreground hover:bg-background/50 hover:text-foreground"
       }`}
     >
       <Icon className="h-4 w-4" />
       {label}
-    </div>
+    </button>
   );
 }
 
@@ -201,36 +336,75 @@ function SectionHeader({ title }: { title: string }) {
   );
 }
 
+// Deterministic relative label — no locale, no client-time drift.
+function relativeDueLabel(dueIso: string): string {
+  const diff = new Date(dueIso).getTime() - DEMO_EPOCH;
+  if (diff < -86400_000) return `Overdue · ${Math.floor(-diff / 86400_000)}d`;
+  if (diff < 0) return "Overdue";
+  if (diff < 86400_000) return "Today";
+  if (diff < 2 * 86400_000) return "Tomorrow";
+  return `In ${Math.floor(diff / 86400_000)}d`;
+}
+
 function DemoRow({ item }: { item: DemoPromise }) {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<"open" | "kept" | "dismissed">("open");
+  const [actionResult, setActionResult] = useState<{ action: string; text: string } | null>(null);
+  const [busy, setBusy] = useState<null | "draft_reply" | "prep_brief" | "research_person">(null);
+  const runAction = useServerFn(runPromiseAction);
+
   const SrcIcon = item.channel === "email" ? Mail : item.channel === "meeting" ? CalendarDays : StickyNote;
-  const diff = new Date(item.due_at).getTime() - Date.now();
+  const diff = new Date(item.due_at).getTime() - DEMO_EPOCH;
   const tone =
     diff < 0
       ? { dot: "bg-rose-500", label: "text-rose-600" }
       : diff < 86400_000
       ? { dot: "bg-amber-500", label: "text-amber-600" }
       : { dot: "bg-primary", label: "text-primary" };
-  const dueLabel =
-    diff < -86400_000
-      ? `Overdue · ${Math.floor(-diff / 86400_000)}d`
-      : diff < 0
-      ? "Overdue"
-      : diff < 86400_000
-      ? "Today"
-      : diff < 2 * 86400_000
-      ? "Tomorrow"
-      : new Date(item.due_at).toLocaleDateString(undefined, { weekday: "long" });
+  const dueLabel = relativeDueLabel(item.due_at);
+
+  async function handleAction(action: "draft_reply" | "prep_brief" | "research_person") {
+    setBusy(action);
+    setOpen(true);
+    try {
+      const result = await runAction({
+        data: {
+          action,
+          promise: {
+            id: item.id,
+            summary: item.summary,
+            owed_to: item.owed_to,
+            channel: item.channel,
+            due_at: item.due_at,
+            evidence_snippet: item.evidence_snippet,
+          },
+        },
+      });
+      setActionResult(result);
+    } catch (err) {
+      console.error(err);
+      toast.error("Agent failed", { description: err instanceof Error ? err.message : "Please try again." });
+    } finally {
+      setBusy(null);
+    }
+  }
 
   if (status !== "open") {
     return (
       <div className="flex items-center justify-between rounded-lg border border-dashed border-border px-4 py-3 text-[12.5px] text-muted-foreground">
         <span>{status === "kept" ? "Marked done" : "Dismissed"} — {item.summary}</span>
-        <button onClick={() => setStatus("open")} className="text-foreground/70 hover:text-foreground">Undo</button>
+        <button onClick={() => setStatus("open")} className="text-foreground/70 hover:text-foreground">
+          Undo
+        </button>
       </div>
     );
   }
+
+  const actionLabels: Record<string, string> = {
+    draft_reply: "Draft reply",
+    prep_brief: "Prep brief",
+    research_person: "Research",
+  };
 
   return (
     <div className="rounded-lg border border-border bg-card p-4 transition-shadow hover:shadow-sm">
@@ -279,16 +453,70 @@ function DemoRow({ item }: { item: DemoPromise }) {
           </button>
         </div>
       </div>
-      {open && item.draft_reply && (
+
+      {/* Agent action bar */}
+      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
+        <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground">Nyvlo can</span>
+        <ActionButton
+          icon={PenLine}
+          label="Draft reply"
+          loading={busy === "draft_reply"}
+          disabled={busy !== null}
+          onClick={() => handleAction("draft_reply")}
+        />
+        <ActionButton
+          icon={ClipboardList}
+          label="Prep brief"
+          loading={busy === "prep_brief"}
+          disabled={busy !== null}
+          onClick={() => handleAction("prep_brief")}
+        />
+        <ActionButton
+          icon={Search}
+          label="Research"
+          loading={busy === "research_person"}
+          disabled={busy !== null}
+          onClick={() => handleAction("research_person")}
+        />
+      </div>
+
+      {open && (actionResult || item.draft_reply) && (
         <div className="mt-4 border-t border-border pt-4">
-          <div className="mb-1 flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">
-            <Sparkles className="h-3 w-3 text-primary" /> Draft reply
+          <div className="mb-1.5 flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">
+            <Sparkles className="h-3 w-3 text-primary" />
+            {actionResult ? actionLabels[actionResult.action] ?? "Agent result" : "Draft reply"}
           </div>
           <div className="whitespace-pre-wrap rounded-md border border-border bg-secondary/40 p-3 text-[13px] leading-relaxed">
-            {item.draft_reply}
+            {actionResult?.text ?? item.draft_reply}
           </div>
         </div>
       )}
     </div>
+  );
+}
+
+function ActionButton({
+  icon: Icon,
+  label,
+  onClick,
+  loading,
+  disabled,
+}: {
+  icon: any;
+  label: string;
+  onClick: () => void;
+  loading?: boolean;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 text-[11.5px] font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+    >
+      {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Icon className="h-3 w-3" />}
+      {label}
+    </button>
   );
 }
