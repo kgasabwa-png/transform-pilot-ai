@@ -65,12 +65,12 @@ You have access to these tools:
 - research_person: pull together what we know about someone from memory and open commitments
 - search_memory: look up specific facts in memory
 
-When the user asks something open-ended ("what's on my plate?", "what should I focus on?"), answer directly using the context below — don't call a tool just to summarize. Call tools when the user wants real output (a draft, a brief, a dossier). If the context is empty, say so plainly instead of making things up.
+When the user asks something open-ended ("what's on my plate?", "what should I focus on?"), answer directly using the context below — don't call a tool just to summarize. Call tools when the user wants real output (a draft, a brief, a dossier). If the context is empty, say so plainly instead of making things up. If you need an item not shown here, call \`search_memory\` to look it up — the lists below are the items most relevant to the current conversation, not the whole workspace${totals ? ` (showing ${promises.length} of ${totals.promises} promises, ${memory.length} of ${totals.memory} memory items)` : ""}.
 
-# Open promises
+# Open promises (most relevant)
 ${promisesBlock}
 
-# Memory items
+# Memory items (most relevant)
 ${memoryBlock}
 
 When you reference a promise, use its summary (not its ID). When you draft something, the user will review and send — be confident, write the actual text, don't hedge.`;
