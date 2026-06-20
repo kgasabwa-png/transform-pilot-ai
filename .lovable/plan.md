@@ -1,66 +1,107 @@
-# Kill manual tokens — desktop + extension auto-auth
+## Goal
 
-Goal: end-user never sees a token. Sign in once, everything else is automatic.
+Two things, shipped together:
 
-## 1. Shared auth primitives (web app)
+1. **`/try` becomes a real demo account.** Visitors land in the actual app with realistic seeded data — every screen works because it *is* the app, not a static mockup.
+2. **Action agents.** Introduce the "Chief of Staff" surface: a chat that can draft, research, and (with permission) execute, plus one-click action buttons on every promise.
 
-New public server route: `src/routes/api/public/auth/device-exchange.ts`
+This is the wedge vs Granola/Reader/Attention: they *capture*, we *act*.
 
-- `POST /api/public/auth/device-exchange` — body `{ code }`. Validates a one-time device code minted by the web app (`device_codes` table, 60s TTL, single use). Returns `{ access_token, refresh_token, user }` from the user's Supabase session.
-- `POST /api/public/auth/device-start` — desktop/extension calls this anonymously, gets `{ code, verification_url }` where `verification_url = https://<app>/link?code=...`. Code is pending until the signed-in user approves it.
-- `GET /api/public/auth/device-poll?code=...` — client polls until approved, then receives tokens.
+---
 
-New table `device_link_codes (code text pk, user_id uuid null, status text, created_at, approved_at, consumed_at)` with RLS + grants. Anon can insert (start) and select own row by code; authenticated can update own pending row to approve.
+## Part 1 — Real demo account
 
-New authenticated route `src/routes/_authenticated/link.tsx`:
-- Reads `?code=...`, shows "Link your Nyvlo desktop app / extension?" with Approve button. On approve, calls a server fn that stamps `status='approved', user_id=auth.uid()`.
+### Behavior
+- `/try` button on the landing page → signs the visitor into a shared `demo@nyvlo.app` account → drops them at `/today`.
+- A persistent "You're in the demo. Sign up to use your own inbox →" banner across every authenticated page when the active user is the demo user.
+- Demo account has seeded: 12 promises (mix overdue/today/upcoming/kept), 8 memory items, 3 fake connector "connections" (Gmail, Calendar, Notes — marked as demo), 30 days of reliability history, sample agent chat thread.
+- Demo writes are allowed (mark done, dismiss, send a draft) but a nightly reset restores the seed.
 
-This replaces the entire "extension token" UI flow.
+### Why this approach
+The "expand static demo" path means maintaining a parallel UI forever. Real-account demos scale: every feature we build is automatically in the demo.
 
-## 2. Desktop app rewrite (Electron)
+### Safety
+- Demo user role = `demo` (new enum value), checked server-side to block: connecting real OAuth, sending real email, paying.
+- All "Execute" tier actions short-circuit in demo with a toast: "Demo mode — this would send the email in your real account."
 
-`desktop/main.cjs`:
-- On launch, check `electron-store` for refresh token. If missing → open default browser to `/link?code=<new>` via `device-start`, poll `/device-poll` until approved, persist tokens.
-- Register custom protocol `nyvlo://` so the web `/link` page can deep-link `nyvlo://linked?code=...` back into the app (faster than polling; polling is the fallback).
-- IPC exposes `getAccessToken()` to renderer; auto-refreshes via Supabase refresh endpoint.
+---
 
-`desktop/renderer/app.js`:
-- Remove the token textarea + save/load logic.
-- All `fetch(TRANSCRIBE/CAPTURE)` calls use `Authorization: Bearer ${await window.nyvlo.getAccessToken()}`.
-- Status surface: "Signed in as <email>" + Sign out.
+## Part 2 — Action agents
 
-`desktop/renderer/index.html`: drop token UI; keep record/reset/timer/transcript.
+### Action catalog (server-side tools)
 
-Server routes `api/public/extension/transcribe.ts` and `capture.ts` start accepting `Authorization: Bearer <supabase access token>` (verify via `supabase.auth.getUser(token)`) in addition to current legacy token, so we don't break anything mid-migration.
+| Tool | Tier | Description |
+|---|---|---|
+| `draft_email_reply` | Draft | Generates a reply to a promise/thread. Returns text + subject. |
+| `draft_meeting_brief` | Draft | Pulls context for an upcoming meeting → markdown pre-read. |
+| `draft_status_update` | Draft | Summarizes progress on a project/person → posts to chat. |
+| `research_person` | Research | Internal: all email/notes/promises involving X. Optional web enrich. |
+| `research_topic` | Research | Cross-source query: "what did we agree with Acme on pricing?" |
+| `prep_for_event` | Research | Calendar event → people, last threads, open promises both ways. |
+| `web_research` | Research | Lovable AI + search: "Marcus Lee Linear funding" → structured brief. |
+| `send_email` | Execute | Sends drafted email via Gmail (requires write scope, per-action confirm). |
+| `create_calendar_event` | Execute | Same, calendar.events scope. |
+| `mark_promise_done` | Execute | Internal, always available. |
 
-## 3. Browser extension auto-auth
+Built with AI SDK `tool` + `inputSchema` + `execute`, called from a `streamText` agent loop with `stopWhen: stepCountIs(50)`. `send_email` and `create_calendar_event` use `needsApproval`.
 
-`extension/manifest.json`:
-- Add `"host_permissions": ["https://*.nyvlo.com/*", "https://*.lovable.app/*"]` and `"permissions": ["cookies", "storage"]`.
+### Two UI surfaces
 
-`extension/popup.js` / new `extension/background.js`:
-- On install + on popup open, call `chrome.cookies.get` for the Supabase auth cookie on the web app origin. If present, read the access token from it and store in `chrome.storage.local`.
-- If absent, popup shows a single "Sign in to Nyvlo" button that opens the web app `/auth` in a new tab. Once user signs in there, the cookie exists and the extension picks it up on next open (no copy-paste).
-- All content scripts (`gmail.js`, `linear.js`, `notion.js`, `slack.js`) use the stored token via `chrome.storage.local.get`.
+**A. Chief of Staff chat (`/agent`)**
+- New route, added to the sidebar.
+- Persistent thread per user (one conversation per user for v1 — we can add threading later).
+- AI Elements composer + message list, renders tool calls + results inline.
+- System prompt includes: user name, today's date, open promises summary, recent memory items.
+- All action-catalog tools available.
 
-Note: Supabase JS stores the session in `localStorage`, not a cookie, by default. To make this work we add a small shim on the web app (`__root.tsx`) that mirrors the access token into a non-HttpOnly cookie `nyvlo-at` scoped to the app domain on every auth state change. The cookie is readable by the extension via `chrome.cookies` but not by other origins (SameSite=Lax, Secure). Acceptable for our threat model since it's the same token already in localStorage.
+**B. Per-promise action menu**
+- Every `DemoRow` / `PromiseRow` gets: `Draft reply` · `Prep` · `Research` · overflow menu.
+- Clicking runs the tool inline, expands the row with the result, lets user edit and approve.
 
-## 4. Settings cleanup
+### Backend
 
-`src/components/nyvlo/ExtensionSection.tsx`:
-- Remove generate/copy/revoke token UI entirely.
-- Keep: "Download desktop app", "Install browser extension", and the muted-sources list.
-- Add a "Linked devices" list backed by `device_link_codes` (label, last seen, revoke).
+- Server route `src/routes/api/agent.ts` — `useChat` transport for `/agent`.
+- Server function `src/lib/agent/run-tool.functions.ts` — single-tool invocations from row buttons.
+- Tools live in `src/lib/agent/tools/` — one file each, all imported by both surfaces.
+- Lovable AI Gateway, default model `google/gemini-3-flash-preview` for chat, `google/gemini-2.5-pro` for research-heavy tools.
 
-## 5. Out of scope this turn
+---
 
-- Native macOS calendar auto-detect (priority 4 from earlier — separate turn).
-- Founder demo seed mode (separate turn).
-- Removing the legacy extension token tables — keep them dormant until all clients are migrated, then drop in a follow-up.
+## Part 3 — Fix the immediate bugs
 
-## Technical notes
+- `/try` sidebar tabs are non-clickable `<div>`s — replaced by the real sidebar once /try is the real app.
+- Hydration error on `DemoRow` (server renders "Monday", client renders "Tuesday") — caused by `toLocaleDateString(weekday)` evaluating in different timezones. Replaced with deterministic relative labels computed from a server-stable timestamp.
 
-- All new server routes under `/api/public/auth/*` — verify nothing returns PII beyond the signed-in user's own email/id.
-- `device_link_codes`: anon insert + select-by-code only (no list); authenticated update only own pending row via RLS using a per-code claim approach (we'll use a `claim_code(code)` SECURITY DEFINER RPC instead of granting broad UPDATE).
-- Electron deep link: register `nyvlo://` in `main.cjs` via `app.setAsDefaultProtocolClient` + `second-instance` handler.
-- Extension cookie shim: ~10 lines in `__root.tsx` inside the existing `onAuthStateChange` listener.
+---
+
+## Build order
+
+1. Hydration fix on `/try` (10 min, unblocks current preview).
+2. Demo account: seed migration, `demo` role, server-side guards, `/try` → sign-in-and-redirect, demo banner.
+3. Action tool catalog (just `draft_email_reply`, `research_person`, `prep_for_event`, `mark_promise_done` for v1).
+4. Per-promise action buttons wired to single-tool server fn.
+5. `/agent` Chief of Staff chat surface.
+6. Execute-tier tools (`send_email`, `create_calendar_event`) gated behind real Gmail write scope + per-action approval — last because they need OAuth scope expansion.
+
+Steps 1–5 are this turn's scope. Step 6 is its own follow-up because adding Gmail write scope requires user-visible OAuth consent changes.
+
+---
+
+## Out of scope this turn
+
+- Threaded conversations in `/agent` (one thread per user for v1).
+- Background/scheduled agent runs ("every morning, draft my top 3 follow-ups").
+- Multi-user shared agent context.
+- Execute-tier tools (deferred to next turn — needs OAuth scope decision).
+
+---
+
+## Open question before I start
+
+The plan above ships **steps 1–5 in one turn**. That's a lot. Two alternatives if you'd rather slice smaller:
+
+- **Slice A (recommended):** Steps 1 + 3 + 4 only. Fix /try bugs, add the action tool catalog, wire row buttons. Skip the real demo account *and* the chat surface this turn. Smallest unit that demonstrates "we action things."
+- **Slice B:** Steps 1 + 2 only. Real demo account, no agents yet. Demo first, agents next turn.
+- **Full plan:** Everything 1–5.
+
+Tell me which slice and I build it.
