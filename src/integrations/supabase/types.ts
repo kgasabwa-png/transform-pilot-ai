@@ -408,6 +408,7 @@ export type Database = {
       memory_items: {
         Row: {
           created_at: string
+          embedding: string | null
           id: string
           kind: string
           occurred_at: string
@@ -418,6 +419,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          embedding?: string | null
           id?: string
           kind?: string
           occurred_at?: string
@@ -428,6 +430,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          embedding?: string | null
           id?: string
           kind?: string
           occurred_at?: string
@@ -612,6 +615,7 @@ export type Database = {
           created_at: string
           draft_reply: string | null
           due_at: string | null
+          embedding: string | null
           evidence_snippet: string | null
           id: string
           last_nudged_at: string | null
@@ -630,6 +634,7 @@ export type Database = {
           created_at?: string
           draft_reply?: string | null
           due_at?: string | null
+          embedding?: string | null
           evidence_snippet?: string | null
           id?: string
           last_nudged_at?: string | null
@@ -648,6 +653,7 @@ export type Database = {
           created_at?: string
           draft_reply?: string | null
           due_at?: string | null
+          embedding?: string | null
           evidence_snippet?: string | null
           id?: string
           last_nudged_at?: string | null
@@ -965,6 +971,38 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      match_memory_items: {
+        Args: {
+          _user_id: string
+          match_count?: number
+          query_embedding: string
+        }
+        Returns: {
+          id: string
+          kind: string
+          occurred_at: string
+          similarity: number
+          snippet: string
+          title: string
+        }[]
+      }
+      match_promises: {
+        Args: {
+          _user_id: string
+          match_count?: number
+          query_embedding: string
+        }
+        Returns: {
+          channel: string
+          due_at: string
+          evidence_snippet: string
+          id: string
+          owed_to: string
+          similarity: number
+          status: Database["public"]["Enums"]["promise_status"]
+          summary: string
+        }[]
       }
       move_to_dlq: {
         Args: {
