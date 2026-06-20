@@ -90,6 +90,23 @@ export function ExtensionSection() {
         </button>
       </div>
 
+      <div className="flex items-center justify-between border-b border-border bg-secondary/20 px-4 py-2.5">
+        <div className="text-[12px]">
+          <div className="font-medium">macOS capture (Swift sidecar)</div>
+          <div className="text-[11px] text-muted-foreground">
+            System-audio + screen capture via ScreenCaptureKit (macOS 13+).
+            Build with <code className="rounded bg-muted px-1 py-0.5 text-[10.5px]">swift build -c release</code> — see README inside.
+          </div>
+        </div>
+        <button
+          onClick={() => handleDownload("/nyvlo-mac-capture.zip", "nyvlo-mac-capture.zip")}
+          aria-label="Download macOS Swift sidecar source"
+          className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[11px] hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Download className="h-3 w-3" /> Swift
+        </button>
+      </div>
+
       <div className="border-t border-border bg-secondary/20 px-4 py-2 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
         Linked devices
       </div>
