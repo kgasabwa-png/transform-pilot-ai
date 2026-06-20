@@ -5,6 +5,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { buildSystemPrompt, type AgentPromise, type AgentMemory } from "@/lib/agent/context";
 import { buildAgentTools } from "@/lib/agent/tools.server";
+import { selectRelevantContext, turnsFromUIMessages } from "@/lib/agent/retrieve";
 
 export const Route = createFileRoute("/api/agent")({
   server: {
