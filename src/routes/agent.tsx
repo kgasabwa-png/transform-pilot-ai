@@ -258,7 +258,7 @@ function MessageView({ message }: { message: UIMessage }) {
   const isUser = message.role === "user";
   return (
     <Message from={message.role}>
-      <MessageContent variant={isUser ? "contained" : "flat"}>
+      <MessageContent>
         {message.parts.map((part, idx) => {
           if (part.type === "text") {
             return isUser ? (
