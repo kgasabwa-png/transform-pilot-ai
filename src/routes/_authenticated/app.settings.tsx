@@ -9,8 +9,15 @@ import { getGmailConnection, startGmailOAuth, disconnectGmail } from "@/lib/nyvl
 import { Check, ShieldCheck, Globe, LogOut, RefreshCw, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
+
+const GMAIL_STATUS_MESSAGES: Record<string, { kind: "success" | "error"; message: string }> = {
+  connected: { kind: "success", message: "Gmail connected" },
+  error: { kind: "error", message: "Gmail connect was cancelled or failed" },
+  bad_state: { kind: "error", message: "Gmail connect expired. Please try again." },
+  failed: { kind: "error", message: "Gmail connect failed. Please try again." },
+};
 
 export const Route = createFileRoute("/_authenticated/app/settings")({
   head: () => ({ meta: [{ title: "Settings · Nyvlo" }] }),
@@ -34,6 +41,27 @@ function SettingsPage() {
   const profile = data?.profile;
   const connection = data?.connection;
   const gmail = gmailData?.connection;
+
+  // Surface ?gmail=connected|error|... left by the OAuth callback redirect.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get("gmail");
+    if (!status) return;
+    const entry = GMAIL_STATUS_MESSAGES[status];
+    if (entry) {
+      toast[entry.kind](entry.message);
+      if (status === "connected") {
+        queryClient.invalidateQueries({ queryKey: ["gmail-connection"] });
+      }
+    }
+    params.delete("gmail");
+    const next = params.toString();
+    window.history.replaceState(
+      {},
+      "",
+      window.location.pathname + (next ? `?${next}` : ""),
+    );
+  }, [queryClient]);
 
   const handleConnect = async () => {
     setBusy("connect");
@@ -75,16 +103,15 @@ function SettingsPage() {
     navigate({ to: "/auth", replace: true });
   };
 
-  const handleConnectGmail = async () => {
-    // Open a same-origin handoff page synchronously. That page can safely wait
-    // for the server auth URL and then navigate itself to Nylas.
+  const handleConnectGmail = () => {
+    // Open a same-origin handoff page synchronously so the popup is not
+    // blocked, then let it fetch the Google OAuth URL and navigate itself.
     const popup = window.open("/app/gmail-connect", "_blank");
-    setBusy("gmail-connect");
     if (!popup) {
       toast.error("Popup blocked. Allow popups for this site, then try again.");
-      setBusy(null);
       return;
     }
+    setBusy("gmail-connect");
     window.setTimeout(() => setBusy(null), 900);
   };
 

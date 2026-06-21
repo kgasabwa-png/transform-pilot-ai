@@ -46,7 +46,6 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
-import { Route as ApiPublicNylasCallbackRouteImport } from './routes/api/public/nylas/callback'
 import { Route as ApiPublicIngestSessionStartRouteImport } from './routes/api/public/ingest/session-start'
 import { Route as ApiPublicIngestSessionEndRouteImport } from './routes/api/public/ingest/session-end'
 import { Route as ApiPublicIngestScreenFrameRouteImport } from './routes/api/public/ingest/screen-frame'
@@ -256,11 +255,6 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicNylasCallbackRoute = ApiPublicNylasCallbackRouteImport.update({
-  id: '/api/public/nylas/callback',
-  path: '/api/public/nylas/callback',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiPublicIngestSessionStartRoute =
   ApiPublicIngestSessionStartRouteImport.update({
     id: '/api/public/ingest/session-start',
@@ -387,7 +381,6 @@ export interface FileRoutesByFullPath {
   '/api/public/ingest/screen-frame': typeof ApiPublicIngestScreenFrameRoute
   '/api/public/ingest/session-end': typeof ApiPublicIngestSessionEndRoute
   '/api/public/ingest/session-start': typeof ApiPublicIngestSessionStartRoute
-  '/api/public/nylas/callback': typeof ApiPublicNylasCallbackRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -438,7 +431,6 @@ export interface FileRoutesByTo {
   '/api/public/ingest/screen-frame': typeof ApiPublicIngestScreenFrameRoute
   '/api/public/ingest/session-end': typeof ApiPublicIngestSessionEndRoute
   '/api/public/ingest/session-start': typeof ApiPublicIngestSessionStartRoute
-  '/api/public/nylas/callback': typeof ApiPublicNylasCallbackRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -493,7 +485,6 @@ export interface FileRoutesById {
   '/api/public/ingest/screen-frame': typeof ApiPublicIngestScreenFrameRoute
   '/api/public/ingest/session-end': typeof ApiPublicIngestSessionEndRoute
   '/api/public/ingest/session-start': typeof ApiPublicIngestSessionStartRoute
-  '/api/public/nylas/callback': typeof ApiPublicNylasCallbackRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -548,7 +539,6 @@ export interface FileRouteTypes {
     | '/api/public/ingest/screen-frame'
     | '/api/public/ingest/session-end'
     | '/api/public/ingest/session-start'
-    | '/api/public/nylas/callback'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -599,7 +589,6 @@ export interface FileRouteTypes {
     | '/api/public/ingest/screen-frame'
     | '/api/public/ingest/session-end'
     | '/api/public/ingest/session-start'
-    | '/api/public/nylas/callback'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -653,7 +642,6 @@ export interface FileRouteTypes {
     | '/api/public/ingest/screen-frame'
     | '/api/public/ingest/session-end'
     | '/api/public/ingest/session-start'
-    | '/api/public/nylas/callback'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -690,7 +678,6 @@ export interface RootRouteChildren {
   ApiPublicIngestScreenFrameRoute: typeof ApiPublicIngestScreenFrameRoute
   ApiPublicIngestSessionEndRoute: typeof ApiPublicIngestSessionEndRoute
   ApiPublicIngestSessionStartRoute: typeof ApiPublicIngestSessionStartRoute
-  ApiPublicNylasCallbackRoute: typeof ApiPublicNylasCallbackRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -960,13 +947,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/nylas/callback': {
-      id: '/api/public/nylas/callback'
-      path: '/api/public/nylas/callback'
-      fullPath: '/api/public/nylas/callback'
-      preLoaderRoute: typeof ApiPublicNylasCallbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/ingest/session-start': {
       id: '/api/public/ingest/session-start'
       path: '/api/public/ingest/session-start'
@@ -1159,7 +1139,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicIngestScreenFrameRoute: ApiPublicIngestScreenFrameRoute,
   ApiPublicIngestSessionEndRoute: ApiPublicIngestSessionEndRoute,
   ApiPublicIngestSessionStartRoute: ApiPublicIngestSessionStartRoute,
-  ApiPublicNylasCallbackRoute: ApiPublicNylasCallbackRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
