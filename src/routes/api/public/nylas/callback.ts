@@ -36,7 +36,7 @@ export const Route = createFileRoute("/api/public/nylas/callback")({
                 provider: "nylas",
                 grant_id: grant.grant_id,
                 email: grant.email,
-                scopes: grant.scope ?? null,
+                scopes: grant.scope ? grant.scope.split(/\s+/).filter(Boolean) : null,
                 status: "connected",
                 connected_at: new Date().toISOString(),
               },
