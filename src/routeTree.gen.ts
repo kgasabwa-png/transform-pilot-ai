@@ -54,6 +54,7 @@ import { Route as ApiPublicIngestAudioChunkRouteImport } from './routes/api/publ
 import { Route as ApiPublicHooksSyncAllRouteImport } from './routes/api/public/hooks/sync-all'
 import { Route as ApiPublicHooksGenerateRemindersRouteImport } from './routes/api/public/hooks/generate-reminders'
 import { Route as ApiPublicHooksDailyDigestRouteImport } from './routes/api/public/hooks/daily-digest'
+import { Route as ApiPublicGoogleGmailCallbackRouteImport } from './routes/api/public/google/gmail-callback'
 import { Route as ApiPublicExtensionTranscribeRouteImport } from './routes/api/public/extension/transcribe'
 import { Route as ApiPublicExtensionTodayRouteImport } from './routes/api/public/extension/today'
 import { Route as ApiPublicExtensionCaptureRouteImport } from './routes/api/public/extension/capture'
@@ -301,6 +302,12 @@ const ApiPublicHooksDailyDigestRoute =
     path: '/api/public/hooks/daily-digest',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicGoogleGmailCallbackRoute =
+  ApiPublicGoogleGmailCallbackRouteImport.update({
+    id: '/api/public/google/gmail-callback',
+    path: '/api/public/google/gmail-callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicExtensionTranscribeRoute =
   ApiPublicExtensionTranscribeRouteImport.update({
     id: '/api/public/extension/transcribe',
@@ -372,6 +379,7 @@ export interface FileRoutesByFullPath {
   '/api/public/extension/capture': typeof ApiPublicExtensionCaptureRoute
   '/api/public/extension/today': typeof ApiPublicExtensionTodayRoute
   '/api/public/extension/transcribe': typeof ApiPublicExtensionTranscribeRoute
+  '/api/public/google/gmail-callback': typeof ApiPublicGoogleGmailCallbackRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/generate-reminders': typeof ApiPublicHooksGenerateRemindersRoute
   '/api/public/hooks/sync-all': typeof ApiPublicHooksSyncAllRoute
@@ -422,6 +430,7 @@ export interface FileRoutesByTo {
   '/api/public/extension/capture': typeof ApiPublicExtensionCaptureRoute
   '/api/public/extension/today': typeof ApiPublicExtensionTodayRoute
   '/api/public/extension/transcribe': typeof ApiPublicExtensionTranscribeRoute
+  '/api/public/google/gmail-callback': typeof ApiPublicGoogleGmailCallbackRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/generate-reminders': typeof ApiPublicHooksGenerateRemindersRoute
   '/api/public/hooks/sync-all': typeof ApiPublicHooksSyncAllRoute
@@ -476,6 +485,7 @@ export interface FileRoutesById {
   '/api/public/extension/capture': typeof ApiPublicExtensionCaptureRoute
   '/api/public/extension/today': typeof ApiPublicExtensionTodayRoute
   '/api/public/extension/transcribe': typeof ApiPublicExtensionTranscribeRoute
+  '/api/public/google/gmail-callback': typeof ApiPublicGoogleGmailCallbackRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/generate-reminders': typeof ApiPublicHooksGenerateRemindersRoute
   '/api/public/hooks/sync-all': typeof ApiPublicHooksSyncAllRoute
@@ -530,6 +540,7 @@ export interface FileRouteTypes {
     | '/api/public/extension/capture'
     | '/api/public/extension/today'
     | '/api/public/extension/transcribe'
+    | '/api/public/google/gmail-callback'
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/generate-reminders'
     | '/api/public/hooks/sync-all'
@@ -580,6 +591,7 @@ export interface FileRouteTypes {
     | '/api/public/extension/capture'
     | '/api/public/extension/today'
     | '/api/public/extension/transcribe'
+    | '/api/public/google/gmail-callback'
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/generate-reminders'
     | '/api/public/hooks/sync-all'
@@ -633,6 +645,7 @@ export interface FileRouteTypes {
     | '/api/public/extension/capture'
     | '/api/public/extension/today'
     | '/api/public/extension/transcribe'
+    | '/api/public/google/gmail-callback'
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/generate-reminders'
     | '/api/public/hooks/sync-all'
@@ -669,6 +682,7 @@ export interface RootRouteChildren {
   ApiPublicExtensionCaptureRoute: typeof ApiPublicExtensionCaptureRoute
   ApiPublicExtensionTodayRoute: typeof ApiPublicExtensionTodayRoute
   ApiPublicExtensionTranscribeRoute: typeof ApiPublicExtensionTranscribeRoute
+  ApiPublicGoogleGmailCallbackRoute: typeof ApiPublicGoogleGmailCallbackRoute
   ApiPublicHooksDailyDigestRoute: typeof ApiPublicHooksDailyDigestRoute
   ApiPublicHooksGenerateRemindersRoute: typeof ApiPublicHooksGenerateRemindersRoute
   ApiPublicHooksSyncAllRoute: typeof ApiPublicHooksSyncAllRoute
@@ -1002,6 +1016,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksDailyDigestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/google/gmail-callback': {
+      id: '/api/public/google/gmail-callback'
+      path: '/api/public/google/gmail-callback'
+      fullPath: '/api/public/google/gmail-callback'
+      preLoaderRoute: typeof ApiPublicGoogleGmailCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/extension/transcribe': {
       id: '/api/public/extension/transcribe'
       path: '/api/public/extension/transcribe'
@@ -1130,6 +1151,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicExtensionCaptureRoute: ApiPublicExtensionCaptureRoute,
   ApiPublicExtensionTodayRoute: ApiPublicExtensionTodayRoute,
   ApiPublicExtensionTranscribeRoute: ApiPublicExtensionTranscribeRoute,
+  ApiPublicGoogleGmailCallbackRoute: ApiPublicGoogleGmailCallbackRoute,
   ApiPublicHooksDailyDigestRoute: ApiPublicHooksDailyDigestRoute,
   ApiPublicHooksGenerateRemindersRoute: ApiPublicHooksGenerateRemindersRoute,
   ApiPublicHooksSyncAllRoute: ApiPublicHooksSyncAllRoute,
