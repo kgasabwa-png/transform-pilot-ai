@@ -76,21 +76,28 @@ function SettingsPage() {
   };
 
   const handleConnectGmail = async () => {
+    // Open the tab SYNCHRONOUSLY on click — popup blockers and sandboxed
+    // iframes reject window.open() that happens after an await.
+    const popup = window.open("about:blank", "_blank", "noopener,noreferrer");
     setBusy("gmail-connect");
     try {
       const { url } = await startGmail();
-      // Break out of the Lovable preview iframe — Nylas refuses to be framed.
-      try {
-        if (window.top && window.top !== window.self) {
-          window.top.location.href = url;
-          return;
+      if (popup && !popup.closed) {
+        popup.location.href = url;
+      } else {
+        // Popup was blocked — try escaping the iframe to the top window.
+        try {
+          if (window.top && window.top !== window.self) {
+            window.top.location.href = url;
+            return;
+          }
+        } catch {
+          /* cross-origin */
         }
-      } catch {
-        // Cross-origin top access blocked — fall through to new tab.
+        window.location.href = url;
       }
-      const opened = window.open(url, "_blank", "noopener,noreferrer");
-      if (!opened) window.location.href = url;
     } catch (e) {
+      popup?.close();
       toast.error(e instanceof Error ? e.message : "Couldn't start Gmail connect");
       setBusy(null);
     }
