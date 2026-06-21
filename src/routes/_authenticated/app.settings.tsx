@@ -155,6 +155,42 @@ function SettingsPage() {
               </button>
             )}
           </div>
+
+          <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-3 last:border-b-0">
+            <div className="flex items-start gap-3">
+              <Mail className="mt-0.5 h-4 w-4 text-muted-foreground" />
+              <div>
+                <div className="text-[13.5px] font-medium">Gmail</div>
+                <div className="mt-0.5 text-[11.5px] text-muted-foreground">
+                  {gmail
+                    ? `${gmail.email}${gmail.last_sync_at ? ` · synced ${formatDistanceToNow(new Date(gmail.last_sync_at), { addSuffix: true })}` : " · never synced"}`
+                    : "Read and send email on your behalf"}
+                </div>
+              </div>
+            </div>
+            {gmail ? (
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={handleDisconnectGmail}
+                  disabled={busy === "gmail-disconnect"}
+                  className="rounded-md border border-border px-2.5 py-1 text-[11.5px] text-muted-foreground hover:bg-muted disabled:opacity-50"
+                >
+                  Disconnect
+                </button>
+                <span className="inline-flex items-center gap-1 rounded-md bg-success/15 px-2 py-0.5 text-[11.5px] font-medium text-success">
+                  <Check className="h-3 w-3" /> Connected
+                </span>
+              </div>
+            ) : (
+              <button
+                onClick={handleConnectGmail}
+                disabled={busy === "gmail-connect"}
+                className="rounded-md bg-foreground px-3 py-1.5 text-[12px] font-medium text-background hover:opacity-90 disabled:opacity-50"
+              >
+                {busy === "gmail-connect" ? "Opening…" : "Connect Gmail"}
+              </button>
+            )}
+          </div>
         </Section>
 
         <ExtensionSection />
