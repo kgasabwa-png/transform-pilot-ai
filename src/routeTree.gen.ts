@@ -32,6 +32,7 @@ import { Route as AuthenticatedAppSettingsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAppPromisesRouteImport } from './routes/_authenticated/app.promises'
 import { Route as AuthenticatedAppMemoryRouteImport } from './routes/_authenticated/app.memory'
 import { Route as AuthenticatedAppLinkRouteImport } from './routes/_authenticated/app.link'
+import { Route as AuthenticatedAppGmailConnectRouteImport } from './routes/_authenticated/app.gmail-connect'
 import { Route as AuthenticatedAppCommandRouteImport } from './routes/_authenticated/app.command'
 import { Route as AuthenticatedAppCaptureRouteImport } from './routes/_authenticated/app.capture'
 import { Route as AuthenticatedAdminWaitlistRouteImport } from './routes/_authenticated/admin.waitlist'
@@ -176,6 +177,12 @@ const AuthenticatedAppLinkRoute = AuthenticatedAppLinkRouteImport.update({
   path: '/link',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppGmailConnectRoute =
+  AuthenticatedAppGmailConnectRouteImport.update({
+    id: '/gmail-connect',
+    path: '/gmail-connect',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppCommandRoute = AuthenticatedAppCommandRouteImport.update({
   id: '/command',
   path: '/command',
@@ -351,6 +358,7 @@ export interface FileRoutesByFullPath {
   '/admin/waitlist': typeof AuthenticatedAdminWaitlistRoute
   '/app/capture': typeof AuthenticatedAppCaptureRoute
   '/app/command': typeof AuthenticatedAppCommandRoute
+  '/app/gmail-connect': typeof AuthenticatedAppGmailConnectRoute
   '/app/link': typeof AuthenticatedAppLinkRoute
   '/app/memory': typeof AuthenticatedAppMemoryRoute
   '/app/promises': typeof AuthenticatedAppPromisesRoute
@@ -400,6 +408,7 @@ export interface FileRoutesByTo {
   '/admin/waitlist': typeof AuthenticatedAdminWaitlistRoute
   '/app/capture': typeof AuthenticatedAppCaptureRoute
   '/app/command': typeof AuthenticatedAppCommandRoute
+  '/app/gmail-connect': typeof AuthenticatedAppGmailConnectRoute
   '/app/link': typeof AuthenticatedAppLinkRoute
   '/app/memory': typeof AuthenticatedAppMemoryRoute
   '/app/promises': typeof AuthenticatedAppPromisesRoute
@@ -453,6 +462,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/waitlist': typeof AuthenticatedAdminWaitlistRoute
   '/_authenticated/app/capture': typeof AuthenticatedAppCaptureRoute
   '/_authenticated/app/command': typeof AuthenticatedAppCommandRoute
+  '/_authenticated/app/gmail-connect': typeof AuthenticatedAppGmailConnectRoute
   '/_authenticated/app/link': typeof AuthenticatedAppLinkRoute
   '/_authenticated/app/memory': typeof AuthenticatedAppMemoryRoute
   '/_authenticated/app/promises': typeof AuthenticatedAppPromisesRoute
@@ -506,6 +516,7 @@ export interface FileRouteTypes {
     | '/admin/waitlist'
     | '/app/capture'
     | '/app/command'
+    | '/app/gmail-connect'
     | '/app/link'
     | '/app/memory'
     | '/app/promises'
@@ -555,6 +566,7 @@ export interface FileRouteTypes {
     | '/admin/waitlist'
     | '/app/capture'
     | '/app/command'
+    | '/app/gmail-connect'
     | '/app/link'
     | '/app/memory'
     | '/app/promises'
@@ -607,6 +619,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/waitlist'
     | '/_authenticated/app/capture'
     | '/_authenticated/app/command'
+    | '/_authenticated/app/gmail-connect'
     | '/_authenticated/app/link'
     | '/_authenticated/app/memory'
     | '/_authenticated/app/promises'
@@ -835,6 +848,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppLinkRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/gmail-connect': {
+      id: '/_authenticated/app/gmail-connect'
+      path: '/gmail-connect'
+      fullPath: '/app/gmail-connect'
+      preLoaderRoute: typeof AuthenticatedAppGmailConnectRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/app/command': {
       id: '/_authenticated/app/command'
       path: '/command'
@@ -1051,6 +1071,7 @@ const AuthenticatedAdminRouteWithChildren =
 interface AuthenticatedAppRouteChildren {
   AuthenticatedAppCaptureRoute: typeof AuthenticatedAppCaptureRoute
   AuthenticatedAppCommandRoute: typeof AuthenticatedAppCommandRoute
+  AuthenticatedAppGmailConnectRoute: typeof AuthenticatedAppGmailConnectRoute
   AuthenticatedAppLinkRoute: typeof AuthenticatedAppLinkRoute
   AuthenticatedAppMemoryRoute: typeof AuthenticatedAppMemoryRoute
   AuthenticatedAppPromisesRoute: typeof AuthenticatedAppPromisesRoute
@@ -1061,6 +1082,7 @@ interface AuthenticatedAppRouteChildren {
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppCaptureRoute: AuthenticatedAppCaptureRoute,
   AuthenticatedAppCommandRoute: AuthenticatedAppCommandRoute,
+  AuthenticatedAppGmailConnectRoute: AuthenticatedAppGmailConnectRoute,
   AuthenticatedAppLinkRoute: AuthenticatedAppLinkRoute,
   AuthenticatedAppMemoryRoute: AuthenticatedAppMemoryRoute,
   AuthenticatedAppPromisesRoute: AuthenticatedAppPromisesRoute,
@@ -1126,13 +1148,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
