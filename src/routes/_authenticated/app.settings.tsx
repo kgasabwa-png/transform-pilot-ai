@@ -77,24 +77,19 @@ function SettingsPage() {
 
   const handleConnectGmail = async () => {
     // Open the tab SYNCHRONOUSLY on click — popup blockers and sandboxed
-    // iframes reject window.open() that happens after an await.
-    const popup = window.open("about:blank", "_blank", "noopener,noreferrer");
+    // iframes reject window.open() that happens after an await. Do not use
+    // noopener here; browsers return null for the popup handle, which would
+    // force the framed preview to navigate to Nylas and render blank.
+    const popup = window.open("about:blank", "_blank");
     setBusy("gmail-connect");
     try {
       const { url } = await startGmail();
       if (popup && !popup.closed) {
-        popup.location.href = url;
+        popup.opener = null;
+        popup.location.replace(url);
       } else {
-        // Popup was blocked — try escaping the iframe to the top window.
-        try {
-          if (window.top && window.top !== window.self) {
-            window.top.location.href = url;
-            return;
-          }
-        } catch {
-          /* cross-origin */
-        }
-        window.location.href = url;
+        toast.error("Popup blocked. Allow popups for this site, then try again.");
+        setBusy(null);
       }
     } catch (e) {
       popup?.close();
