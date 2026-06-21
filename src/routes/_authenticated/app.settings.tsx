@@ -42,6 +42,27 @@ function SettingsPage() {
   const connection = data?.connection;
   const gmail = gmailData?.connection;
 
+  // Surface ?gmail=connected|error|... left by the OAuth callback redirect.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get("gmail");
+    if (!status) return;
+    const entry = GMAIL_STATUS_MESSAGES[status];
+    if (entry) {
+      toast[entry.kind](entry.message);
+      if (status === "connected") {
+        queryClient.invalidateQueries({ queryKey: ["gmail-connection"] });
+      }
+    }
+    params.delete("gmail");
+    const next = params.toString();
+    window.history.replaceState(
+      {},
+      "",
+      window.location.pathname + (next ? `?${next}` : ""),
+    );
+  }, [queryClient]);
+
   const handleConnect = async () => {
     setBusy("connect");
     try {
