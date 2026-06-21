@@ -1,107 +1,150 @@
-## Goal
 
-Two things, shipped together:
+# Per-User Gmail OAuth for Nyvlo
 
-1. **`/try` becomes a real demo account.** Visitors land in the actual app with realistic seeded data — every screen works because it *is* the app, not a static mockup.
-2. **Action agents.** Introduce the "Chief of Staff" surface: a chat that can draft, research, and (with permission) execute, plus one-click action buttons on every promise.
+## Part 1 — Conceptual walkthrough
 
-This is the wedge vs Granola/Reader/Attention: they *capture*, we *act*.
+### Why this is the right wedge
+Superhuman, Granola, Vimcal, Shortwave, Notion Calendar all do this. The user clicks "Connect Gmail," Google shows them a consent screen listing scopes, they click Allow, you get tokens. **IT is never involved** because the user is authorizing an app against their own account — same mechanism as "Sign in with Google," just with extra scopes. This is the cleanest PLG path: zero gatekeeper, zero procurement, zero security review.
 
----
+### The actors
+1. **Google Cloud project** (yours) — holds the OAuth client ID/secret, declares which scopes your app will ever request, and the consent screen branding (Nyvlo logo, support email, privacy policy URL).
+2. **The user's Google account** — grants/revokes access.
+3. **Nyvlo backend** — stores per-user refresh tokens, refreshes access tokens, makes Gmail API calls server-side.
+4. **Nyvlo frontend** — kicks off the OAuth flow, shows connection status.
 
-## Part 1 — Real demo account
+### The OAuth dance (Authorization Code flow with refresh)
+```
+User clicks "Connect Gmail"
+   ↓
+Nyvlo redirects → https://accounts.google.com/o/oauth2/v2/auth?...
+   (params: client_id, redirect_uri, scope, access_type=offline, prompt=consent, state)
+   ↓
+Google shows consent screen ("Nyvlo wants to read & send email")
+   ↓
+User clicks Allow
+   ↓
+Google redirects → https://nyvlo.com/api/public/google/callback?code=XYZ&state=...
+   ↓
+Nyvlo backend POSTs code → https://oauth2.googleapis.com/token
+   (with client_id + client_secret)
+   ↓
+Google returns: { access_token, refresh_token, expires_in: 3600, scope }
+   ↓
+Nyvlo stores refresh_token (encrypted) keyed to user_id
+   ↓
+Done — Nyvlo can now call Gmail API on behalf of this user forever
+```
 
-### Behavior
-- `/try` button on the landing page → signs the visitor into a shared `demo@nyvlo.app` account → drops them at `/today`.
-- A persistent "You're in the demo. Sign up to use your own inbox →" banner across every authenticated page when the active user is the demo user.
-- Demo account has seeded: 12 promises (mix overdue/today/upcoming/kept), 8 memory items, 3 fake connector "connections" (Gmail, Calendar, Notes — marked as demo), 30 days of reliability history, sample agent chat thread.
-- Demo writes are allowed (mark done, dismiss, send a draft) but a nightly reset restores the seed.
+Key flags:
+- `access_type=offline` — required to get a refresh token (without it you only get a 1-hour access token).
+- `prompt=consent` — forces the consent screen so Google reliably re-issues the refresh token (Google sometimes omits it on repeat auths).
+- `state` — CSRF token; you generate it, stash it in a short-lived cookie, verify on callback.
 
-### Why this approach
-The "expand static demo" path means maintaining a parallel UI forever. Real-account demos scale: every feature we build is automatically in the demo.
+### Token lifecycle
+- **Access token** — short-lived (1h), used in `Authorization: Bearer ...` header for Gmail API calls. Don't store; refresh on demand.
+- **Refresh token** — long-lived (until user revokes, or 6 months of inactivity for unverified apps). Encrypted at rest. Used to mint new access tokens.
 
-### Safety
-- Demo user role = `demo` (new enum value), checked server-side to block: connecting real OAuth, sending real email, paying.
-- All "Execute" tier actions short-circuit in demo with a toast: "Demo mode — this would send the email in your real account."
+Refresh pattern: before each Gmail API call, check if cached access token is >55min old → if so, POST to token endpoint with refresh_token → cache new access token in memory (or short-TTL row).
 
----
+### Scopes you need
+- `https://www.googleapis.com/auth/gmail.readonly` — read inbox, threads, messages (extract promises from sent + received mail).
+- `https://www.googleapis.com/auth/gmail.send` — send drafts on user's behalf (the watermarked follow-ups).
+- `https://www.googleapis.com/auth/userinfo.email` — know which Gmail address you connected (so we can match it to the Nyvlo user).
 
-## Part 2 — Action agents
+Skip `gmail.modify` and `gmail.compose` for v1 — narrower scopes = less scary consent screen = higher conversion.
 
-### Action catalog (server-side tools)
+### The Google verification gatekeeper (the real catch)
+Gmail scopes are "sensitive" + "restricted." Until your app is verified by Google:
+- Unverified screen: "Google hasn't verified this app." User clicks "Advanced → Continue (unsafe)" to proceed.
+- Cap of **100 users** total can grant access before you're hard-blocked.
 
-| Tool | Tier | Description |
-|---|---|---|
-| `draft_email_reply` | Draft | Generates a reply to a promise/thread. Returns text + subject. |
-| `draft_meeting_brief` | Draft | Pulls context for an upcoming meeting → markdown pre-read. |
-| `draft_status_update` | Draft | Summarizes progress on a project/person → posts to chat. |
-| `research_person` | Research | Internal: all email/notes/promises involving X. Optional web enrich. |
-| `research_topic` | Research | Cross-source query: "what did we agree with Acme on pricing?" |
-| `prep_for_event` | Research | Calendar event → people, last threads, open promises both ways. |
-| `web_research` | Research | Lovable AI + search: "Marcus Lee Linear funding" → structured brief. |
-| `send_email` | Execute | Sends drafted email via Gmail (requires write scope, per-action confirm). |
-| `create_calendar_event` | Execute | Same, calendar.events scope. |
-| `mark_promise_done` | Execute | Internal, always available. |
+For launch this is fine — 100 design partners. To remove the warning and lift the cap:
+- Submit OAuth app for verification (form + privacy policy + ToS + demo video).
+- Because Gmail is "restricted scope," you also need a **CASA security assessment** (3rd-party security audit, ~$1.5k–$15k, takes 4–8 weeks).
 
-Built with AI SDK `tool` + `inputSchema` + `execute`, called from a `streamText` agent loop with `stopWhen: stepCountIs(50)`. `send_email` and `create_calendar_event` use `needsApproval`.
+This is the real friction — but you don't need it until you've validated the wedge. Granola, Superhuman all went through this.
 
-### Two UI surfaces
+### Edge cases
+- **User revokes access in Google account settings** → next refresh fails with `invalid_grant` → mark connection as disconnected, prompt re-auth.
+- **User changes Google password** → refresh token still valid (Google doesn't invalidate on password change).
+- **Multiple Gmail accounts** → store one connection per (user_id, gmail_address). v1 = single connection.
+- **Token theft** → refresh tokens are bearer credentials. Encrypt at rest with a key from env (never plaintext in DB), restrict by RLS, never log.
 
-**A. Chief of Staff chat (`/agent`)**
-- New route, added to the sidebar.
-- Persistent thread per user (one conversation per user for v1 — we can add threading later).
-- AI Elements composer + message list, renders tool calls + results inline.
-- System prompt includes: user name, today's date, open promises summary, recent memory items.
-- All action-catalog tools available.
-
-**B. Per-promise action menu**
-- Every `DemoRow` / `PromiseRow` gets: `Draft reply` · `Prep` · `Research` · overflow menu.
-- Clicking runs the tool inline, expands the row with the result, lets user edit and approve.
-
-### Backend
-
-- Server route `src/routes/api/agent.ts` — `useChat` transport for `/agent`.
-- Server function `src/lib/agent/run-tool.functions.ts` — single-tool invocations from row buttons.
-- Tools live in `src/lib/agent/tools/` — one file each, all imported by both surfaces.
-- Lovable AI Gateway, default model `google/gemini-3-flash-preview` for chat, `google/gemini-2.5-pro` for research-heavy tools.
-
----
-
-## Part 3 — Fix the immediate bugs
-
-- `/try` sidebar tabs are non-clickable `<div>`s — replaced by the real sidebar once /try is the real app.
-- Hydration error on `DemoRow` (server renders "Monday", client renders "Tuesday") — caused by `toLocaleDateString(weekday)` evaluating in different timezones. Replaced with deterministic relative labels computed from a server-stable timestamp.
-
----
-
-## Build order
-
-1. Hydration fix on `/try` (10 min, unblocks current preview).
-2. Demo account: seed migration, `demo` role, server-side guards, `/try` → sign-in-and-redirect, demo banner.
-3. Action tool catalog (just `draft_email_reply`, `research_person`, `prep_for_event`, `mark_promise_done` for v1).
-4. Per-promise action buttons wired to single-tool server fn.
-5. `/agent` Chief of Staff chat surface.
-6. Execute-tier tools (`send_email`, `create_calendar_event`) gated behind real Gmail write scope + per-action approval — last because they need OAuth scope expansion.
-
-Steps 1–5 are this turn's scope. Step 6 is its own follow-up because adding Gmail write scope requires user-visible OAuth consent changes.
+### What you can do once connected
+1. **Inbox scan**: pull last 30 days of sent mail → extract commitments ("I'll send you the deck by Friday") → seed promises table.
+2. **Background sync**: poll every ~5 min via Gmail's `historyId` for new messages → detect new commitments in real time.
+3. **Send drafts**: the killer feature — Nyvlo drafts a follow-up email and sends it from the user's Gmail with the watermark. Recipient sees it as a normal email from the user.
+4. **Thread context**: when a promise comes due, pull the original thread for context in the agent UI.
 
 ---
 
-## Out of scope this turn
+## Part 2 — Build plan (sequenced)
 
-- Threaded conversations in `/agent` (one thread per user for v1).
-- Background/scheduled agent runs ("every morning, draft my top 3 follow-ups").
-- Multi-user shared agent context.
-- Execute-tier tools (deferred to next turn — needs OAuth scope decision).
+### Phase 0 — Google Cloud setup (manual, ~30 min, you do this once)
+1. Create Google Cloud project "Nyvlo Production."
+2. Enable Gmail API + People API.
+3. Configure OAuth consent screen: External, Nyvlo branding, support email, privacy + ToS URLs, scopes list (the 3 above), test users (your email + first design partners — up to 100 while unverified).
+4. Create OAuth 2.0 Client ID (Web application). Authorized redirect URI: `https://transform-pilot-ai.lovable.app/api/public/google/callback` (+ preview URL + custom domain when added).
+5. Copy client ID + secret → store as `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` secrets. (Already present per project secrets — reuse if they're the right project, otherwise add new.)
 
----
+### Phase 1 — DB schema (1 migration)
+New table `gmail_connections`:
+- `id uuid pk`
+- `user_id uuid` (→ profiles.id, unique — one Gmail per Nyvlo user for v1)
+- `gmail_address text not null`
+- `refresh_token_encrypted text not null` (encrypted via pgsodium or app-level AES-GCM)
+- `scopes text[] not null`
+- `connected_at timestamptz`
+- `last_synced_at timestamptz`
+- `last_history_id text` (for incremental sync)
+- `status text` ('active' | 'revoked' | 'error')
+- `last_error text`
 
-## Open question before I start
+Plus an `oauth_states` table (short-lived CSRF tokens, 10-min TTL):
+- `state text pk`, `user_id uuid`, `expires_at timestamptz`
 
-The plan above ships **steps 1–5 in one turn**. That's a lot. Two alternatives if you'd rather slice smaller:
+RLS: user can read their own connection row (but never the encrypted token — exclude via a view), service_role full access. GRANTs on both.
 
-- **Slice A (recommended):** Steps 1 + 3 + 4 only. Fix /try bugs, add the action tool catalog, wire row buttons. Skip the real demo account *and* the chat surface this turn. Smallest unit that demonstrates "we action things."
-- **Slice B:** Steps 1 + 2 only. Real demo account, no agents yet. Demo first, agents next turn.
-- **Full plan:** Everything 1–5.
+### Phase 2 — OAuth endpoints (server routes)
+- `src/routes/api/public/google/start.ts` (GET) — authenticated user, generates state, redirects to Google.
+  - Actually: needs to be on a non-`public` authenticated server function path since it requires the Nyvlo user session. Use a `createServerFn` that returns the URL, client navigates to it.
+- `src/routes/api/public/google/callback.ts` (GET) — Google calls this. Exchanges code → tokens, looks up user via state, encrypts + stores refresh token, redirects to `/settings/integrations?gmail=connected`.
 
-Tell me which slice and I build it.
+### Phase 3 — Token refresh + Gmail client helper
+`src/lib/gmail/client.server.ts`:
+- `getAccessToken(userId)` — fetch refresh token, swap for access token, cache in-memory with TTL.
+- `gmailFetch(userId, path, init)` — wrapper that auto-refreshes on 401, returns parsed JSON.
+- `disconnectGmail(userId)` — POST to revoke endpoint, delete row.
+
+### Phase 4 — UI
+- `src/routes/_authenticated/settings.integrations.tsx` — "Connect Gmail" button, connection status, disconnect button, last sync timestamp.
+- Server function `getGmailConnectionStatus` — returns { connected, gmail_address, last_synced_at, status }.
+
+### Phase 5 — First feature: inbox backfill (the value moment)
+`scanInboxForPromises` server function (callable post-connect):
+- Calls Gmail `users.messages.list?q=from:me newer_than:30d&maxResults=100`.
+- For each message, fetch full body, run existing promise-extraction LLM prompt, insert into `promises` table with `source='gmail'`, `evidence_snippet=<quoted text>`, embedding (reuses the embedding pipeline we just shipped).
+- Updates `last_synced_at` and `last_history_id`.
+- UI: progress bar "Scanning your sent mail… found 14 promises so far."
+
+This is the wow moment. User connects → 30 seconds later sees 14 things they forgot they committed to.
+
+### Phase 6 (later, not in this plan) — Background sync via Gmail watch/history
+- Pubsub push notifications or a 5-min cron polling `history.list?startHistoryId=...`.
+- Verification submission to Google + CASA.
+- Send drafts via `users.messages.send`.
+
+### Scope of THIS plan
+Phases 0–5. Phase 0 you do manually in Google Cloud. Phases 1–5 are roughly **2–3 days of build work**: ~1 migration, 2 server routes, 1 settings UI, 1 backfill server function, integration with existing extraction + embedding pipeline.
+
+### Technical details (collapsed for non-technical readers)
+- Encryption: Node `crypto.createCipheriv('aes-256-gcm', ...)` with a 32-byte key from `GMAIL_TOKEN_ENC_KEY` secret (we'll add via `add_secret` in build mode). IV per row, stored alongside ciphertext.
+- State cookie: httpOnly, secure, SameSite=Lax, 10-min expiry.
+- Redirect URI must match exactly what's registered in Google Cloud — including protocol and trailing slash behavior. Plan adds both prod + preview URIs upfront.
+- Reuse the existing `LOVABLE_API_KEY` Gemini pipeline for extraction (no new model wiring).
+
+### What I'll need from you before building
+1. Confirm Google Cloud project access (you'll need to create the OAuth client and paste the secret).
+2. Confirm whether the existing `GOOGLE_OAUTH_CLIENT_ID` / `_SECRET` secrets are for Nyvlo's production project or for "Sign in with Google" — if the latter, we add new secrets (e.g. `GMAIL_OAUTH_CLIENT_ID`) to keep auth and Gmail-data scopes on separate clients (recommended — different consent screens, easier verification path).
+
+Approve this plan and I'll start with the migration + secret setup.
