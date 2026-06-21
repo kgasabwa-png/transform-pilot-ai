@@ -79,7 +79,17 @@ function SettingsPage() {
     setBusy("gmail-connect");
     try {
       const { url } = await startGmail();
-      window.location.href = url;
+      // Break out of the Lovable preview iframe — Nylas refuses to be framed.
+      try {
+        if (window.top && window.top !== window.self) {
+          window.top.location.href = url;
+          return;
+        }
+      } catch {
+        // Cross-origin top access blocked — fall through to new tab.
+      }
+      const opened = window.open(url, "_blank", "noopener,noreferrer");
+      if (!opened) window.location.href = url;
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't start Gmail connect");
       setBusy(null);
