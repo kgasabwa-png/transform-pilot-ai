@@ -375,6 +375,48 @@ export type Database = {
           },
         ]
       }
+      gmail_connections: {
+        Row: {
+          connected_at: string
+          created_at: string
+          email: string
+          grant_id: string
+          id: string
+          last_sync_at: string | null
+          provider: string
+          scopes: string[]
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          connected_at?: string
+          created_at?: string
+          email: string
+          grant_id: string
+          id?: string
+          last_sync_at?: string | null
+          provider?: string
+          scopes?: string[]
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          connected_at?: string
+          created_at?: string
+          email?: string
+          grant_id?: string
+          id?: string
+          last_sync_at?: string | null
+          provider?: string
+          scopes?: string[]
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ingestion_errors: {
         Row: {
           context: Json | null

@@ -5,7 +5,8 @@ import { Shell } from "@/components/nyvlo/Shell";
 import { ExtensionSection } from "@/components/nyvlo/ExtensionSection";
 import { getProfile } from "@/lib/nyvlo/profile.functions";
 import { startGoogleOAuth, disconnectGoogle, runSyncNow } from "@/lib/nyvlo/google.functions";
-import { Check, ShieldCheck, Globe, LogOut, RefreshCw } from "lucide-react";
+import { getGmailConnection, startGmailOAuth, disconnectGmail } from "@/lib/nyvlo/gmail.functions";
+import { Check, ShieldCheck, Globe, LogOut, RefreshCw, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -23,11 +24,16 @@ function SettingsPage() {
   const startOAuth = useServerFn(startGoogleOAuth);
   const disconnect = useServerFn(disconnectGoogle);
   const syncNow = useServerFn(runSyncNow);
+  const fetchGmail = useServerFn(getGmailConnection);
+  const startGmail = useServerFn(startGmailOAuth);
+  const disconnectGmailFn = useServerFn(disconnectGmail);
   const [busy, setBusy] = useState<string | null>(null);
 
   const { data } = useQuery({ queryKey: ["profile"], queryFn: () => fetchProfile() });
+  const { data: gmailData } = useQuery({ queryKey: ["gmail-connection"], queryFn: () => fetchGmail() });
   const profile = data?.profile;
   const connection = data?.connection;
+  const gmail = gmailData?.connection;
 
   const handleConnect = async () => {
     setBusy("connect");
@@ -68,6 +74,29 @@ function SettingsPage() {
     await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
   };
+
+  const handleConnectGmail = async () => {
+    setBusy("gmail-connect");
+    try {
+      const { url } = await startGmail();
+      window.location.href = url;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't start Gmail connect");
+      setBusy(null);
+    }
+  };
+
+  const handleDisconnectGmail = async () => {
+    setBusy("gmail-disconnect");
+    try {
+      await disconnectGmailFn();
+      toast.success("Gmail disconnected");
+      queryClient.invalidateQueries({ queryKey: ["gmail-connection"] });
+    } finally {
+      setBusy(null);
+    }
+  };
+
 
   return (
     <Shell title="Settings" subtitle="You control what Nyvlo connects to and remembers.">
@@ -123,6 +152,42 @@ function SettingsPage() {
                 className="rounded-md bg-foreground px-3 py-1.5 text-[12px] font-medium text-background hover:opacity-90 disabled:opacity-50"
               >
                 {busy === "connect" ? "Opening…" : "Connect Google"}
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-3 last:border-b-0">
+            <div className="flex items-start gap-3">
+              <Mail className="mt-0.5 h-4 w-4 text-muted-foreground" />
+              <div>
+                <div className="text-[13.5px] font-medium">Gmail</div>
+                <div className="mt-0.5 text-[11.5px] text-muted-foreground">
+                  {gmail
+                    ? `${gmail.email}${gmail.last_sync_at ? ` · synced ${formatDistanceToNow(new Date(gmail.last_sync_at), { addSuffix: true })}` : " · never synced"}`
+                    : "Read and send email on your behalf"}
+                </div>
+              </div>
+            </div>
+            {gmail ? (
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={handleDisconnectGmail}
+                  disabled={busy === "gmail-disconnect"}
+                  className="rounded-md border border-border px-2.5 py-1 text-[11.5px] text-muted-foreground hover:bg-muted disabled:opacity-50"
+                >
+                  Disconnect
+                </button>
+                <span className="inline-flex items-center gap-1 rounded-md bg-success/15 px-2 py-0.5 text-[11.5px] font-medium text-success">
+                  <Check className="h-3 w-3" /> Connected
+                </span>
+              </div>
+            ) : (
+              <button
+                onClick={handleConnectGmail}
+                disabled={busy === "gmail-connect"}
+                className="rounded-md bg-foreground px-3 py-1.5 text-[12px] font-medium text-background hover:opacity-90 disabled:opacity-50"
+              >
+                {busy === "gmail-connect" ? "Opening…" : "Connect Gmail"}
               </button>
             )}
           </div>
