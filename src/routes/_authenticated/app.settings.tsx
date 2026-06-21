@@ -6,7 +6,7 @@ import { ExtensionSection } from "@/components/nyvlo/ExtensionSection";
 import { getProfile } from "@/lib/nyvlo/profile.functions";
 import { startGoogleOAuth, disconnectGoogle, runSyncNow } from "@/lib/nyvlo/google.functions";
 import { getGmailConnection, startGmailOAuth, disconnectGmail } from "@/lib/nyvlo/gmail.functions";
-import { Check, ShieldCheck, Globe, LogOut, RefreshCw, Mail } from "lucide-react";
+import { Check, ShieldCheck, Globe, LogOut, RefreshCw, Mail, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
