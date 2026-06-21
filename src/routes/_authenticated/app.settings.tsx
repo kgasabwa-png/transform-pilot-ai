@@ -75,6 +75,29 @@ function SettingsPage() {
     navigate({ to: "/auth", replace: true });
   };
 
+  const handleConnectGmail = async () => {
+    setBusy("gmail-connect");
+    try {
+      const { url } = await startGmail();
+      window.location.href = url;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't start Gmail connect");
+      setBusy(null);
+    }
+  };
+
+  const handleDisconnectGmail = async () => {
+    setBusy("gmail-disconnect");
+    try {
+      await disconnectGmailFn();
+      toast.success("Gmail disconnected");
+      queryClient.invalidateQueries({ queryKey: ["gmail-connection"] });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+
   return (
     <Shell title="Settings" subtitle="You control what Nyvlo connects to and remembers.">
       <div className="grid gap-6 md:grid-cols-2">
