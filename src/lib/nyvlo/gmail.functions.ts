@@ -2,6 +2,29 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+const DEFAULT_NYLAS_REDIRECT_ORIGIN = "https://transform-pilot-ai.lovable.app";
+
+function normalizeOrigin(origin?: string | null) {
+  return origin?.replace(/\/+$/, "");
+}
+
+function requestOrigin() {
+  const host =
+    getRequestHeader("x-forwarded-host") ?? getRequestHeader("host") ?? "";
+  const proto =
+    getRequestHeader("x-forwarded-proto") ??
+    (host.includes("localhost") ? "http" : "https");
+  return host ? `${proto}://${host}` : DEFAULT_NYLAS_REDIRECT_ORIGIN;
+}
+
+function nylasRedirectOrigin() {
+  return (
+    normalizeOrigin(process.env.NYLAS_REDIRECT_ORIGIN) ??
+    normalizeOrigin(process.env.NYLAS_PUBLIC_ORIGIN) ??
+    DEFAULT_NYLAS_REDIRECT_ORIGIN
+  );
+}
+
 export const getGmailConnection = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -23,13 +46,11 @@ export const startGmailOAuth = createServerFn({ method: "POST" })
       );
     }
 
-    // Derive origin from the incoming request so preview + production both work.
-    const host =
-      getRequestHeader("x-forwarded-host") ?? getRequestHeader("host") ?? "";
-    const proto =
-      getRequestHeader("x-forwarded-proto") ??
-      (host.includes("localhost") ? "http" : "https");
-    const origin = `${proto}://${host}`;
+    // Nylas only accepts pre-registered callback URLs. Preview iframe domains
+    // are transient, so use the published app origin unless explicitly set.
+    const origin = requestOrigin().includes("localhost")
+      ? requestOrigin()
+      : nylasRedirectOrigin();
 
     const { buildAuthUrl, signState } = await import("@/lib/nyvlo/nylas.server");
     const state = signState(context.userId);
