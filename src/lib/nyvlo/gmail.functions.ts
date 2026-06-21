@@ -5,7 +5,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 const DEFAULT_NYLAS_REDIRECT_ORIGIN = "https://transform-pilot-ai.lovable.app";
 
 function normalizeOrigin(origin?: string | null) {
-  return origin?.replace(/\/+$/, "");
+  const value = origin?.trim().replace(/\/+$/, "");
+  return value || undefined;
 }
 
 function requestOrigin() {
