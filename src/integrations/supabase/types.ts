@@ -377,41 +377,50 @@ export type Database = {
       }
       gmail_connections: {
         Row: {
+          access_token: string | null
           connected_at: string
           created_at: string
           email: string
-          grant_id: string
+          grant_id: string | null
           id: string
           last_sync_at: string | null
           provider: string
+          refresh_token: string | null
           scopes: string[]
           status: string
+          token_expires_at: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          access_token?: string | null
           connected_at?: string
           created_at?: string
           email: string
-          grant_id: string
+          grant_id?: string | null
           id?: string
           last_sync_at?: string | null
           provider?: string
+          refresh_token?: string | null
           scopes?: string[]
           status?: string
+          token_expires_at?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          access_token?: string | null
           connected_at?: string
           created_at?: string
           email?: string
-          grant_id?: string
+          grant_id?: string | null
           id?: string
           last_sync_at?: string | null
           provider?: string
+          refresh_token?: string | null
           scopes?: string[]
           status?: string
+          token_expires_at?: string | null
           updated_at?: string
           user_id?: string
         }

@@ -1,19 +1,19 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { getRequestHost, getRequestHeader } from "@tanstack/react-start/server";
 
-const DEFAULT_NYLAS_REDIRECT_ORIGIN = "https://transform-pilot-ai.lovable.app";
+// Falls back to the published origin when the request is from a transient
+// preview iframe — Google only accepts pre-registered redirect URIs.
+const DEFAULT_REDIRECT_ORIGIN = "https://transform-pilot-ai.lovable.app";
 
-function normalizeOrigin(origin?: string | null) {
-  const value = origin?.trim().replace(/\/+$/, "");
-  return value || undefined;
-}
-
-function nylasRedirectOrigin() {
-  return (
-    normalizeOrigin(process.env.NYLAS_REDIRECT_ORIGIN) ??
-    normalizeOrigin(process.env.NYLAS_PUBLIC_ORIGIN) ??
-    DEFAULT_NYLAS_REDIRECT_ORIGIN
-  );
+function siteOrigin() {
+  const host = getRequestHost();
+  if (!host || host.includes("lovableproject.com") || host.includes("id-preview--")) {
+    return DEFAULT_REDIRECT_ORIGIN;
+  }
+  const fwdProto = getRequestHeader("x-forwarded-proto");
+  const proto = fwdProto ?? (host.includes("localhost") ? "http" : "https");
+  return `${proto}://${host}`;
 }
 
 export const getGmailConnection = createServerFn({ method: "GET" })
@@ -31,42 +31,57 @@ export const getGmailConnection = createServerFn({ method: "GET" })
 export const startGmailOAuth = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    if (!process.env.NYLAS_CLIENT_ID || !process.env.NYLAS_API_KEY) {
+    const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
+    if (!clientId) {
       throw new Error(
-        "Gmail connect is not configured. Missing NYLAS_CLIENT_ID or NYLAS_API_KEY.",
+        "Gmail connect is not configured. Missing GOOGLE_OAUTH_CLIENT_ID.",
       );
     }
 
-    // Nylas only accepts pre-registered callback URLs. Preview iframe domains
-    // are transient, so use the published app origin unless explicitly set.
-    const origin = nylasRedirectOrigin();
+    const { signGmailState } = await import("@/lib/nyvlo/gmail.server");
+    const origin = siteOrigin();
+    const redirectUri = `${origin}/api/public/google/gmail-callback`;
+    const state = signGmailState(context.userId);
 
-    const { buildAuthUrl, signState } = await import("@/lib/nyvlo/nylas.server");
-    const state = signState(context.userId);
-    const url = buildAuthUrl({
-      redirectUri: `${origin}/api/public/nylas/callback`,
+    const params = new URLSearchParams({
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      response_type: "code",
+      access_type: "offline",
+      prompt: "consent",
+      include_granted_scopes: "true",
+      scope: [
+        "openid",
+        "email",
+        "profile",
+        "https://www.googleapis.com/auth/gmail.readonly",
+        "https://www.googleapis.com/auth/gmail.send",
+      ].join(" "),
       state,
     });
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
     return { url };
   });
 
 export const disconnectGmail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    // Look up grant_id first so we can revoke at Nylas.
     const { data: row } = await context.supabase
       .from("gmail_connections")
-      .select("grant_id")
+      .select("refresh_token, access_token")
       .eq("user_id", context.userId)
       .maybeSingle();
 
-    if (row?.grant_id) {
+    const token = row?.refresh_token ?? row?.access_token;
+    if (token) {
       try {
-        const { deleteGrant } = await import("@/lib/nyvlo/nylas.server");
-        await deleteGrant(row.grant_id);
+        // Best-effort token revoke at Google.
+        await fetch(`https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(token)}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        });
       } catch (e) {
-        console.error("[nylas disconnect] grant delete failed", e);
-        // Continue anyway — we still want to remove the local row.
+        console.error("[gmail disconnect] revoke failed", e);
       }
     }
 
