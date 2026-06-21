@@ -67,7 +67,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Nyvlo is the quiet AI that catches the follow-ups, promises and loose ends slipping through your week — and drafts the reply before anyone notices." },
       { name: "theme-color", content: "#0b0c10" },
       { property: "og:title", content: "Nyvlo · The AI memory layer for the things you forget" },
-      { property: "og:description", content: "The quiet AI that catches what you forgot, before anyone notices." },
+      { property: "og:description", content: "Nyvlo is the quiet AI that catches the follow-ups, promises and loose ends slipping through your week — and drafts the reply before anyone notices." },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "Nyvlo" },
       { property: "og:image", content: "https://transform-pilot-ai.lovable.app/nyvlo-og.jpg" },
@@ -75,7 +75,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:image:height", content: "640" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Nyvlo · The AI memory layer for the things you forget" },
-      { name: "twitter:description", content: "The quiet AI that catches what you forgot, before anyone notices." },
+      { name: "twitter:description", content: "Nyvlo is the quiet AI that catches the follow-ups, promises and loose ends slipping through your week — and drafts the reply before anyone notices." },
       { name: "twitter:image", content: "https://transform-pilot-ai.lovable.app/nyvlo-og.jpg" },
     ],
     links: [
