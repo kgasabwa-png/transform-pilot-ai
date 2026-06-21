@@ -76,26 +76,16 @@ function SettingsPage() {
   };
 
   const handleConnectGmail = async () => {
-    // Open the tab SYNCHRONOUSLY on click — popup blockers and sandboxed
-    // iframes reject window.open() that happens after an await. Do not use
-    // noopener here; browsers return null for the popup handle, which would
-    // force the framed preview to navigate to Nylas and render blank.
-    const popup = window.open("about:blank", "_blank");
+    // Open a same-origin handoff page synchronously. That page can safely wait
+    // for the server auth URL and then navigate itself to Nylas.
+    const popup = window.open("/app/gmail-connect", "_blank");
     setBusy("gmail-connect");
-    try {
-      const { url } = await startGmail();
-      if (popup && !popup.closed) {
-        popup.opener = null;
-        popup.location.replace(url);
-      } else {
-        toast.error("Popup blocked. Allow popups for this site, then try again.");
-        setBusy(null);
-      }
-    } catch (e) {
-      popup?.close();
-      toast.error(e instanceof Error ? e.message : "Couldn't start Gmail connect");
+    if (!popup) {
+      toast.error("Popup blocked. Allow popups for this site, then try again.");
       setBusy(null);
+      return;
     }
+    window.setTimeout(() => setBusy(null), 900);
   };
 
   const handleDisconnectGmail = async () => {
