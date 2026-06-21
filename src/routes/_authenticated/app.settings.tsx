@@ -6,7 +6,7 @@ import { ExtensionSection } from "@/components/nyvlo/ExtensionSection";
 import { getProfile } from "@/lib/nyvlo/profile.functions";
 import { startGoogleOAuth, disconnectGoogle, runSyncNow } from "@/lib/nyvlo/google.functions";
 import { getGmailConnection, startGmailOAuth, disconnectGmail } from "@/lib/nyvlo/gmail.functions";
-import { Check, ShieldCheck, Globe, LogOut, RefreshCw, Mail } from "lucide-react";
+import { Check, ShieldCheck, Globe, LogOut, RefreshCw, Mail, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
@@ -146,16 +146,22 @@ function SettingsPage() {
 
         <Section title="Connections">
           <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-3 last:border-b-0">
-            <div>
-              <div className="text-[13.5px] font-medium">Google Calendar</div>
-              <div className="mt-0.5 text-[11.5px] text-muted-foreground">
-                {connection
-                  ? `${connection.google_email ?? "Connected"}${connection.last_synced_at ? ` · synced ${formatDistanceToNow(new Date(connection.last_synced_at), { addSuffix: true })}` : " · never synced"}`
-                  : "Read-only access to find your promises"}
+            <div className="flex items-start gap-3 min-w-0">
+              <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+              <div className="min-w-0">
+                <div className="text-[13.5px] font-medium">Google Calendar</div>
+                <div className="mt-0.5 truncate text-[11.5px] text-muted-foreground">
+                  {connection
+                    ? `${connection.google_email ?? "Connected"}${connection.last_synced_at ? ` · synced ${formatDistanceToNow(new Date(connection.last_synced_at), { addSuffix: true })}` : " · never synced"}`
+                    : "Read-only access to find your promises"}
+                </div>
               </div>
             </div>
             {connection ? (
-              <div className="flex items-center gap-1.5">
+              <div className="flex shrink-0 items-center gap-1.5">
+                <span className="inline-flex items-center gap-1 rounded-md bg-success/15 px-2 py-0.5 text-[11.5px] font-medium text-success">
+                  <Check className="h-3 w-3" /> Connected
+                </span>
                 <button
                   onClick={handleSync}
                   disabled={busy === "sync"}
@@ -170,27 +176,24 @@ function SettingsPage() {
                 >
                   Disconnect
                 </button>
-                <span className="inline-flex items-center gap-1 rounded-md bg-success/15 px-2 py-0.5 text-[11.5px] font-medium text-success">
-                  <Check className="h-3 w-3" /> Connected
-                </span>
               </div>
             ) : (
               <button
                 onClick={handleConnect}
                 disabled={busy === "connect"}
-                className="rounded-md bg-foreground px-3 py-1.5 text-[12px] font-medium text-background hover:opacity-90 disabled:opacity-50"
+                className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-[12px] font-medium text-primary-foreground shadow-sm transition hover:opacity-90 disabled:opacity-50"
               >
-                {busy === "connect" ? "Opening…" : "Connect Google"}
+                {busy === "connect" ? "Opening…" : "Connect"}
               </button>
             )}
           </div>
 
           <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-3 last:border-b-0">
-            <div className="flex items-start gap-3">
-              <Mail className="mt-0.5 h-4 w-4 text-muted-foreground" />
-              <div>
+            <div className="flex items-start gap-3 min-w-0">
+              <Mail className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+              <div className="min-w-0">
                 <div className="text-[13.5px] font-medium">Gmail</div>
-                <div className="mt-0.5 text-[11.5px] text-muted-foreground">
+                <div className="mt-0.5 truncate text-[11.5px] text-muted-foreground">
                   {gmail
                     ? `${gmail.email}${gmail.last_sync_at ? ` · synced ${formatDistanceToNow(new Date(gmail.last_sync_at), { addSuffix: true })}` : " · never synced"}`
                     : "Read and send email on your behalf"}
@@ -198,7 +201,10 @@ function SettingsPage() {
               </div>
             </div>
             {gmail ? (
-              <div className="flex items-center gap-1.5">
+              <div className="flex shrink-0 items-center gap-1.5">
+                <span className="inline-flex items-center gap-1 rounded-md bg-success/15 px-2 py-0.5 text-[11.5px] font-medium text-success">
+                  <Check className="h-3 w-3" /> Connected
+                </span>
                 <button
                   onClick={handleDisconnectGmail}
                   disabled={busy === "gmail-disconnect"}
@@ -206,17 +212,14 @@ function SettingsPage() {
                 >
                   Disconnect
                 </button>
-                <span className="inline-flex items-center gap-1 rounded-md bg-success/15 px-2 py-0.5 text-[11.5px] font-medium text-success">
-                  <Check className="h-3 w-3" /> Connected
-                </span>
               </div>
             ) : (
               <button
                 onClick={handleConnectGmail}
                 disabled={busy === "gmail-connect"}
-                className="rounded-md bg-foreground px-3 py-1.5 text-[12px] font-medium text-background hover:opacity-90 disabled:opacity-50"
+                className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-[12px] font-medium text-primary-foreground shadow-sm transition hover:opacity-90 disabled:opacity-50"
               >
-                {busy === "gmail-connect" ? "Opening…" : "Connect Gmail"}
+                {busy === "gmail-connect" ? "Opening…" : "Connect"}
               </button>
             )}
           </div>
