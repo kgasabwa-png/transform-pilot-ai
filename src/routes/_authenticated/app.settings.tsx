@@ -9,8 +9,15 @@ import { getGmailConnection, startGmailOAuth, disconnectGmail } from "@/lib/nyvl
 import { Check, ShieldCheck, Globe, LogOut, RefreshCw, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
+
+const GMAIL_STATUS_MESSAGES: Record<string, { kind: "success" | "error"; message: string }> = {
+  connected: { kind: "success", message: "Gmail connected" },
+  error: { kind: "error", message: "Gmail connect was cancelled or failed" },
+  bad_state: { kind: "error", message: "Gmail connect expired. Please try again." },
+  failed: { kind: "error", message: "Gmail connect failed. Please try again." },
+};
 
 export const Route = createFileRoute("/_authenticated/app/settings")({
   head: () => ({ meta: [{ title: "Settings · Nyvlo" }] }),
