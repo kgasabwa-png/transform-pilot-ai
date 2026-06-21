@@ -24,11 +24,16 @@ function SettingsPage() {
   const startOAuth = useServerFn(startGoogleOAuth);
   const disconnect = useServerFn(disconnectGoogle);
   const syncNow = useServerFn(runSyncNow);
+  const fetchGmail = useServerFn(getGmailConnection);
+  const startGmail = useServerFn(startGmailOAuth);
+  const disconnectGmailFn = useServerFn(disconnectGmail);
   const [busy, setBusy] = useState<string | null>(null);
 
   const { data } = useQuery({ queryKey: ["profile"], queryFn: () => fetchProfile() });
+  const { data: gmailData } = useQuery({ queryKey: ["gmail-connection"], queryFn: () => fetchGmail() });
   const profile = data?.profile;
   const connection = data?.connection;
+  const gmail = gmailData?.connection;
 
   const handleConnect = async () => {
     setBusy("connect");
