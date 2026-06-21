@@ -103,16 +103,15 @@ function SettingsPage() {
     navigate({ to: "/auth", replace: true });
   };
 
-  const handleConnectGmail = async () => {
-    // Open a same-origin handoff page synchronously. That page can safely wait
-    // for the server auth URL and then navigate itself to Nylas.
+  const handleConnectGmail = () => {
+    // Open a same-origin handoff page synchronously so the popup is not
+    // blocked, then let it fetch the Google OAuth URL and navigate itself.
     const popup = window.open("/app/gmail-connect", "_blank");
-    setBusy("gmail-connect");
     if (!popup) {
       toast.error("Popup blocked. Allow popups for this site, then try again.");
-      setBusy(null);
       return;
     }
+    setBusy("gmail-connect");
     window.setTimeout(() => setBusy(null), 900);
   };
 
