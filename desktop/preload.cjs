@@ -32,13 +32,15 @@ contextBridge.exposeInMainWorld("nyvlo", {
       "capture:error",
       "capture:event",
     ];
-    const handler = (_e, payload) => cb(payload);
+    const handlers = [];
     for (const ev of events) {
-      ipcRenderer.on(ev, (_e, payload) => cb({ event: ev.replace("capture:", ""), ...payload }));
+      const h = (_e, payload) => cb({ event: ev.replace("capture:", ""), ...payload });
+      ipcRenderer.on(ev, h);
+      handlers.push([ev, h]);
     }
     return () => {
-      for (const ev of events) {
-        ipcRenderer.removeAllListeners(ev);
+      for (const [ev, h] of handlers) {
+        ipcRenderer.removeListener(ev, h);
       }
     };
   },

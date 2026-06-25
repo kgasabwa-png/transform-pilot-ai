@@ -153,12 +153,15 @@ function spawnSidecar(token, label) {
     stdio: ["pipe", "pipe", "pipe"],
   });
 
+  let sidecarLineBuf = "";
   sidecarProcess.stdout.on("data", (data) => {
-    const lines = data.toString().split("\n").filter(Boolean);
+    sidecarLineBuf += data.toString();
+    const lines = sidecarLineBuf.split("\n");
+    sidecarLineBuf = lines.pop(); // keep incomplete tail for next chunk
     for (const line of lines) {
+      if (!line) continue;
       try {
-        const msg = JSON.parse(line);
-        handleSidecarMessage(msg);
+        handleSidecarMessage(JSON.parse(line));
       } catch {
         console.warn("[nyvlo:sidecar] non-JSON stdout:", line);
       }
