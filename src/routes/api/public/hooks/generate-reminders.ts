@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { requireCronAuth } from "@/lib/api/cron-auth";
 
 // Scans open promises and creates notification nudges for things due in the
 // next 24h or already overdue. Dedup'd per promise per day so we don't spam.
@@ -6,10 +7,8 @@ export const Route = createFileRoute("/api/public/hooks/generate-reminders")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apikey = request.headers.get("apikey");
-        if (!apikey || apikey !== process.env.SUPABASE_PUBLISHABLE_KEY) {
-          return new Response("Unauthorized", { status: 401 });
-        }
+        const denied = requireCronAuth(request);
+        if (denied) return denied;
 
         const { adminClient } = await import("@/lib/nyvlo/google.server");
         const supabase = adminClient();

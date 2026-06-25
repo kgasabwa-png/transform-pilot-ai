@@ -1,13 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { getRequestHost, getRequestHeader } from "@tanstack/react-start/server";
-
-function siteOrigin() {
-  const fwdProto = getRequestHeader("x-forwarded-proto");
-  const host = getRequestHost();
-  const proto = fwdProto ?? (host?.includes("localhost") ? "http" : "https");
-  return `${proto}://${host}`;
-}
+import { siteOrigin } from "@/lib/api/site-origin";
 
 export const startGoogleOAuth = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

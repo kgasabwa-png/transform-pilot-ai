@@ -1,17 +1,14 @@
 // Anonymous endpoint: a device (desktop app or extension) requests a fresh
 // pairing code. The user then opens /link?code=... in the web app to approve.
 import { createFileRoute } from "@tanstack/react-router";
+import { corsHeaders, optionsHandler } from "@/lib/api/cors";
 
-const cors = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+const cors = corsHeaders("POST", "OPTIONS");
 
 export const Route = createFileRoute("/api/public/auth/device-start")({
   server: {
     handlers: {
-      OPTIONS: async () => new Response(null, { status: 204, headers: cors }),
+      OPTIONS: optionsHandler(cors),
       POST: async ({ request }) => {
         let body: { label?: unknown } = {};
         try {
