@@ -1,44 +1,38 @@
-# Nyvlo Desktop
+# Nyvlo for Mac
 
-Tiny Electron app that records a meeting (mic + system audio), transcribes it
-through the Nyvlo backend, and pushes any extracted promises into your inbox.
+Small Electron shell plus a Swift ScreenCaptureKit sidecar. It captures both sides of a customer call without a meeting bot, streams live transcript chunks to Nyvlo, blends your typed notes on stop, and creates companion follow-ups ready to cosign.
 
 ## Run locally
 
 ```bash
-cd desktop
-npm install            # ~150 MB; pulls Electron
+cd desktop/sidecar
+swift build -c release
+
+cd ..
+npm install
 npm start
 ```
 
-1. Paste your Nyvlo token (Settings → Browser extension → New token).
-2. Give the meeting a title.
-3. **Start recording** — grant mic + screen access (screen pick is required
-   for system audio on macOS/Windows; only the audio is used).
-4. **Stop** — wait a few seconds; transcript appears and any promises land
-   in your Nyvlo inbox tagged as `meeting`.
+1. Click **Sign in with Nyvlo** and approve the device-link flow in the browser.
+2. Enter a meeting title and jot notes while the call runs.
+3. Click **Start recording**. macOS will ask for Screen Recording and Microphone access.
+4. Click **Stop & create actions**. The app sends notes plus ordered transcript chunks to Nyvlo.
+5. Follow-ups appear in the web app Today view as companion actions ready to cosign.
+
+## Capture model
+
+- No bot joins the meeting.
+- Swift uses ScreenCaptureKit for system audio and screen context.
+- On macOS 15+, the sidecar also requests `captureMicrophone` and mixes mic plus system audio into mono 16 kHz PCM chunks.
+- Audio chunks are uploaded as short WAV files for transcription. Raw audio is not kept as the product record.
+- Typed notes are posted only when you stop recording.
 
 ## Package a distributable
 
 ```bash
-npm run package:mac      # macOS universal binary → release/Nyvlo-darwin-universal/
-npm run package:win      # release/Nyvlo-win32-x64/
-npm run package:linux    # release/Nyvlo-linux-x64/
+npm run package:mac
+npm run package:win
+npm run package:linux
 ```
 
-`@electron/packager` bundles its own Electron binary, so the output is a
-self-contained app folder you can zip and share.
-
-## Privacy
-
-- Audio is held in memory while recording.
-- Only on stop is it uploaded to `transform-pilot-ai.lovable.app` for
-  transcription (Lovable AI / `openai/gpt-4o-mini-transcribe`).
-- Audio is not stored on the server; only the resulting transcript is saved
-  as a `sources` row alongside any extracted promises.
-
-## Roadmap
-
-- Local Whisper.cpp WASM for fully on-device transcription (no upload).
-- Pause/resume.
-- Speaker diarization labels in the transcript.
+For macOS packaging, build and sign the Swift sidecar, then place `NyvloCapture` in the app resources so `main.cjs` can find it via `process.resourcesPath`.
