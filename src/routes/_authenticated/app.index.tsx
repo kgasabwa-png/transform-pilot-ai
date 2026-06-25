@@ -283,6 +283,7 @@ function MeetingRow({ session, live }: { session: MeetingSession; live: boolean 
   return (
     <Link
       to="/app/capture"
+      search={{ session: session.id }}
       className="group block rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/40"
     >
       <div className="flex items-start justify-between gap-4">

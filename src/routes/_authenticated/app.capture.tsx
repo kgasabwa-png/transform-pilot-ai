@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
@@ -25,10 +25,16 @@ import {
   Copy,
   Check,
   Clock,
+  Search,
+  Link2,
+  FileDown,
 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/app/capture")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    session: typeof search.session === "string" ? search.session : undefined,
+  }),
   component: CapturePage,
 });
 
@@ -68,11 +74,35 @@ type CaptureAction = {
   draft_reply?: string | null;
 };
 
+type MeetingStatusFilter = "all" | "live" | "enhanced" | "needs_enhance";
+
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
 }
 
+function getSessionMetadata(session: Pick<CaptureSession, "metadata">) {
+  return session.metadata && typeof session.metadata === "object"
+    ? (session.metadata as Record<string, unknown>)
+    : {};
+}
+
+function getTemplateLabel(value: string | undefined) {
+  return MEETING_TEMPLATES.find((item) => item.value === value)?.label ?? "General meeting";
+}
+
+function getManualNotes(session: Pick<CaptureSession, "metadata">) {
+  const metadata = getSessionMetadata(session);
+  return typeof metadata.manual_notes === "string" ? metadata.manual_notes : "";
+}
+
+function getTemplateValue(session: Pick<CaptureSession, "metadata">) {
+  const metadata = getSessionMetadata(session);
+  return typeof metadata.meeting_template === "string" ? metadata.meeting_template : "general";
+}
+
 function CapturePage() {
+  const navigate = useNavigate();
+  const search = Route.useSearch();
   const fetchList = useServerFn(listCaptureSessions);
   const fetchQuota = useServerFn(getCaptureQuota);
   const list = useQuery({
@@ -86,9 +116,39 @@ function CapturePage() {
     refetchInterval: 30_000,
   });
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<MeetingStatusFilter>("all");
+  const [templateFilter, setTemplateFilter] = useState("all");
   const sessions = (list.data ?? []) as CaptureSession[];
-  const activeId = selectedId ?? sessions[0]?.id ?? null;
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredSessions = sessions.filter((session) => {
+    const matchesStatus =
+      statusFilter === "all" ||
+      (statusFilter === "live" && session.status === "active") ||
+      (statusFilter === "enhanced" && Boolean(session.notes_md || session.summary)) ||
+      (statusFilter === "needs_enhance" &&
+        session.status !== "active" &&
+        !session.notes_md &&
+        !session.summary);
+    const matchesTemplate =
+      templateFilter === "all" || getTemplateValue(session) === templateFilter;
+    const haystack = [
+      session.label,
+      session.summary,
+      session.notes_md,
+      getManualNotes(session),
+      getTemplateLabel(getTemplateValue(session)),
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    const matchesQuery = !normalizedQuery || haystack.includes(normalizedQuery);
+    return matchesStatus && matchesTemplate && matchesQuery;
+  });
+  const activeId =
+    (search.session && sessions.some((session) => session.id === search.session)
+      ? search.session
+      : filteredSessions[0]?.id) ?? null;
 
   const qc = useQueryClient();
   const q = quota.data;
@@ -140,7 +200,7 @@ function CapturePage() {
         <BrowserRecorder
           maxSeconds={q && !q.is_pro ? 30 * 60 : undefined}
           onSessionChange={(id) => {
-            if (id) setSelectedId(id);
+            if (id) navigate({ to: "/app/capture", search: { session: id } });
             qc.invalidateQueries({ queryKey: ["capture-sessions"] });
             qc.invalidateQueries({ queryKey: ["capture-quota"] });
           }}
@@ -152,8 +212,41 @@ function CapturePage() {
           <div className="mb-1 px-2 pt-1 text-[11px] uppercase tracking-wider text-muted-foreground">
             Recent meetings
           </div>
+          <div className="space-y-2 px-2 pb-2">
+            <div className="flex items-center gap-2 rounded-md border border-border bg-background px-2.5 py-1.5">
+              <Search className="h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search notes"
+                className="min-w-0 flex-1 bg-transparent text-[12.5px] outline-none placeholder:text-muted-foreground"
+              />
+            </div>
+            <select
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value as MeetingStatusFilter)}
+              className="h-8 w-full rounded-md border border-border bg-background px-2 text-[12px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <option value="all">All statuses</option>
+              <option value="live">Live now</option>
+              <option value="enhanced">Enhanced</option>
+              <option value="needs_enhance">Needs enhancement</option>
+            </select>
+            <select
+              value={templateFilter}
+              onChange={(event) => setTemplateFilter(event.target.value)}
+              className="h-8 w-full rounded-md border border-border bg-background px-2 text-[12px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <option value="all">All templates</option>
+              {MEETING_TEMPLATES.map((template) => (
+                <option key={template.value} value={template.value}>
+                  {template.label}
+                </option>
+              ))}
+            </select>
+          </div>
           {list.isLoading && (
-            <div className="px-2 py-3 text-sm text-muted-foreground">Loading…</div>
+            <div className="px-2 py-3 text-sm text-muted-foreground">Loading...</div>
           )}
           {!list.isLoading && sessions.length === 0 && (
             <div className="px-2 py-4 text-[13px] leading-relaxed text-muted-foreground">
@@ -161,13 +254,18 @@ function CapturePage() {
               notes, transcript, and enhanced summary together.
             </div>
           )}
+          {!list.isLoading && sessions.length > 0 && filteredSessions.length === 0 && (
+            <div className="px-2 py-4 text-[13px] leading-relaxed text-muted-foreground">
+              No meetings match those filters.
+            </div>
+          )}
           <div className="space-y-0.5">
-            {sessions.map((s) => {
+            {filteredSessions.map((s) => {
               const active = activeId === s.id;
               return (
                 <button
                   key={s.id}
-                  onClick={() => setSelectedId(s.id)}
+                  onClick={() => navigate({ to: "/app/capture", search: { session: s.id } })}
                   className={[
                     "w-full rounded-md px-2.5 py-2 text-left text-[13px] transition-colors",
                     active
@@ -201,7 +299,10 @@ function CapturePage() {
         </Card>
 
         {activeId ? (
-          <SessionDetail sessionId={activeId} onDelete={() => setSelectedId(null)} />
+          <SessionDetail
+            sessionId={activeId}
+            onDelete={() => navigate({ to: "/app/capture", search: {} })}
+          />
         ) : (
           <EmptyState />
         )}
@@ -322,6 +423,63 @@ function SessionDetail({ sessionId, onDelete }: { sessionId: string; onDelete: (
     session.status === "ended" && !session.notes_md && !session.summary && chunks.length > 0;
   const isLive = session.status === "active";
   const noContent = session.status === "ended" && chunks.length === 0 && frames.length === 0;
+  const transcriptText = chunks
+    .filter((chunk) => chunk.transcript)
+    .map((chunk) => `[${chunk.speaker || "speaker"}] ${chunk.transcript}`)
+    .join("\n");
+  const markdownExport = [
+    `# ${titleDraft || session.label || "Untitled meeting"}`,
+    "",
+    session.notes_md || session.summary || "",
+    promises.length
+      ? [
+          "",
+          "## Action items",
+          ...promises.map(
+            (promise) => `- ${promise.summary}${promise.due_at ? ` (${promise.due_at})` : ""}`,
+          ),
+        ].join("\n")
+      : "",
+    manualNotes ? ["", "## Rough notes", manualNotes].join("\n") : "",
+    transcriptText ? ["", "## Transcript", transcriptText].join("\n") : "",
+  ]
+    .filter(Boolean)
+    .join("\n")
+    .trim();
+
+  const copyToClipboard = async (text: string, label: string) => {
+    if (!text.trim()) {
+      toast.message(`No ${label.toLowerCase()} to copy yet`);
+      return;
+    }
+    await navigator.clipboard.writeText(text);
+    toast.success(`${label} copied`);
+  };
+
+  const copyMeetingLink = async () => {
+    const url = new URL(window.location.href);
+    url.pathname = "/app/capture";
+    url.search = new URLSearchParams({ session: sessionId }).toString();
+    await navigator.clipboard.writeText(url.toString());
+    toast.success("Meeting link copied");
+  };
+
+  const downloadMarkdown = () => {
+    if (!markdownExport) {
+      toast.message("Nothing to export yet");
+      return;
+    }
+    const slug = (titleDraft || session.label || "meeting")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+    const url = URL.createObjectURL(new Blob([markdownExport], { type: "text/markdown" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `${slug || "meeting"}.md`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="space-y-5">
@@ -371,6 +529,29 @@ function SessionDetail({ sessionId, onDelete }: { sessionId: string; onDelete: (
           </Button>
         </div>
       </div>
+
+      <Card className="flex flex-wrap items-center gap-2 p-3">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => copyToClipboard(markdownExport, "Meeting note")}
+        >
+          <Copy className="mr-1.5 h-3.5 w-3.5" /> Copy note
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => copyToClipboard(transcriptText, "Transcript")}
+        >
+          <Copy className="mr-1.5 h-3.5 w-3.5" /> Copy transcript
+        </Button>
+        <Button variant="outline" size="sm" onClick={copyMeetingLink}>
+          <Link2 className="mr-1.5 h-3.5 w-3.5" /> Copy link
+        </Button>
+        <Button variant="outline" size="sm" onClick={downloadMarkdown}>
+          <FileDown className="mr-1.5 h-3.5 w-3.5" /> Export markdown
+        </Button>
+      </Card>
 
       <Card className="p-5">
         <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
