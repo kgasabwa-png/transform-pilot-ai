@@ -25,6 +25,24 @@ export const Route = createFileRoute("/_authenticated/app/")({
   component: MeetingsHome,
 });
 
+type MeetingSession = {
+  id: string;
+  label: string | null;
+  status: string;
+  started_at: string;
+  duration_seconds: number | null;
+  summary: string | null;
+  notes_md: string | null;
+  metadata: unknown;
+};
+
+type ActionItem = {
+  id: string;
+  summary: string;
+  status: string;
+  due_at: string | null;
+};
+
 function MeetingsHome() {
   const fetchSessions = useServerFn(listCaptureSessions);
   const fetchPromises = useServerFn(listPromises);
@@ -49,12 +67,16 @@ function MeetingsHome() {
     queryFn: () => fetchQuota(),
   });
 
-  const sessions = sessionsQuery.data ?? [];
-  const actions = (promisesQuery.data ?? []).filter((p: any) => p.status === "open").slice(0, 4);
-  const notesReady = sessions.filter((s: any) => Boolean(s.notes_md || s.summary));
-  const liveSession = sessions.find((s: any) => s.status === "active");
+  const sessions = (sessionsQuery.data ?? []) as MeetingSession[];
+  const actions = ((promisesQuery.data ?? []) as ActionItem[])
+    .filter((p) => p.status === "open")
+    .slice(0, 4);
+  const notesReady = sessions.filter((s) => Boolean(s.notes_md || s.summary));
+  const liveSession = sessions.find((s) => s.status === "active");
   const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  const notesThisWeek = sessions.filter((s: any) => new Date(s.started_at).getTime() >= oneWeekAgo).length;
+  const notesThisWeek = sessions.filter(
+    (s) => new Date(s.started_at).getTime() >= oneWeekAgo,
+  ).length;
   const name = profileQuery.data?.profile?.full_name?.split(" ")[0] ?? "there";
   const isConnected = Boolean(profileQuery.data?.connection);
   const quota = quotaQuery.data;
@@ -97,7 +119,8 @@ function MeetingsHome() {
                 Private by default
               </div>
               <p className="mt-2 text-[12.5px] leading-relaxed text-muted-foreground">
-                Nyvlo does not join your meeting. Browser capture uses your mic; desktop capture can add system audio.
+                Nyvlo does not join your meeting. Browser capture uses your mic; desktop capture can
+                add system audio.
               </p>
               <div className="mt-4 grid grid-cols-2 gap-2">
                 <MiniStat label="Notes" value={String(sessions.length)} />
@@ -114,13 +137,14 @@ function MeetingsHome() {
           </div>
           {isConnected ? (
             <p className="text-[13px] leading-relaxed text-muted-foreground">
-              Google Calendar is connected. Meeting briefs can use event titles, attendees, and prior context
-              so every note starts grounded.
+              Google Calendar is connected. Meeting briefs can use event titles, attendees, and
+              prior context so every note starts grounded.
             </p>
           ) : (
             <>
               <p className="text-[13px] leading-relaxed text-muted-foreground">
-                Connect Google Calendar to prep context before external meetings and name notes automatically.
+                Connect Google Calendar to prep context before external meetings and name notes
+                automatically.
               </p>
               <Link
                 to="/app/settings"
@@ -139,14 +163,32 @@ function MeetingsHome() {
       </section>
 
       <section className="mb-8 grid gap-4 md:grid-cols-3">
-        <StatTile icon={NotebookPen} label="Meeting notes" value={String(sessions.length)} hint="captured in Nyvlo" />
-        <StatTile icon={FileText} label="Enhanced" value={String(notesReady.length)} hint="ready to search and share" />
-        <StatTile icon={ListChecks} label="Open actions" value={String(actions.length)} hint="from your conversations" />
+        <StatTile
+          icon={NotebookPen}
+          label="Meeting notes"
+          value={String(sessions.length)}
+          hint="captured in Nyvlo"
+        />
+        <StatTile
+          icon={FileText}
+          label="Enhanced"
+          value={String(notesReady.length)}
+          hint="ready to search and share"
+        />
+        <StatTile
+          icon={ListChecks}
+          label="Open actions"
+          value={String(actions.length)}
+          hint="from your conversations"
+        />
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[1fr_340px]">
         <div>
-          <SectionHeader title="Recent notes" link={{ to: "/app/capture", label: "Open notebook" }} />
+          <SectionHeader
+            title="Recent notes"
+            link={{ to: "/app/capture", label: "Open notebook" }}
+          />
           <div className="space-y-2">
             {sessionsQuery.isLoading ? (
               <CardSkeletons count={4} />
@@ -158,9 +200,15 @@ function MeetingsHome() {
                 cta={{ to: "/app/capture", label: "Start a note" }}
               />
             ) : (
-              sessions.slice(0, 6).map((session: any) => (
-                <MeetingRow key={session.id} session={session} live={liveSession?.id === session.id} />
-              ))
+              sessions
+                .slice(0, 6)
+                .map((session) => (
+                  <MeetingRow
+                    key={session.id}
+                    session={session}
+                    live={liveSession?.id === session.id}
+                  />
+                ))
             )}
           </div>
         </div>
@@ -176,11 +224,13 @@ function MeetingsHome() {
               </div>
             ) : (
               <ul className="divide-y divide-border/60">
-                {actions.map((action: any) => (
+                {actions.map((action) => (
                   <li key={action.id} className="py-3 first:pt-0 last:pb-0">
                     <div className="text-[13px] font-medium leading-snug">{action.summary}</div>
                     <div className="mt-1 text-[11.5px] text-muted-foreground">
-                      {action.due_at ? `Due ${new Date(action.due_at).toLocaleDateString()}` : "No due date"}
+                      {action.due_at
+                        ? `Due ${new Date(action.due_at).toLocaleDateString()}`
+                        : "No due date"}
                     </div>
                   </li>
                 ))}
@@ -224,9 +274,12 @@ function StatTile({
   );
 }
 
-function MeetingRow({ session, live }: { session: any; live: boolean }) {
+function MeetingRow({ session, live }: { session: MeetingSession; live: boolean }) {
   const metadata = session.metadata && typeof session.metadata === "object" ? session.metadata : {};
-  const template = typeof metadata.meeting_template === "string" ? metadata.meeting_template.replaceAll("_", " ") : "general";
+  const template =
+    typeof metadata.meeting_template === "string"
+      ? metadata.meeting_template.replaceAll("_", " ")
+      : "general";
   return (
     <Link
       to="/app/capture"
@@ -235,11 +288,18 @@ function MeetingRow({ session, live }: { session: any; live: boolean }) {
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            {live ? <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive" /> : null}
-            <h3 className="truncate text-[14px] font-semibold">{session.label || "Untitled meeting"}</h3>
+            {live ? (
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive" />
+            ) : null}
+            <h3 className="truncate text-[14px] font-semibold">
+              {session.label || "Untitled meeting"}
+            </h3>
           </div>
           <p className="mt-1 line-clamp-2 text-[12.5px] leading-relaxed text-muted-foreground">
-            {session.summary || (session.notes_md ? "Enhanced notes are ready." : "Transcript captured. Enhance notes when ready.")}
+            {session.summary ||
+              (session.notes_md
+                ? "Enhanced notes are ready."
+                : "Transcript captured. Enhance notes when ready.")}
           </p>
         </div>
         <ArrowRight className="mt-1 h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
@@ -254,7 +314,9 @@ function MeetingRow({ session, live }: { session: any; live: boolean }) {
             minute: "2-digit",
           })}
         </span>
-        {session.duration_seconds ? <span>{Math.max(1, Math.round(session.duration_seconds / 60))} min</span> : null}
+        {session.duration_seconds ? (
+          <span>{Math.max(1, Math.round(session.duration_seconds / 60))} min</span>
+        ) : null}
         <span className="capitalize">{template}</span>
         {session.notes_md ? <span className="text-primary">enhanced</span> : null}
       </div>
@@ -265,9 +327,14 @@ function MeetingRow({ session, live }: { session: any; live: boolean }) {
 function SectionHeader({ title, link }: { title: string; link?: { to: string; label: string } }) {
   return (
     <div className="mb-3 flex items-baseline justify-between">
-      <h2 className="text-[13px] font-medium uppercase tracking-[0.14em] text-muted-foreground">{title}</h2>
+      <h2 className="text-[13px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+        {title}
+      </h2>
       {link ? (
-        <Link to={link.to} className="inline-flex items-center gap-1 text-[12px] text-foreground/70 hover:text-foreground">
+        <Link
+          to={link.to}
+          className="inline-flex items-center gap-1 text-[12px] text-foreground/70 hover:text-foreground"
+        >
           {link.label} <ArrowRight className="h-3 w-3" />
         </Link>
       ) : null}

@@ -74,7 +74,10 @@ function Nav() {
           </Link>
         </nav>
         <div className="flex items-center gap-2.5">
-          <Link to="/auth" className="hidden text-[13px] text-muted-foreground transition-colors hover:text-foreground md:inline">
+          <Link
+            to="/auth"
+            className="hidden text-[13px] text-muted-foreground transition-colors hover:text-foreground md:inline"
+          >
             Sign in
           </Link>
           <Link
@@ -107,8 +110,8 @@ function Hero() {
             className="nyvlo-rise mx-auto mt-6 max-w-2xl text-[16px] leading-relaxed text-muted-foreground md:text-[18px]"
             style={{ animationDelay: "120ms" }}
           >
-            Start a notepad for any call, jot the parts that matter, and Nyvlo enhances your rough notes
-            with the transcript into a clean summary, decisions, and follow-ups.
+            Start a notepad for any call, jot the parts that matter, and Nyvlo enhances your rough
+            notes with the transcript into a clean summary, decisions, and follow-ups.
           </p>
           <div
             className="nyvlo-rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row"
@@ -127,7 +130,10 @@ function Hero() {
               See the workflow
             </a>
           </div>
-          <div className="nyvlo-rise mt-4 text-[11.5px] text-muted-foreground" style={{ animationDelay: "320ms" }}>
+          <div
+            className="nyvlo-rise mt-4 text-[11.5px] text-muted-foreground"
+            style={{ animationDelay: "320ms" }}
+          >
             Browser mic capture included · desktop system audio ready · no credit card
           </div>
         </div>
@@ -154,14 +160,17 @@ function ProductCanvas() {
             </div>
           </div>
           <div className="hidden items-center gap-1.5 rounded-md border border-border bg-background/40 px-2 py-1 text-[10.5px] text-muted-foreground md:flex">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive" /> recording privately
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive" /> recording
+            privately
           </div>
         </div>
         <div className="grid md:grid-cols-[0.9fr_1.1fr]">
           <div className="border-b border-border bg-card/60 p-6 md:border-b-0 md:border-r">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <div className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">Your rough notes</div>
+                <div className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Your rough notes
+                </div>
                 <h3 className="mt-1 text-lg font-semibold">What you jot during the call</h3>
               </div>
               <span className="rounded-full border border-border bg-background px-2 py-0.5 text-[10.5px] text-muted-foreground">
@@ -181,14 +190,16 @@ function ProductCanvas() {
           <div className="p-6">
             <div className="mb-4 flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
-              <div className="text-[10.5px] uppercase tracking-[0.18em] text-primary">Enhanced notes</div>
+              <div className="text-[10.5px] uppercase tracking-[0.18em] text-primary">
+                Enhanced notes
+              </div>
             </div>
             <article className="space-y-5 text-[13.5px] leading-relaxed">
               <div>
                 <h3 className="text-xl font-semibold tracking-tight">Acme discovery call</h3>
                 <p className="mt-2 text-muted-foreground">
-                  Sarah is evaluating Nyvlo for a customer success team that needs cleaner onboarding handoffs
-                  and reusable implementation notes.
+                  Sarah is evaluating Nyvlo for a customer success team that needs cleaner
+                  onboarding handoffs and reusable implementation notes.
                 </p>
               </div>
               <NoteSection
@@ -207,7 +218,11 @@ function ProductCanvas() {
               />
               <NoteSection
                 title="Next steps"
-                items={["Share migration checklist", "Draft annual plan follow-up", "Book technical validation call"]}
+                items={[
+                  "Share migration checklist",
+                  "Draft annual plan follow-up",
+                  "Book technical validation call",
+                ]}
               />
             </article>
           </div>
@@ -245,7 +260,10 @@ function ProofStrip() {
     <section className="relative border-y border-border/60 bg-background/40">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-9 gap-y-3 px-6 py-6">
         {items.map(({ icon: Icon, label }) => (
-          <div key={label} className="inline-flex items-center gap-2 text-[13px] font-medium text-muted-foreground">
+          <div
+            key={label}
+            className="inline-flex items-center gap-2 text-[13px] font-medium text-muted-foreground"
+          >
             <Icon className="h-4 w-4 text-primary" strokeWidth={1.75} />
             {label}
           </div>
@@ -274,7 +292,10 @@ function WorkflowSection() {
     },
   ];
   return (
-    <section id="workflow" className="relative border-t border-border/60 bg-gradient-to-b from-background to-card/30">
+    <section
+      id="workflow"
+      className="relative border-t border-border/60 bg-gradient-to-b from-background to-card/30"
+    >
       <div className="mx-auto max-w-6xl px-6 py-24 md:py-32">
         <SectionIntro
           eyebrow="Workflow"
@@ -283,7 +304,13 @@ function WorkflowSection() {
         />
         <div className="mt-14 grid gap-4 md:grid-cols-3">
           {steps.map((step, index) => (
-            <FeatureCard key={step.title} icon={step.icon} title={step.title} body={step.body} number={index + 1} />
+            <FeatureCard
+              key={step.title}
+              icon={step.icon}
+              title={step.title}
+              body={step.body}
+              number={index + 1}
+            />
           ))}
         </div>
       </div>
@@ -309,8 +336,8 @@ function TemplatesSection() {
             Notes shaped for the meeting you are actually in.
           </h2>
           <p className="mt-4 text-[15.5px] leading-relaxed text-muted-foreground">
-            A product interview should not read like a pipeline review. Pick the template before you start,
-            and Nyvlo biases the enhanced note toward the right details.
+            A product interview should not read like a pipeline review. Pick the template before you
+            start, and Nyvlo biases the enhanced note toward the right details.
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -333,7 +360,10 @@ function TemplatesSection() {
 
 function MemorySection() {
   return (
-    <section id="memory" className="relative border-t border-border/60 bg-gradient-to-b from-card/20 to-background">
+    <section
+      id="memory"
+      className="relative border-t border-border/60 bg-gradient-to-b from-card/20 to-background"
+    >
       <div className="mx-auto max-w-6xl px-6 py-24 md:py-32">
         <SectionIntro
           eyebrow="Memory"
@@ -373,11 +403,16 @@ function PrivacySection() {
           Humans in the room. No bot required.
         </h2>
         <p className="mx-auto mt-5 max-w-xl text-[15.5px] leading-relaxed text-muted-foreground">
-          Nyvlo captures from your device instead of joining meetings as a participant. Notes stay private by default,
-          and you decide what to share, export, or delete.
+          Nyvlo captures from your device instead of joining meetings as a participant. Notes stay
+          private by default, and you decide what to share, export, or delete.
         </p>
         <div className="mt-7 flex flex-wrap items-center justify-center gap-2 text-[11.5px] text-muted-foreground">
-          {["Private by default", "Delete notes anytime", "Calendar read-only", "No model training on your data"].map((item) => (
+          {[
+            "Private by default",
+            "Delete notes anytime",
+            "Calendar read-only",
+            "No model training on your data",
+          ].map((item) => (
             <span key={item} className="rounded-full border border-border bg-card/60 px-2.5 py-1">
               {item}
             </span>
@@ -401,10 +436,14 @@ function FinalCta() {
           Stay present. Leave with great notes.
         </h2>
         <p className="mx-auto mt-5 max-w-md text-[15px] text-muted-foreground">
-          Start a notepad in the browser, then upgrade to desktop capture when you want system audio.
+          Start a notepad in the browser, then upgrade to desktop capture when you want system
+          audio.
         </p>
         <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-          <Link to="/auth" className="btn-ion inline-flex items-center gap-2 rounded-full px-5 py-3 text-[14.5px] font-semibold">
+          <Link
+            to="/auth"
+            className="btn-ion inline-flex items-center gap-2 rounded-full px-5 py-3 text-[14.5px] font-semibold"
+          >
             Start free <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -443,7 +482,9 @@ function FeatureCard({
         <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-background/60 text-primary">
           <Icon className="h-4 w-4" strokeWidth={1.75} />
         </span>
-        {number ? <span className="font-mono text-[11px] text-muted-foreground">0{number}</span> : null}
+        {number ? (
+          <span className="font-mono text-[11px] text-muted-foreground">0{number}</span>
+        ) : null}
       </div>
       <h3 className="mt-5 font-display text-[20px] font-semibold tracking-tight">{title}</h3>
       <p className="mt-2 text-[13.5px] leading-relaxed text-muted-foreground">{body}</p>

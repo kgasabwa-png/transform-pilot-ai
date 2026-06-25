@@ -37,7 +37,10 @@ function SettingsPage() {
   const [busy, setBusy] = useState<string | null>(null);
 
   const { data } = useQuery({ queryKey: ["profile"], queryFn: () => fetchProfile() });
-  const { data: gmailData } = useQuery({ queryKey: ["gmail-connection"], queryFn: () => fetchGmail() });
+  const { data: gmailData } = useQuery({
+    queryKey: ["gmail-connection"],
+    queryFn: () => fetchGmail(),
+  });
   const profile = data?.profile;
   const connection = data?.connection;
   const gmail = gmailData?.connection;
@@ -56,11 +59,7 @@ function SettingsPage() {
     }
     params.delete("gmail");
     const next = params.toString();
-    window.history.replaceState(
-      {},
-      "",
-      window.location.pathname + (next ? `?${next}` : ""),
-    );
+    window.history.replaceState({}, "", window.location.pathname + (next ? `?${next}` : ""));
   }, [queryClient]);
 
   const handleConnect = async () => {
@@ -125,7 +124,6 @@ function SettingsPage() {
       setBusy(null);
     }
   };
-
 
   return (
     <Shell title="Settings" subtitle="You control meeting context, capture, and memory.">
@@ -247,7 +245,9 @@ function SettingsPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-card">
-      <div className="border-b border-border bg-secondary/30 px-4 py-2.5 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">{title}</div>
+      <div className="border-b border-border bg-secondary/30 px-4 py-2.5 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+        {title}
+      </div>
       <div className="flex flex-col">{children}</div>
     </div>
   );

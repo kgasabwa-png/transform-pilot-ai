@@ -13,13 +13,27 @@ type ExtractedPromise = {
   evidence_snippet?: string | null;
 };
 
+type ChatCompletionResponse = {
+  choices?: Array<{
+    message?: {
+      content?: string;
+    };
+  }>;
+};
+
 const templateGuidance: Record<string, string> = {
-  general: "General meeting: prioritize decisions, discussion themes, open questions, and next steps.",
-  sales: "Sales or customer call: prioritize customer goals, pain points, objections, buying process, stakeholders, risks, and follow-ups.",
-  discovery: "Product discovery: prioritize user workflows, needs, pain points, quotes, feature requests, and evidence-backed insights.",
-  interview: "Research interview: prioritize participant context, observations, direct quotes, behavioral patterns, and follow-up questions.",
-  one_on_one: "1:1: prioritize goals, blockers, feedback, personal commitments, support needed, and manager/teammate follow-ups.",
-  planning: "Planning meeting: prioritize scope, decisions, dependencies, owners, deadlines, risks, and unresolved trade-offs.",
+  general:
+    "General meeting: prioritize decisions, discussion themes, open questions, and next steps.",
+  sales:
+    "Sales or customer call: prioritize customer goals, pain points, objections, buying process, stakeholders, risks, and follow-ups.",
+  discovery:
+    "Product discovery: prioritize user workflows, needs, pain points, quotes, feature requests, and evidence-backed insights.",
+  interview:
+    "Research interview: prioritize participant context, observations, direct quotes, behavioral patterns, and follow-up questions.",
+  one_on_one:
+    "1:1: prioritize goals, blockers, feedback, personal commitments, support needed, and manager/teammate follow-ups.",
+  planning:
+    "Planning meeting: prioritize scope, decisions, dependencies, owners, deadlines, risks, and unresolved trade-offs.",
 };
 
 function readSessionMetadata(metadata: unknown) {
@@ -29,9 +43,7 @@ function readSessionMetadata(metadata: unknown) {
   const record = metadata as Record<string, unknown>;
   return {
     manualNotes:
-      typeof record.manual_notes === "string"
-        ? record.manual_notes.slice(0, 20_000)
-        : "",
+      typeof record.manual_notes === "string" ? record.manual_notes.slice(0, 20_000) : "",
     template:
       typeof record.meeting_template === "string" && record.meeting_template in templateGuidance
         ? record.meeting_template
@@ -43,7 +55,6 @@ export async function extractPromisesFromSession(
   sessionId: string,
   userId: string,
 ): Promise<{ inserted: number; summary: string | null; notes_md: string | null }> {
-
   const supabase = adminClient();
   const key = process.env.LOVABLE_API_KEY;
   if (!key) throw new Error("LOVABLE_API_KEY missing");
@@ -118,8 +129,6 @@ notes_md formatting rules (mirror Granola):
 
 Promise rules: only EXPLICIT commitments. Skip chit-chat. Use speaker labels to set owner ("me"/"user" → self). Always include draft_reply when owner is "self".`;
 
-
-
   const userMsg = `Session label: ${session.label ?? "(untitled)"}
 Started: ${session.started_at}
 Template: ${template}
@@ -154,7 +163,7 @@ ${screenContext || "(no screen activity)"}`;
     const t = await res.text().catch(() => "");
     throw new Error(`Gemini extract failed: ${res.status} ${t}`);
   }
-  const json = (await res.json()) as any;
+  const json = (await res.json()) as ChatCompletionResponse;
   const raw = json.choices?.[0]?.message?.content ?? "{}";
   let parsed: { summary?: string; notes_md?: string; promises?: ExtractedPromise[] } = {};
   try {
@@ -188,18 +197,19 @@ ${screenContext || "(no screen activity)"}`;
     }));
 
   if (rows.length) {
-    await supabase.from("promises").insert(rows as any);
+    await supabase.from("promises").insert(rows);
   }
 
-  const sessionUpdate: Record<string, unknown> = {};
+  const sessionUpdate: { summary?: string; notes_md?: string } = {};
   if (parsed.summary) sessionUpdate.summary = parsed.summary;
   if (typeof parsed.notes_md === "string") sessionUpdate.notes_md = parsed.notes_md;
   if (Object.keys(sessionUpdate).length) {
-    await supabase
-      .from("capture_sessions")
-      .update(sessionUpdate as any)
-      .eq("id", sessionId);
+    await supabase.from("capture_sessions").update(sessionUpdate).eq("id", sessionId);
   }
 
-  return { inserted: rows.length, summary: parsed.summary ?? null, notes_md: parsed.notes_md ?? null };
+  return {
+    inserted: rows.length,
+    summary: parsed.summary ?? null,
+    notes_md: parsed.notes_md ?? null,
+  };
 }

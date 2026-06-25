@@ -1,8 +1,23 @@
 import { useState } from "react";
-import { Check, Sparkles, X, ChevronDown, Mail, CalendarDays, StickyNote, ExternalLink, Flag, VolumeX } from "lucide-react";
+import {
+  Check,
+  Sparkles,
+  X,
+  ChevronDown,
+  Mail,
+  CalendarDays,
+  StickyNote,
+  ExternalLink,
+  Flag,
+  VolumeX,
+} from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { updatePromiseStatus, reportNotAPromise, getPromiseSource } from "@/lib/nyvlo/data.functions";
+import {
+  updatePromiseStatus,
+  reportNotAPromise,
+  getPromiseSource,
+} from "@/lib/nyvlo/data.functions";
 import { addMute } from "@/lib/nyvlo/mutes.functions";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
@@ -43,7 +58,9 @@ export function PromiseRow({ item }: { item: PromiseRowData }) {
     mutationFn: (status: "kept" | "missed" | "dismissed") =>
       update({ data: { id: item.id, status } }),
     onSuccess: (_, status) => {
-      toast.success(status === "kept" ? "Marked done" : status === "dismissed" ? "Dismissed" : "Updated");
+      toast.success(
+        status === "kept" ? "Marked done" : status === "dismissed" ? "Dismissed" : "Updated",
+      );
       invalidate();
     },
     onError: () => toast.error("Couldn't update"),
@@ -68,7 +85,8 @@ export function PromiseRow({ item }: { item: PromiseRowData }) {
     onError: () => toast.error("Couldn't mute source"),
   });
 
-  const SrcIcon = item.channel === "email" ? Mail : item.channel === "meeting" ? CalendarDays : StickyNote;
+  const SrcIcon =
+    item.channel === "email" ? Mail : item.channel === "meeting" ? CalendarDays : StickyNote;
   const dueLabel = formatDue(item.due_at);
   const dueTone = dueTone_(item.due_at);
 
@@ -79,7 +97,9 @@ export function PromiseRow({ item }: { item: PromiseRowData }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
             <h3 className="text-[15px] font-medium tracking-tight">{item.summary}</h3>
-            {item.owed_to && <span className="text-[12.5px] text-muted-foreground">· {item.owed_to}</span>}
+            {item.owed_to && (
+              <span className="text-[12.5px] text-muted-foreground">· {item.owed_to}</span>
+            )}
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px]">
             <span className={`font-medium ${dueTone.label}`}>{dueLabel}</span>
@@ -109,17 +129,26 @@ export function PromiseRow({ item }: { item: PromiseRowData }) {
         </div>
 
         <div className="flex items-center gap-1">
-          <IconBtn label="Mark done" onClick={() => mutation.mutate("kept")} disabled={mutation.isPending}>
+          <IconBtn
+            label="Mark done"
+            onClick={() => mutation.mutate("kept")}
+            disabled={mutation.isPending}
+          >
             <Check className="h-3.5 w-3.5" />
           </IconBtn>
-          <IconBtn label="Dismiss" onClick={() => mutation.mutate("dismissed")} disabled={mutation.isPending}>
+          <IconBtn
+            label="Dismiss"
+            onClick={() => mutation.mutate("dismissed")}
+            disabled={mutation.isPending}
+          >
             <X className="h-3.5 w-3.5" />
           </IconBtn>
           <button
             onClick={() => setOpen((v) => !v)}
             className="ml-1 inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11.5px] hover:bg-muted"
           >
-            Details <ChevronDown className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`} />
+            Details{" "}
+            <ChevronDown className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`} />
           </button>
         </div>
       </div>
@@ -192,9 +221,25 @@ export function PromiseRow({ item }: { item: PromiseRowData }) {
   );
 }
 
-function IconBtn({ children, label, onClick, disabled }: { children: React.ReactNode; label: string; onClick?: () => void; disabled?: boolean }) {
+function IconBtn({
+  children,
+  label,
+  onClick,
+  disabled,
+}: {
+  children: React.ReactNode;
+  label: string;
+  onClick?: () => void;
+  disabled?: boolean;
+}) {
   return (
-    <button onClick={onClick} disabled={disabled} title={label} aria-label={label} className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40">
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      title={label}
+      aria-label={label}
+      className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40"
+    >
       {children}
     </button>
   );

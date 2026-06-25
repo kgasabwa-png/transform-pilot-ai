@@ -45,7 +45,9 @@ function Onboarding() {
   return (
     <div className="min-h-dvh bg-background">
       <header className="mx-auto flex max-w-3xl items-center justify-between px-6 py-6">
-        <Link to="/app"><NyvloMark size="lg" /></Link>
+        <Link to="/app">
+          <NyvloMark size="lg" />
+        </Link>
         <Link to="/app" className="text-[13px] text-muted-foreground hover:text-foreground">
           Skip → app
         </Link>
@@ -74,7 +76,9 @@ function Onboarding() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-[11px] font-mono uppercase text-muted-foreground">Step {i + 1}</span>
+                  <span className="text-[11px] font-mono uppercase text-muted-foreground">
+                    Step {i + 1}
+                  </span>
                   <h3 className="text-[15px] font-medium">{s.title}</h3>
                 </div>
                 <p className="mt-1 text-[13.5px] text-muted-foreground">{s.body}</p>
@@ -93,7 +97,10 @@ function Onboarding() {
 
         <div className="mt-10 rounded-xl border border-border bg-secondary/40 p-5 text-center">
           <p className="text-[13.5px] text-muted-foreground">
-            Done? <Link to="/app" className="font-medium text-foreground underline underline-offset-2">Go to meetings →</Link>
+            Done?{" "}
+            <Link to="/app" className="font-medium text-foreground underline underline-offset-2">
+              Go to meetings →
+            </Link>
           </p>
         </div>
       </main>

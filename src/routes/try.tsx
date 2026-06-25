@@ -20,9 +20,15 @@ export const Route = createFileRoute("/try")({
   head: () => ({
     meta: [
       { title: "Try Nyvlo · Meeting notes demo" },
-      { name: "description", content: "Explore a sample Nyvlo meeting notebook — no signup required." },
+      {
+        name: "description",
+        content: "Explore a sample Nyvlo meeting notebook — no signup required.",
+      },
       { property: "og:title", content: "Try Nyvlo · Meeting notes demo" },
-      { property: "og:description", content: "Explore a sample Nyvlo meeting notebook — no signup required." },
+      {
+        property: "og:description",
+        content: "Explore a sample Nyvlo meeting notebook — no signup required.",
+      },
     ],
   }),
   component: TryPage,
@@ -37,14 +43,26 @@ const meetings = [
     duration: "31 min",
     summary:
       "Sarah is evaluating Nyvlo for customer success onboarding. The biggest pain is losing implementation details across calls, Slack, and docs.",
-    rough: ["onboarding notes scattered", "wants examples by industry", "annual pricing concern", "send migration checklist"],
-    decisions: ["Send industry-specific examples before Acme's internal review.", "Position annual plan with migration support included."],
+    rough: [
+      "onboarding notes scattered",
+      "wants examples by industry",
+      "annual pricing concern",
+      "send migration checklist",
+    ],
+    decisions: [
+      "Send industry-specific examples before Acme's internal review.",
+      "Position annual plan with migration support included.",
+    ],
     discussion: [
       "Current handoff notes are split across docs, Slack threads, and recordings.",
       "Searchable meeting memory is more valuable to Acme than a raw transcript archive.",
       "Sarah wants implementation notes that can be shared with support managers without cleanup.",
     ],
-    actions: ["Share migration checklist", "Draft annual plan follow-up", "Book technical validation call"],
+    actions: [
+      "Share migration checklist",
+      "Draft annual plan follow-up",
+      "Book technical validation call",
+    ],
   },
   {
     id: "roadmap",
@@ -54,14 +72,26 @@ const meetings = [
     duration: "46 min",
     summary:
       "The team narrowed Q3 scope to calendar briefs, improved desktop capture, and searchable team folders.",
-    rough: ["defer CRM sync", "calendar brief is priority", "desktop capture bugs", "folder chat prototype"],
-    decisions: ["Defer CRM sync until after desktop capture is stable.", "Make calendar briefs the Q3 activation bet."],
+    rough: [
+      "defer CRM sync",
+      "calendar brief is priority",
+      "desktop capture bugs",
+      "folder chat prototype",
+    ],
+    decisions: [
+      "Defer CRM sync until after desktop capture is stable.",
+      "Make calendar briefs the Q3 activation bet.",
+    ],
     discussion: [
       "Design wants fewer dashboard metrics and more note-first affordances.",
       "Engineering flagged system audio permissions as the highest-risk onboarding step.",
       "Team folders should start simple: private notes first, share explicitly later.",
     ],
-    actions: ["Write Q3 scope memo", "Schedule desktop QA pass", "Prototype folder chat empty state"],
+    actions: [
+      "Write Q3 scope memo",
+      "Schedule desktop QA pass",
+      "Prototype folder chat empty state",
+    ],
   },
 ];
 
@@ -72,7 +102,11 @@ function TryPage() {
   const [selectedId, setSelectedId] = useState(meetings[0].id);
   const selected = meetings.find((meeting) => meeting.id === selectedId) ?? meetings[0];
   const actions = meetings.flatMap((meeting) =>
-    meeting.actions.map((action) => ({ action, meeting: meeting.title, id: `${meeting.id}-${action}` })),
+    meeting.actions.map((action) => ({
+      action,
+      meeting: meeting.title,
+      id: `${meeting.id}-${action}`,
+    })),
   );
 
   return (
@@ -82,7 +116,9 @@ function TryPage() {
           <div className="flex items-center gap-2">
             <PlayCircle className="h-4 w-4" />
             <span className="font-medium">You're in the meeting-notes demo.</span>
-            <span className="hidden text-background/70 sm:inline">Sample notes — no signup required.</span>
+            <span className="hidden text-background/70 sm:inline">
+              Sample notes — no signup required.
+            </span>
           </div>
           <Link
             to="/auth"
@@ -99,10 +135,30 @@ function TryPage() {
             <NyvloMark size="lg" />
           </Link>
           <nav className="flex flex-col gap-0.5">
-            <DemoNav icon={Sparkles} label="Meetings" active={view === "meetings"} onClick={() => setView("meetings")} />
-            <DemoNav icon={CheckCircle2} label="Actions" active={view === "actions"} onClick={() => setView("actions")} />
-            <DemoNav icon={BookMarked} label="Library" active={view === "memory"} onClick={() => setView("memory")} />
-            <DemoNav icon={MessageSquareText} label="Ask" active={view === "ask"} onClick={() => setView("ask")} />
+            <DemoNav
+              icon={Sparkles}
+              label="Meetings"
+              active={view === "meetings"}
+              onClick={() => setView("meetings")}
+            />
+            <DemoNav
+              icon={CheckCircle2}
+              label="Actions"
+              active={view === "actions"}
+              onClick={() => setView("actions")}
+            />
+            <DemoNav
+              icon={BookMarked}
+              label="Library"
+              active={view === "memory"}
+              onClick={() => setView("memory")}
+            />
+            <DemoNav
+              icon={MessageSquareText}
+              label="Ask"
+              active={view === "ask"}
+              onClick={() => setView("ask")}
+            />
           </nav>
           <div className="mt-auto rounded-lg border border-border bg-background/40 p-3 text-[12px] text-muted-foreground">
             This demo mirrors the signed-in product: capture, jot, enhance, then ask across notes.
@@ -165,7 +221,9 @@ function MeetingsView({
 
       <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
         <div className="rounded-xl border border-border bg-card p-2">
-          <div className="px-2 py-2 text-[11px] uppercase tracking-wider text-muted-foreground">Recent meetings</div>
+          <div className="px-2 py-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+            Recent meetings
+          </div>
           {meetings.map((meeting) => (
             <button
               key={meeting.id}
@@ -178,7 +236,9 @@ function MeetingsView({
               ].join(" ")}
             >
               <div className="truncate font-medium">{meeting.title}</div>
-              <div className="mt-0.5 text-[11px] text-muted-foreground">{meeting.time} · {meeting.duration}</div>
+              <div className="mt-0.5 text-[11px] text-muted-foreground">
+                {meeting.time} · {meeting.duration}
+              </div>
             </button>
           ))}
         </div>
@@ -189,7 +249,9 @@ function MeetingsView({
               <div>
                 <h2 className="text-2xl font-semibold tracking-tight">{selected.title}</h2>
                 <div className="mt-1 flex items-center gap-3 text-[12px] text-muted-foreground">
-                  <span className="inline-flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {selected.time}</span>
+                  <span className="inline-flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5" /> {selected.time}
+                  </span>
                   <span>{selected.duration}</span>
                   <span>{selected.template}</span>
                 </div>
@@ -206,7 +268,9 @@ function MeetingsView({
                 <NotebookPen className="h-4 w-4 text-primary" /> Rough notes
               </div>
               <ul className="space-y-2 font-mono text-[12.5px] text-muted-foreground">
-                {selected.rough.map((item) => <li key={item}>- {item}</li>)}
+                {selected.rough.map((item) => (
+                  <li key={item}>- {item}</li>
+                ))}
               </ul>
             </div>
 
@@ -215,7 +279,9 @@ function MeetingsView({
                 <Sparkles className="h-4 w-4" /> Enhanced notes
               </div>
               <h3 className="text-xl font-semibold">{selected.title}</h3>
-              <p className="mt-2 text-[13.5px] leading-relaxed text-muted-foreground">{selected.summary}</p>
+              <p className="mt-2 text-[13.5px] leading-relaxed text-muted-foreground">
+                {selected.summary}
+              </p>
               <NoteSection title="Key decisions" items={selected.decisions} />
               <NoteSection title="Discussion" items={selected.discussion} />
               <NoteSection title="Next steps" items={selected.actions} />
@@ -232,7 +298,9 @@ function ActionsView({ actions }: { actions: { id: string; action: string; meeti
     <>
       <header className="mb-8">
         <h1 className="text-[28px] font-semibold tracking-tight">Actions</h1>
-        <p className="mt-1 text-[14px] text-muted-foreground">Follow-ups extracted from enhanced meeting notes.</p>
+        <p className="mt-1 text-[14px] text-muted-foreground">
+          Follow-ups extracted from enhanced meeting notes.
+        </p>
       </header>
       <div className="flex flex-col gap-2">
         {actions.map((item) => (
@@ -253,15 +321,29 @@ function ActionsView({ actions }: { actions: { id: string; action: string; meeti
 
 function MemoryView() {
   const items = [
-    { icon: CalendarDays, title: "Acme cares about onboarding handoffs", source: "Acme discovery call" },
-    { icon: FileText, title: "Q3 activation bet is calendar briefs", source: "Q3 roadmap planning" },
-    { icon: Search, title: "System audio permissions are the risky onboarding step", source: "Q3 roadmap planning" },
+    {
+      icon: CalendarDays,
+      title: "Acme cares about onboarding handoffs",
+      source: "Acme discovery call",
+    },
+    {
+      icon: FileText,
+      title: "Q3 activation bet is calendar briefs",
+      source: "Q3 roadmap planning",
+    },
+    {
+      icon: Search,
+      title: "System audio permissions are the risky onboarding step",
+      source: "Q3 roadmap planning",
+    },
   ];
   return (
     <>
       <header className="mb-8">
         <h1 className="text-[28px] font-semibold tracking-tight">Library</h1>
-        <p className="mt-1 text-[14px] text-muted-foreground">Useful context Nyvlo can retrieve when you ask questions.</p>
+        <p className="mt-1 text-[14px] text-muted-foreground">
+          Useful context Nyvlo can retrieve when you ask questions.
+        </p>
       </header>
       <div className="flex flex-col gap-2">
         {items.map(({ icon: Icon, title, source }) => (
@@ -290,14 +372,19 @@ function AskView() {
     <>
       <header className="mb-8">
         <h1 className="text-[28px] font-semibold tracking-tight">Ask</h1>
-        <p className="mt-1 text-[14px] text-muted-foreground">Chat across notes, actions, and meeting memory.</p>
+        <p className="mt-1 text-[14px] text-muted-foreground">
+          Chat across notes, actions, and meeting memory.
+        </p>
       </header>
       <div className="rounded-xl border border-border bg-card p-8 text-center">
         <MessageSquareText className="mx-auto h-8 w-8 text-primary" />
         <h3 className="mt-3 text-[16px] font-medium">Ask your meeting notebook</h3>
         <div className="mx-auto mt-5 flex max-w-md flex-col gap-2">
           {prompts.map((prompt) => (
-            <button key={prompt} className="rounded-md border border-border bg-background px-3 py-2 text-left text-[13px] hover:bg-muted">
+            <button
+              key={prompt}
+              className="rounded-md border border-border bg-background px-3 py-2 text-left text-[13px] hover:bg-muted"
+            >
               {prompt}
             </button>
           ))}
@@ -323,7 +410,9 @@ function DemoNav({
       type="button"
       onClick={onClick}
       className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[13.5px] transition-colors ${
-        active ? "bg-background text-foreground" : "text-muted-foreground hover:bg-background/50 hover:text-foreground"
+        active
+          ? "bg-background text-foreground"
+          : "text-muted-foreground hover:bg-background/50 hover:text-foreground"
       }`}
     >
       <Icon className="h-4 w-4" />

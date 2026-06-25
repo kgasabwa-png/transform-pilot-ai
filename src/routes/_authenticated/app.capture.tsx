@@ -32,6 +32,46 @@ export const Route = createFileRoute("/_authenticated/app/capture")({
   component: CapturePage,
 });
 
+type CaptureSession = {
+  id: string;
+  label: string | null;
+  status: string;
+  started_at: string;
+  duration_seconds: number | null;
+  summary: string | null;
+  notes_md: string | null;
+  metadata: unknown;
+};
+
+type CaptureChunk = {
+  id: string;
+  sequence: number;
+  started_at: string;
+  speaker: string | null;
+  transcript: string | null;
+  status: string;
+};
+
+type CaptureFrame = {
+  id: string;
+  captured_at: string;
+  app_name: string | null;
+  window_title: string | null;
+  vision_summary: string | null;
+};
+
+type CaptureAction = {
+  id: string;
+  summary: string;
+  due_at: string | null;
+  owed_to: string | null;
+  draft_reply?: string | null;
+};
+
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
 function CapturePage() {
   const fetchList = useServerFn(listCaptureSessions);
   const fetchQuota = useServerFn(getCaptureQuota);
@@ -47,7 +87,7 @@ function CapturePage() {
   });
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const sessions = list.data ?? [];
+  const sessions = (list.data ?? []) as CaptureSession[];
   const activeId = selectedId ?? sessions[0]?.id ?? null;
 
   const qc = useQueryClient();
@@ -56,11 +96,16 @@ function CapturePage() {
   const nearLimit = q && !q.is_pro && q.used >= q.limit * 0.7;
 
   return (
-    <Shell title="Meeting notes" subtitle="Capture audio, jot what matters, and enhance it into private notes.">
+    <Shell
+      title="Meeting notes"
+      subtitle="Capture audio, jot what matters, and enhance it into private notes."
+    >
       {q && !q.is_pro ? (
         <div
           className={`mb-4 flex items-center gap-4 rounded-lg border px-4 py-3 text-sm ${
-            q.allowed ? "border-border bg-card/60" : "border-amber-500/40 bg-amber-50/60 dark:bg-amber-950/20"
+            q.allowed
+              ? "border-border bg-card/60"
+              : "border-amber-500/40 bg-amber-50/60 dark:bg-amber-950/20"
           }`}
         >
           <div className="flex-1">
@@ -77,7 +122,8 @@ function CapturePage() {
             </div>
             {nearLimit ? (
               <p className="mt-2 text-[12px] text-muted-foreground">
-                Free meetings are capped at 30 minutes each. Upgrade for unlimited history, system audio, and the desktop app.
+                Free meetings are capped at 30 minutes each. Upgrade for unlimited history, system
+                audio, and the desktop app.
               </p>
             ) : null}
           </div>
@@ -111,12 +157,12 @@ function CapturePage() {
           )}
           {!list.isLoading && sessions.length === 0 && (
             <div className="px-2 py-4 text-[13px] leading-relaxed text-muted-foreground">
-              No meetings yet. Start a notepad when your next call begins. Nyvlo keeps your rough notes,
-              transcript, and enhanced summary together.
+              No meetings yet. Start a notepad when your next call begins. Nyvlo keeps your rough
+              notes, transcript, and enhanced summary together.
             </div>
           )}
           <div className="space-y-0.5">
-            {sessions.map((s: any) => {
+            {sessions.map((s) => {
               const active = activeId === s.id;
               return (
                 <button
@@ -145,8 +191,8 @@ function CapturePage() {
                     {s.duration_seconds
                       ? ` · ${Math.max(1, Math.round(s.duration_seconds / 60))}m`
                       : s.status === "active"
-                      ? " · live"
-                      : ""}
+                        ? " · live"
+                        : ""}
                   </div>
                 </button>
               );
@@ -197,14 +243,17 @@ function SessionDetail({ sessionId, onDelete }: { sessionId: string; onDelete: (
     refetchInterval: 5_000,
   });
 
-  const session = q.data?.session as any;
-  const chunks = q.data?.chunks ?? [];
-  const frames = q.data?.frames ?? [];
-  const promises = q.data?.promises ?? [];
+  const session = q.data?.session as CaptureSession | null | undefined;
+  const chunks = (q.data?.chunks ?? []) as CaptureChunk[];
+  const frames = (q.data?.frames ?? []) as CaptureFrame[];
+  const promises = (q.data?.promises ?? []) as CaptureAction[];
 
   useEffect(() => {
     if (!session) return;
-    const metadata = session.metadata && typeof session.metadata === "object" ? session.metadata : {};
+    const metadata =
+      session.metadata && typeof session.metadata === "object"
+        ? (session.metadata as Record<string, unknown>)
+        : {};
     setManualNotes(typeof metadata.manual_notes === "string" ? metadata.manual_notes : "");
     setTemplate(
       typeof metadata.meeting_template === "string" &&
@@ -213,6 +262,9 @@ function SessionDetail({ sessionId, onDelete }: { sessionId: string; onDelete: (
         : "general",
     );
     setTitleDraft(session.label || "");
+    // Hydrate editable fields only when switching sessions; polling refetches
+    // should not overwrite rough notes while the user is typing.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.id]);
 
   if (!session) {
@@ -233,8 +285,8 @@ function SessionDetail({ sessionId, onDelete }: { sessionId: string; onDelete: (
       qc.invalidateQueries({ queryKey: ["capture-session", sessionId] });
       qc.invalidateQueries({ queryKey: ["capture-sessions"] });
       if (!quiet) toast.success("Meeting notepad saved");
-    } catch (e: any) {
-      toast.error(e.message ?? "Couldn't save notes");
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, "Couldn't save notes"));
       throw e;
     } finally {
       setSaving(false);
@@ -252,8 +304,8 @@ function SessionDetail({ sessionId, onDelete }: { sessionId: string; onDelete: (
           : "Enhanced notes regenerated",
       );
       qc.invalidateQueries({ queryKey: ["capture-session", sessionId] });
-    } catch (e: any) {
-      toast.error(e.message ?? "Couldn't regenerate notes");
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, "Couldn't regenerate notes"));
     } finally {
       setExtracting(false);
     }
@@ -403,7 +455,6 @@ function SessionDetail({ sessionId, onDelete }: { sessionId: string; onDelete: (
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{session.notes_md}</ReactMarkdown>
           </article>
         </Card>
-
       ) : session.summary ? (
         <Card className="p-5">
           <p className="text-[15px] leading-relaxed">{session.summary}</p>
@@ -425,7 +476,7 @@ function SessionDetail({ sessionId, onDelete }: { sessionId: string; onDelete: (
             </Link>
           </div>
           <ul className="divide-y divide-border/60">
-            {promises.map((p: any) => (
+            {promises.map((p) => (
               <ActionItem key={p.id} p={p} />
             ))}
           </ul>
@@ -461,7 +512,7 @@ function SessionDetail({ sessionId, onDelete }: { sessionId: string; onDelete: (
                   {chunks.length === 0 && (
                     <div className="text-sm text-muted-foreground">No audio.</div>
                   )}
-                  {chunks.map((c: any) => (
+                  {chunks.map((c) => (
                     <div key={c.id} className="text-[13px]">
                       <div className="text-[11px] text-muted-foreground">
                         {c.speaker || "speaker"} · {new Date(c.started_at).toLocaleTimeString()}
@@ -480,7 +531,7 @@ function SessionDetail({ sessionId, onDelete }: { sessionId: string; onDelete: (
                   {frames.length === 0 && (
                     <div className="text-sm text-muted-foreground">No screen captures.</div>
                   )}
-                  {frames.map((f: any) => (
+                  {frames.map((f) => (
                     <div key={f.id} className="text-[13px]">
                       <div className="text-[11px] text-muted-foreground">
                         {f.app_name || "App"}
@@ -500,7 +551,7 @@ function SessionDetail({ sessionId, onDelete }: { sessionId: string; onDelete: (
   );
 }
 
-function ActionItem({ p }: { p: any }) {
+function ActionItem({ p }: { p: CaptureAction }) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const onCopy = () => {

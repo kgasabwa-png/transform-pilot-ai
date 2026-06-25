@@ -4,10 +4,7 @@ import { Download, VolumeX, Trash2, Check, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { listMutes, removeMute } from "@/lib/nyvlo/mutes.functions";
-import {
-  listLinkedDevices,
-  revokeLinkedDevice,
-} from "@/lib/nyvlo/device-link.functions";
+import { listLinkedDevices, revokeLinkedDevice } from "@/lib/nyvlo/device-link.functions";
 
 export function ExtensionSection() {
   const queryClient = useQueryClient();
@@ -66,11 +63,11 @@ export function ExtensionSection() {
       </div>
 
       <div className="border-b border-border px-4 py-3 text-[12px] text-muted-foreground">
-        Optional browser context capture for Gmail, Slack, Notion, and Linear.
-        Use it when you want meeting notes and action items grounded in the tools
-        you were discussing. To install: download the zip, unzip it, open{" "}
-        <code className="rounded bg-muted px-1 py-0.5 text-[11px]">chrome://extensions</code>{" "}
-        → Developer mode → Load unpacked.
+        Optional browser context capture for Gmail, Slack, Notion, and Linear. Use it when you want
+        meeting notes and action items grounded in the tools you were discussing. To install:
+        download the zip, unzip it, open{" "}
+        <code className="rounded bg-muted px-1 py-0.5 text-[11px]">chrome://extensions</code> →
+        Developer mode → Load unpacked.
       </div>
 
       <div className="flex items-center justify-between border-b border-border bg-secondary/20 px-4 py-2.5">
@@ -94,8 +91,11 @@ export function ExtensionSection() {
         <div className="text-[12px]">
           <div className="font-medium">macOS capture (Swift sidecar)</div>
           <div className="text-[11px] text-muted-foreground">
-            System-audio + screen capture via ScreenCaptureKit (macOS 13+).
-            Build with <code className="rounded bg-muted px-1 py-0.5 text-[10.5px]">swift build -c release</code> — see README inside.
+            System-audio + screen capture via ScreenCaptureKit (macOS 13+). Build with{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-[10.5px]">
+              swift build -c release
+            </code>{" "}
+            — see README inside.
           </div>
         </div>
         <button
@@ -128,9 +128,7 @@ export function ExtensionSection() {
                 className="flex items-center justify-between border-b border-border px-4 py-2 last:border-b-0"
               >
                 <div className="min-w-0">
-                  <div className="truncate text-[12.5px]">
-                    {d.device_label || "Device"}
-                  </div>
+                  <div className="truncate text-[12.5px]">{d.device_label || "Device"}</div>
                   <div className="flex items-center gap-1 text-[10.5px] text-muted-foreground">
                     {d.status === "approved" ? (
                       <Clock className="h-3 w-3" />

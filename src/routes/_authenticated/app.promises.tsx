@@ -17,18 +17,24 @@ type Filter = "all" | "open" | "overdue" | "kept" | "missed" | "dismissed";
 function PromisesPage() {
   const [filter, setFilter] = useState<Filter>("all");
   const fetchPromises = useServerFn(listPromises);
-  const { data: items = [], isLoading } = useQuery({ queryKey: ["promises"], queryFn: () => fetchPromises() });
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ["promises"],
+    queryFn: () => fetchPromises(),
+  });
 
   const list = items.filter((p) => {
     if (filter === "all") return true;
-    if (filter === "overdue") return p.status === "open" && p.due_at && new Date(p.due_at).getTime() < Date.now();
+    if (filter === "overdue")
+      return p.status === "open" && p.due_at && new Date(p.due_at).getTime() < Date.now();
     return p.status === filter;
   });
 
   const counts: Record<Filter, number> = {
     all: items.length,
     open: items.filter((p) => p.status === "open").length,
-    overdue: items.filter((p) => p.status === "open" && p.due_at && new Date(p.due_at).getTime() < Date.now()).length,
+    overdue: items.filter(
+      (p) => p.status === "open" && p.due_at && new Date(p.due_at).getTime() < Date.now(),
+    ).length,
     kept: items.filter((p) => p.status === "kept").length,
     missed: items.filter((p) => p.status === "missed").length,
     dismissed: items.filter((p) => p.status === "dismissed").length,
@@ -54,11 +60,15 @@ function PromisesPage() {
               onClick={() => setFilter(f.id)}
               className={[
                 "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[12.5px] transition-colors",
-                active ? "border-foreground/15 bg-foreground text-background" : "border-border bg-card hover:bg-muted",
+                active
+                  ? "border-foreground/15 bg-foreground text-background"
+                  : "border-border bg-card hover:bg-muted",
               ].join(" ")}
             >
               {f.label}
-              <span className={`font-mono text-[10.5px] ${active ? "text-background/70" : "text-muted-foreground"}`}>
+              <span
+                className={`font-mono text-[10.5px] ${active ? "text-background/70" : "text-muted-foreground"}`}
+              >
                 {counts[f.id]}
               </span>
             </button>
@@ -69,7 +79,10 @@ function PromisesPage() {
       <div className="flex flex-col gap-2">
         {isLoading ? (
           Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3.5">
+            <div
+              key={i}
+              className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3.5"
+            >
               <Skeleton className="h-2 w-2 shrink-0 rounded-full" />
               <div className="flex-1 space-y-2">
                 <Skeleton className="h-3.5 w-2/3" />

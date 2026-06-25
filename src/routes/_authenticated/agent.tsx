@@ -90,7 +90,9 @@ function AgentPage() {
     );
   }
 
-  return <AgentChat initial={initial} input={input} setInput={setInput} textareaRef={textareaRef} />;
+  return (
+    <AgentChat initial={initial} input={input} setInput={setInput} textareaRef={textareaRef} />
+  );
 }
 
 function AgentChat({
@@ -249,10 +251,7 @@ function AgentChat({
               placeholder="Ask nyvlo to draft, prep, or research…"
             />
             <PromptInputFooter className="justify-end">
-              <PromptInputSubmit
-                status={status}
-                disabled={!input.trim() && !isLoading}
-              />
+              <PromptInputSubmit status={status} disabled={!input.trim() && !isLoading} />
             </PromptInputFooter>
           </PromptInput>
           {error ? (
@@ -301,7 +300,9 @@ function MessageView({ message }: { message: UIMessage }) {
                       ) : undefined
                     }
                     errorText={
-                      "errorText" in toolPart ? (toolPart as { errorText?: string }).errorText : undefined
+                      "errorText" in toolPart
+                        ? (toolPart as { errorText?: string }).errorText
+                        : undefined
                     }
                   />
                 </ToolContent>

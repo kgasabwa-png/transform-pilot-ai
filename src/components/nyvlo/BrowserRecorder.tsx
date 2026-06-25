@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loader2, Mic, NotebookPen, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -12,6 +12,19 @@ export const MEETING_TEMPLATES = [
   { value: "one_on_one", label: "1:1" },
   { value: "planning", label: "Planning" },
 ] as const;
+
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
+function stopRecorder(recorder: MediaRecorder | null) {
+  if (!recorder || recorder.state === "inactive") return;
+  try {
+    recorder.stop();
+  } catch (error) {
+    console.warn("Ignoring recorder stop failure", error);
+  }
+}
 
 /**
  * Browser-based mic recorder fallback for meeting capture.
@@ -43,9 +56,7 @@ export function BrowserRecorder({
   const cleanup = () => {
     if (chunkTimerRef.current) window.clearInterval(chunkTimerRef.current);
     if (tickRef.current) window.clearInterval(tickRef.current);
-    try {
-      recorderRef.current?.state !== "inactive" && recorderRef.current?.stop();
-    } catch {}
+    stopRecorder(recorderRef.current);
     streamRef.current?.getTracks().forEach((t) => t.stop());
     recorderRef.current = null;
     streamRef.current = null;
@@ -61,14 +72,12 @@ export function BrowserRecorder({
     return tokenRef.current ? `Bearer ${tokenRef.current}` : "";
   };
 
-  const fallbackLabel = useMemo(() => {
-    const now = new Date();
-    return `Meeting · ${now.toLocaleDateString(undefined, {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    })} ${now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
-  }, [state]);
+  const now = new Date();
+  const fallbackLabel = `Meeting · ${now.toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  })} ${now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
 
   const start = async () => {
     setState("starting");
@@ -138,12 +147,12 @@ export function BrowserRecorder({
               };
               recorderRef.current = r2;
               r2.start(1000);
-            } catch {}
+            } catch (error) {
+              console.warn("Unable to restart recorder", error);
+            }
           }
         };
-        try {
-          currentRecorder.stop();
-        } catch {}
+        stopRecorder(currentRecorder);
         await new Promise((r) => setTimeout(r, 150));
         const blob = new Blob(chunks, { type: mime });
         restart();
@@ -180,14 +189,17 @@ export function BrowserRecorder({
         setSeconds((s) => {
           const next = s + 1;
           if (maxSeconds && next >= maxSeconds) {
-            toast.message(`Free-tier capture limit reached (${Math.floor(maxSeconds / 60)} min). Stopping...`, {
-              action: {
-                label: "Upgrade",
-                onClick: () => {
-                  window.location.href = "/pricing";
+            toast.message(
+              `Free-tier capture limit reached (${Math.floor(maxSeconds / 60)} min). Stopping...`,
+              {
+                action: {
+                  label: "Upgrade",
+                  onClick: () => {
+                    window.location.href = "/pricing";
+                  },
                 },
               },
-            });
+            );
             queueMicrotask(() => stop());
           }
           return next;
@@ -196,10 +208,10 @@ export function BrowserRecorder({
       setSeconds(0);
       setState("recording");
       toast.success("Meeting capture started. Jot rough notes while you listen.");
-    } catch (e: any) {
+    } catch (e: unknown) {
       cleanup();
       setState("idle");
-      toast.error(e.message ?? "Couldn't start recording");
+      toast.error(getErrorMessage(e, "Couldn't start recording"));
     }
   };
 
@@ -216,9 +228,7 @@ export function BrowserRecorder({
       window.clearInterval(tickRef.current);
       tickRef.current = null;
     }
-    try {
-      recorderRef.current?.state !== "inactive" && recorderRef.current?.stop();
-    } catch {}
+    stopRecorder(recorderRef.current);
     await new Promise((r) => setTimeout(r, 250));
     streamRef.current?.getTracks().forEach((t) => t.stop());
     try {
@@ -245,10 +255,14 @@ export function BrowserRecorder({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="flex items-center gap-3">
             <span className="h-2 w-2 animate-pulse rounded-full bg-destructive" />
-            <span className="font-mono text-sm tabular-nums">{mm}:{ss}</span>
+            <span className="font-mono text-sm tabular-nums">
+              {mm}:{ss}
+            </span>
             <span className="text-sm font-medium">{title.trim() || fallbackLabel}</span>
           </div>
-          <span className="text-xs text-muted-foreground sm:ml-auto">mic capture · jot notes below</span>
+          <span className="text-xs text-muted-foreground sm:ml-auto">
+            mic capture · jot notes below
+          </span>
           <Button size="sm" variant="outline" onClick={stop}>
             <Square className="mr-1.5 h-3.5 w-3.5" /> Stop & enhance
           </Button>
