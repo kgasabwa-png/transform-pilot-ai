@@ -1,7 +1,12 @@
-// NyvloCapture.swift — ScreenCaptureKit-based sidecar for the Nyvlo desktop app.
-// Captures system audio + screen and POSTs chunks to the Nyvlo ingestion API.
+// NyvloCapture.swift — Audio capture sidecar for the Nyvlo desktop app.
 //
-// macOS 13+ (ScreenCaptureKit), Swift 5.9+.
+// On macOS 14.4+ uses the Core Audio process-tap API (CATapDescription +
+// AudioHardwareCreateProcessTap) combined with the default mic input via an
+// aggregate device. This requires ONLY the microphone permission — no Screen
+// Recording prompt.
+//
+// Falls back to ScreenCaptureKit on macOS 13–14.3 (requires Screen Recording).
+//
 // Compile:  swift build -c release
 // Run:      ./NyvloCapture --token <SUPABASE_ACCESS_TOKEN> --api https://transform-pilot-ai.lovable.app --label "Standup"
 //
@@ -15,10 +20,17 @@
 //   {"action":"stop"}
 
 import Foundation
-import ScreenCaptureKit
 import AVFoundation
-import CoreImage
+import CoreAudio
+import AudioToolbox
 import AppKit
+
+#if canImport(ScreenCaptureKit)
+import ScreenCaptureKit
+import CoreImage
+#endif
+
+// MARK: - Entry point
 
 @available(macOS 13.0, *)
 @main
@@ -42,6 +54,8 @@ struct NyvloCapture {
         }
     }
 }
+
+// MARK: - Arg parsing & logging
 
 func parseArgs() -> [String: String] {
     var out: [String: String] = [:]
@@ -69,6 +83,8 @@ func log(_ type: String, _ payload: [String: Any]) {
     }
 }
 
+// MARK: - Recorder actor
+
 @available(macOS 13.0, *)
 actor Recorder {
     let apiBase: String
@@ -76,11 +92,26 @@ actor Recorder {
     let label: String
     let audioOnly: Bool
     var sessionId: String?
-    var stream: SCStream?
-    var output: StreamOutput?
     var audioSeq = 0
     var screenSeq = 0
     let stopSignal = AsyncStream<Void>.makeStream()
+
+    // Core Audio tap state (macOS 14.4+)
+    var aggregateDeviceID: AudioDeviceID = kAudioObjectUnknown
+    var tapDeviceID: AudioDeviceID = kAudioObjectUnknown
+    var audioUnit: AudioUnit?
+    var coreAudioActive = false
+
+    // ScreenCaptureKit fallback state
+    #if canImport(ScreenCaptureKit)
+    var stream: SCStream?
+    var scOutput: StreamOutput?
+    #endif
+
+    // Shared audio buffering
+    var audioBuffer = Data()
+    var audioBufferStart = Date()
+    let chunkSeconds: TimeInterval = 6.0
 
     init(apiBase: String, token: String, label: String, audioOnly: Bool) async throws {
         self.apiBase = apiBase
@@ -99,20 +130,213 @@ actor Recorder {
         sessionId = id
         log("started", ["sessionId": id])
 
-        // 2. Configure ScreenCaptureKit
+        // 2. Choose capture path
+        if #available(macOS 14.4, *) {
+            try startCoreAudioTap()
+            log("chunk", ["kind": "info", "sequence": 0, "captureMethod": "coreaudio-tap"])
+        } else {
+            #if canImport(ScreenCaptureKit)
+            try await startScreenCaptureKit()
+            log("chunk", ["kind": "info", "sequence": 0, "captureMethod": "screencapturekit"])
+            #else
+            throw NSError(domain: "Nyvlo", code: 5, userInfo: [NSLocalizedDescriptionKey: "ScreenCaptureKit unavailable and macOS < 14.4"])
+            #endif
+        }
+
+        // 3. Listen for stop from stdin
+        Task.detached { await self.readStdin() }
+    }
+
+    // MARK: - Core Audio Process Tap (macOS 14.4+)
+
+    @available(macOS 14.4, *)
+    func startCoreAudioTap() throws {
+        // Create a process tap that captures all system audio output
+        var tapDesc = CATapDescription(stereoMixdownOfProcesses: [])
+        tapDesc.uuid = UUID()
+        tapDesc.name = "NyvloSystemAudioTap"
+        // Mono, not exclusive, not muteable (we're just listening)
+        tapDesc.isMutedWhenTapped = false
+
+        var tapID: AudioObjectID = kAudioObjectUnknown
+        var status = AudioHardwareCreateProcessTap(&tapDesc, &tapID)
+        guard status == noErr else {
+            throw NSError(domain: "Nyvlo", code: 10, userInfo: [NSLocalizedDescriptionKey: "AudioHardwareCreateProcessTap failed: \(status)"])
+        }
+        self.tapDeviceID = tapID
+
+        // Get the default input device (mic)
+        var defaultInput: AudioDeviceID = kAudioObjectUnknown
+        var propSize = UInt32(MemoryLayout<AudioDeviceID>.size)
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwarePropertyDefaultInputDevice,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        status = AudioObjectGetPropertyData(AudioObjectID(kAudioObjectSystemObject), &address, 0, nil, &propSize, &defaultInput)
+        guard status == noErr, defaultInput != kAudioObjectUnknown else {
+            throw NSError(domain: "Nyvlo", code: 11, userInfo: [NSLocalizedDescriptionKey: "No default input device"])
+        }
+
+        // Create aggregate device combining tap + mic
+        let aggregateDesc: [String: Any] = [
+            kAudioAggregateDeviceNameKey as String: "NyvloAggregateDevice",
+            kAudioAggregateDeviceUIDKey as String: "com.nyvlo.aggregate.\(UUID().uuidString)",
+            kAudioAggregateDeviceIsPrivateKey as String: true,
+            kAudioAggregateDeviceSubDeviceListKey as String: [
+                [kAudioSubDeviceUIDKey as String: getDeviceUID(defaultInput) ?? ""],
+                [kAudioSubDeviceUIDKey as String: getDeviceUID(tapID) ?? ""]
+            ],
+            kAudioAggregateDeviceTapListKey as String: [
+                [kAudioSubTapUIDKey as String: tapDesc.uuid.uuidString]
+            ]
+        ]
+
+        var aggregateID: AudioDeviceID = kAudioObjectUnknown
+        status = AudioHardwareCreateAggregateDevice(aggregateDesc as CFDictionary, &aggregateID)
+        guard status == noErr else {
+            throw NSError(domain: "Nyvlo", code: 12, userInfo: [NSLocalizedDescriptionKey: "AudioHardwareCreateAggregateDevice failed: \(status)"])
+        }
+        self.aggregateDeviceID = aggregateID
+
+        // Set up AudioUnit to read from the aggregate device
+        var componentDesc = AudioComponentDescription(
+            componentType: kAudioUnitType_Output,
+            componentSubType: kAudioUnitSubType_HALOutput,
+            componentManufacturer: kAudioUnitManufacturer_Apple,
+            componentFlags: 0,
+            componentFlagsMask: 0
+        )
+        guard let component = AudioComponentFindNext(nil, &componentDesc) else {
+            throw NSError(domain: "Nyvlo", code: 13, userInfo: [NSLocalizedDescriptionKey: "HALOutput component not found"])
+        }
+
+        var unit: AudioUnit?
+        status = AudioComponentInstanceNew(component, &unit)
+        guard status == noErr, let au = unit else {
+            throw NSError(domain: "Nyvlo", code: 14, userInfo: [NSLocalizedDescriptionKey: "AudioComponentInstanceNew failed: \(status)"])
+        }
+
+        // Enable input on the AU, disable output
+        var enableInput: UInt32 = 1
+        status = AudioUnitSetProperty(au, kAudioOutputUnitProperty_EnableIO,
+                                      kAudioUnitScope_Input, 1, &enableInput,
+                                      UInt32(MemoryLayout<UInt32>.size))
+        guard status == noErr else {
+            throw NSError(domain: "Nyvlo", code: 15, userInfo: [NSLocalizedDescriptionKey: "Enable input failed: \(status)"])
+        }
+
+        var disableOutput: UInt32 = 0
+        status = AudioUnitSetProperty(au, kAudioOutputUnitProperty_EnableIO,
+                                      kAudioUnitScope_Output, 0, &disableOutput,
+                                      UInt32(MemoryLayout<UInt32>.size))
+        guard status == noErr else {
+            throw NSError(domain: "Nyvlo", code: 16, userInfo: [NSLocalizedDescriptionKey: "Disable output failed: \(status)"])
+        }
+
+        // Point the AU at the aggregate device
+        var aggID = aggregateID
+        status = AudioUnitSetProperty(au, kAudioOutputUnitProperty_CurrentDevice,
+                                      kAudioUnitScope_Global, 0, &aggID,
+                                      UInt32(MemoryLayout<AudioDeviceID>.size))
+        guard status == noErr else {
+            throw NSError(domain: "Nyvlo", code: 17, userInfo: [NSLocalizedDescriptionKey: "Set current device failed: \(status)"])
+        }
+
+        // Set desired format: 16kHz mono 16-bit integer
+        var streamFormat = AudioStreamBasicDescription(
+            mSampleRate: 16000,
+            mFormatID: kAudioFormatLinearPCM,
+            mFormatFlags: kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked,
+            mBytesPerPacket: 2,
+            mFramesPerPacket: 1,
+            mBytesPerFrame: 2,
+            mChannelsPerFrame: 1,
+            mBitsPerChannel: 16,
+            mReserved: 0
+        )
+        status = AudioUnitSetProperty(au, kAudioUnitProperty_StreamFormat,
+                                      kAudioUnitScope_Output, 1, &streamFormat,
+                                      UInt32(MemoryLayout<AudioStreamBasicDescription>.size))
+        guard status == noErr else {
+            throw NSError(domain: "Nyvlo", code: 18, userInfo: [NSLocalizedDescriptionKey: "Set stream format failed: \(status)"])
+        }
+
+        // Set input callback
+        let selfPtr = Unmanaged.passUnretained(self).toOpaque()
+        var callbackStruct = AURenderCallbackStruct(
+            inputProc: coreAudioInputCallback,
+            inputProcRefCon: selfPtr
+        )
+        status = AudioUnitSetProperty(au, kAudioOutputUnitProperty_SetInputCallback,
+                                      kAudioUnitScope_Global, 0, &callbackStruct,
+                                      UInt32(MemoryLayout<AURenderCallbackStruct>.size))
+        guard status == noErr else {
+            throw NSError(domain: "Nyvlo", code: 19, userInfo: [NSLocalizedDescriptionKey: "Set input callback failed: \(status)"])
+        }
+
+        status = AudioUnitInitialize(au)
+        guard status == noErr else {
+            throw NSError(domain: "Nyvlo", code: 20, userInfo: [NSLocalizedDescriptionKey: "AudioUnitInitialize failed: \(status)"])
+        }
+
+        status = AudioOutputUnitStart(au)
+        guard status == noErr else {
+            throw NSError(domain: "Nyvlo", code: 21, userInfo: [NSLocalizedDescriptionKey: "AudioOutputUnitStart failed: \(status)"])
+        }
+
+        self.audioUnit = au
+        self.coreAudioActive = true
+        self.audioBufferStart = Date()
+    }
+
+    func getDeviceUID(_ deviceID: AudioDeviceID) -> String? {
+        var uid: CFString = "" as CFString
+        var propSize = UInt32(MemoryLayout<CFString>.size)
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioDevicePropertyDeviceUID,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        let status = AudioObjectGetPropertyData(deviceID, &address, 0, nil, &propSize, &uid)
+        return status == noErr ? uid as String : nil
+    }
+
+    nonisolated func handleCoreAudioBuffer(_ data: Data) {
+        Task { await self.appendAudioData(data) }
+    }
+
+    func appendAudioData(_ data: Data) {
+        audioBuffer.append(data)
+        if Date().timeIntervalSince(audioBufferStart) >= chunkSeconds {
+            let pcm = audioBuffer
+            let started = audioBufferStart
+            audioBuffer.removeAll(keepingCapacity: true)
+            audioBufferStart = Date()
+            let wav = makeWavFromPcm16(pcm: pcm, sampleRate: 16_000, channels: 1)
+            let durationMs = Int(Date().timeIntervalSince(started) * 1000)
+            Task { await self.uploadAudio(wavData: wav, durationMs: durationMs) }
+        }
+    }
+
+    // MARK: - ScreenCaptureKit fallback (macOS 13+)
+
+    #if canImport(ScreenCaptureKit)
+    func startScreenCaptureKit() async throws {
         let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
         guard let display = content.displays.first else {
             throw NSError(domain: "Nyvlo", code: 2, userInfo: [NSLocalizedDescriptionKey: "No display"])
         }
         let filter = SCContentFilter(display: display, excludingApplications: [], exceptingWindows: [])
         let config = SCStreamConfiguration()
-        config.capturesAudio = true                    // system audio (the other person's voice in Zoom/Meet)
-        config.excludesCurrentProcessAudio = true      // don't capture our own beeps
+        config.capturesAudio = true
+        config.excludesCurrentProcessAudio = true
         config.sampleRate = 16_000
         config.channelCount = 1
+        // Default to audio-only: minimal frame config
         config.width = 1280
         config.height = 800
-        config.minimumFrameInterval = CMTime(value: 1, timescale: 1) // 1 fps to server (we sub-sample frames)
+        config.minimumFrameInterval = CMTime(value: 1, timescale: 1)
         config.queueDepth = 6
 
         let stream = SCStream(filter: filter, configuration: config, delegate: nil)
@@ -123,11 +347,11 @@ actor Recorder {
         }
         try await stream.startCapture()
         self.stream = stream
-        self.output = output
-
-        // 3. Listen for stop from stdin
-        Task.detached { await self.readStdin() }
+        self.scOutput = output
     }
+    #endif
+
+    // MARK: - Stdin listener
 
     func readStdin() async {
         let h = FileHandle.standardInput
@@ -136,9 +360,47 @@ actor Recorder {
         }
     }
 
+    // MARK: - Stop
+
     func stop() async {
-        guard let stream = stream else { return }
-        try? await stream.stopCapture()
+        if coreAudioActive {
+            if let au = audioUnit {
+                AudioOutputUnitStop(au)
+                AudioComponentInstanceDispose(au)
+            }
+            if aggregateDeviceID != kAudioObjectUnknown {
+                AudioHardwareDestroyAggregateDevice(aggregateDeviceID)
+            }
+            if tapDeviceID != kAudioObjectUnknown {
+                AudioHardwareDestroyProcessTap(tapDeviceID)
+            }
+            // Flush remaining audio
+            if !audioBuffer.isEmpty {
+                let pcm = audioBuffer
+                let started = audioBufferStart
+                audioBuffer.removeAll()
+                let wav = makeWavFromPcm16(pcm: pcm, sampleRate: 16_000, channels: 1)
+                let durationMs = Int(Date().timeIntervalSince(started) * 1000)
+                await uploadAudio(wavData: wav, durationMs: durationMs)
+            }
+            coreAudioActive = false
+        }
+
+        #if canImport(ScreenCaptureKit)
+        if let stream = stream {
+            try? await stream.stopCapture()
+            // Flush remaining audio from SC path
+            if let output = scOutput, !output.audioBuffer.isEmpty {
+                let pcm = output.audioBuffer
+                let started = output.audioBufferStart
+                output.audioBuffer.removeAll()
+                let wav = makeWavFromPcm16(pcm: pcm, sampleRate: 16_000, channels: 1)
+                let durationMs = Int(Date().timeIntervalSince(started) * 1000)
+                await uploadAudio(wavData: wav, durationMs: durationMs)
+            }
+        }
+        #endif
+
         if let sid = sessionId {
             _ = try? await postJSON(path: "/api/public/ingest/session-end", body: ["sessionId": sid])
         }
@@ -240,8 +502,53 @@ actor Recorder {
     }
 }
 
-// MARK: - Stream output (audio + screen)
+// MARK: - Core Audio input callback (C function)
 
+@available(macOS 13.0, *)
+private func coreAudioInputCallback(
+    inRefCon: UnsafeMutableRawPointer,
+    ioActionFlags: UnsafeMutablePointer<AudioUnitRenderActionFlags>,
+    inTimeStamp: UnsafePointer<AudioTimeStamp>,
+    inBusNumber: UInt32,
+    inNumberFrames: UInt32,
+    ioData: UnsafeMutablePointer<AudioBufferList>?
+) -> OSStatus {
+    let recorder = Unmanaged<Recorder>.fromOpaque(inRefCon).takeUnretainedValue()
+
+    var bufferList = AudioBufferList(
+        mNumberBuffers: 1,
+        mBuffers: AudioBuffer(
+            mNumberChannels: 1,
+            mDataByteSize: inNumberFrames * 2,
+            mData: nil
+        )
+    )
+    let bufferSize = Int(inNumberFrames * 2)
+    let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
+    bufferList.mBuffers.mData = UnsafeMutableRawPointer(buffer)
+    bufferList.mBuffers.mDataByteSize = UInt32(bufferSize)
+
+    // We need the AudioUnit to render into our buffer - get it from the recorder
+    // Since we can't await here, we use a synchronous approach
+    let au = recorder.audioUnit
+    guard let audioUnit = au else {
+        buffer.deallocate()
+        return noErr
+    }
+
+    let status = AudioUnitRender(audioUnit, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, &bufferList)
+    if status == noErr {
+        let data = Data(bytes: buffer, count: bufferSize)
+        recorder.handleCoreAudioBuffer(data)
+    }
+
+    buffer.deallocate()
+    return noErr
+}
+
+// MARK: - Stream output for ScreenCaptureKit fallback
+
+#if canImport(ScreenCaptureKit)
 @available(macOS 13.0, *)
 class StreamOutput: NSObject, SCStreamOutput {
     weak var parent: Recorder?
@@ -265,7 +572,6 @@ class StreamOutput: NSObject, SCStreamOutput {
 
     func handleAudio(_ buf: CMSampleBuffer) {
         guard CMSampleBufferDataIsReady(buf) else { return }
-        // Pull PCM into Data
         guard let blockBuffer = CMSampleBufferGetDataBuffer(buf) else { return }
         var length = 0
         var dataPointer: UnsafeMutablePointer<Int8>?
@@ -279,7 +585,6 @@ class StreamOutput: NSObject, SCStreamOutput {
             let started = audioBufferStart
             audioBuffer.removeAll(keepingCapacity: true)
             audioBufferStart = Date()
-            // wrap as WAV (16kHz mono 16-bit)
             let wav = makeWavFromPcm16(pcm: pcm, sampleRate: 16_000, channels: 1)
             let durationMs = Int(Date().timeIntervalSince(started) * 1000)
             Task { [weak self] in await self?.parent?.uploadAudio(wavData: wav, durationMs: durationMs) }
@@ -300,8 +605,10 @@ class StreamOutput: NSObject, SCStreamOutput {
         Task { [weak self] in await self?.parent?.uploadScreen(jpegData: jpeg, app: app, window: nil) }
     }
 }
+#endif
 
-// Minimal PCM16 → WAV encoder (mono, signed 16-bit little-endian)
+// MARK: - WAV encoder
+
 func makeWavFromPcm16(pcm: Data, sampleRate: Int, channels: Int) -> Data {
     var d = Data()
     let byteRate = sampleRate * channels * 2
@@ -311,13 +618,13 @@ func makeWavFromPcm16(pcm: Data, sampleRate: Int, channels: Int) -> Data {
     d.append(uint32LE(chunkSize))
     d.append("WAVE".data(using: .ascii)!)
     d.append("fmt ".data(using: .ascii)!)
-    d.append(uint32LE(16))                   // PCM chunk size
-    d.append(uint16LE(1))                    // PCM
+    d.append(uint32LE(16))
+    d.append(uint16LE(1))
     d.append(uint16LE(UInt16(channels)))
     d.append(uint32LE(UInt32(sampleRate)))
     d.append(uint32LE(UInt32(byteRate)))
-    d.append(uint16LE(UInt16(channels * 2))) // block align
-    d.append(uint16LE(16))                   // bits per sample
+    d.append(uint16LE(UInt16(channels * 2)))
+    d.append(uint16LE(16))
     d.append("data".data(using: .ascii)!)
     d.append(uint32LE(dataSize))
     d.append(pcm)
@@ -325,6 +632,8 @@ func makeWavFromPcm16(pcm: Data, sampleRate: Int, channels: Int) -> Data {
 }
 func uint16LE(_ v: UInt16) -> Data { withUnsafeBytes(of: v.littleEndian) { Data($0) } }
 func uint32LE(_ v: UInt32) -> Data { withUnsafeBytes(of: v.littleEndian) { Data($0) } }
+
+// MARK: - FileHandle readline extension
 
 extension FileHandle {
     func readLine() throws -> String? {

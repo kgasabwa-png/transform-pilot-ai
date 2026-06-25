@@ -65,6 +65,7 @@
         <div id="timer" class="small">00:00</div>
       </div>
       <div class="status" id="status"></div>
+      <div class="small" id="chunk-count"></div>
     </section>
 
     <section class="card" id="result-card" style="display: none">
@@ -78,7 +79,8 @@
     </section>
 
     <div class="small" style="text-align:center">
-      Audio never leaves your machine until you stop — then it's sent to Nyvlo only for transcription.
+      Audio is streamed in 6-second chunks to Nyvlo for transcription while recording.<br>
+      On macOS 14.4+, only microphone permission is needed (no Screen Recording).
     </div>
 
     <script src="app.js"></script>
