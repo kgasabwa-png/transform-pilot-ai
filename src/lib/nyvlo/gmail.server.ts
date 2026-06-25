@@ -1,21 +1,20 @@
 // Server-only helpers for direct Google OAuth (Gmail). Do not import from client code.
 import { createHmac, timingSafeEqual } from "crypto";
 
-function signingSecret() {
-  return (
-    process.env.GOOGLE_OAUTH_CLIENT_SECRET ??
-    process.env.SUPABASE_SERVICE_ROLE_KEY ??
-    "fallback-not-secure"
-  );
+function signingSecret(): string {
+  const secret = process.env.GOOGLE_OAUTH_CLIENT_SECRET ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!secret) {
+    throw new Error(
+      "Missing signing secret: set GOOGLE_OAUTH_CLIENT_SECRET or SUPABASE_SERVICE_ROLE_KEY",
+    );
+  }
+  return secret;
 }
 
 export function signGmailState(userId: string): string {
   const ts = Date.now().toString();
   const payload = `${userId}.${ts}`;
-  const sig = createHmac("sha256", signingSecret())
-    .update(payload)
-    .digest("hex")
-    .slice(0, 32);
+  const sig = createHmac("sha256", signingSecret()).update(payload).digest("hex").slice(0, 32);
   return `${payload}.${sig}`;
 }
 

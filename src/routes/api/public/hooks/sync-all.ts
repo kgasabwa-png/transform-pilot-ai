@@ -4,15 +4,16 @@ export const Route = createFileRoute("/api/public/hooks/sync-all")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // Basic gate: require the publishable apikey (pg_cron sends it).
-        const apikey = request.headers.get("apikey");
-        if (!apikey || apikey !== process.env.SUPABASE_PUBLISHABLE_KEY) {
+        const secret = process.env.WEBHOOK_SECRET;
+        if (!secret) {
+          return new Response("Server misconfiguration", { status: 500 });
+        }
+        const apikey = request.headers.get("x-webhook-secret");
+        if (!apikey || apikey !== secret) {
           return new Response("Unauthorized", { status: 401 });
         }
 
-        const { adminClient, syncAndExtractForUser } = await import(
-          "@/lib/nyvlo/google.server"
-        );
+        const { adminClient, syncAndExtractForUser } = await import("@/lib/nyvlo/google.server");
         const supabase = adminClient();
 
         // Sync any connection not synced in the last 25 minutes.

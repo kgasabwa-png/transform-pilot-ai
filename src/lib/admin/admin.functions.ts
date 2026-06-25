@@ -47,21 +47,62 @@ export const getAdminOverview = createServerFn({ method: "GET" })
       activeUsers30,
     ] = await Promise.all([
       supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }),
-      supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }).gte("created_at", d(7)),
-      supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }).gte("created_at", d(30)),
-      supabaseAdmin.from("page_events").select("id", { count: "exact", head: true }).gte("created_at", d(1)),
-      supabaseAdmin.from("page_events").select("id", { count: "exact", head: true }).gte("created_at", d(7)),
-      supabaseAdmin.from("page_events").select("id", { count: "exact", head: true }).eq("event_name", "pageview").gte("created_at", d(1)),
+      supabaseAdmin
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", d(7)),
+      supabaseAdmin
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", d(30)),
+      supabaseAdmin
+        .from("page_events")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", d(1)),
+      supabaseAdmin
+        .from("page_events")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", d(7)),
+      supabaseAdmin
+        .from("page_events")
+        .select("id", { count: "exact", head: true })
+        .eq("event_name", "pageview")
+        .gte("created_at", d(1)),
       supabaseAdmin.from("page_events").select("visitor_id").gte("created_at", d(1)),
       supabaseAdmin.from("promises").select("id", { count: "exact", head: true }),
-      supabaseAdmin.from("promises").select("id", { count: "exact", head: true }).gte("created_at", d(1)),
+      supabaseAdmin
+        .from("promises")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", d(1)),
       supabaseAdmin.from("waitlist_signups").select("id", { count: "exact", head: true }),
-      supabaseAdmin.from("waitlist_signups").select("id", { count: "exact", head: true }).gte("created_at", d(7)),
-      supabaseAdmin.from("email_send_log").select("id", { count: "exact", head: true }).gte("created_at", d(1)),
-      supabaseAdmin.from("email_send_log").select("id", { count: "exact", head: true }).gte("created_at", d(1)).in("status", ["dlq", "failed", "bounced"]),
-      supabaseAdmin.from("page_events").select("user_id").not("user_id", "is", null).gte("created_at", d(1)),
-      supabaseAdmin.from("page_events").select("user_id").not("user_id", "is", null).gte("created_at", d(7)),
-      supabaseAdmin.from("page_events").select("user_id").not("user_id", "is", null).gte("created_at", d(30)),
+      supabaseAdmin
+        .from("waitlist_signups")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", d(7)),
+      supabaseAdmin
+        .from("email_send_log")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", d(1)),
+      supabaseAdmin
+        .from("email_send_log")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", d(1))
+        .in("status", ["dlq", "failed", "bounced"]),
+      supabaseAdmin
+        .from("page_events")
+        .select("user_id")
+        .not("user_id", "is", null)
+        .gte("created_at", d(1)),
+      supabaseAdmin
+        .from("page_events")
+        .select("user_id")
+        .not("user_id", "is", null)
+        .gte("created_at", d(7)),
+      supabaseAdmin
+        .from("page_events")
+        .select("user_id")
+        .not("user_id", "is", null)
+        .gte("created_at", d(30)),
     ]);
 
     const uniq = (rows: any[] | null, key: string) =>
@@ -216,7 +257,10 @@ export const listUsers = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false })
       .limit(limit);
     if (data.search) {
-      q = q.or(`email.ilike.%${data.search}%,full_name.ilike.%${data.search}%`);
+      const sanitized = data.search.replace(/[%_,()\\]/g, "");
+      if (sanitized) {
+        q = q.or(`email.ilike.%${sanitized}%,full_name.ilike.%${sanitized}%`);
+      }
     }
     const { data: rows } = await q;
     const ids = (rows ?? []).map((r: any) => r.id);
@@ -238,7 +282,7 @@ export const listUsers = createServerFn({ method: "GET" })
     });
     const promiseCount = new Map<string, number>();
     (promiseRows ?? []).forEach((r: any) =>
-      promiseCount.set(r.user_id, (promiseCount.get(r.user_id) ?? 0) + 1)
+      promiseCount.set(r.user_id, (promiseCount.get(r.user_id) ?? 0) + 1),
     );
     const lastSeen = new Map<string, string>();
     (eventRows ?? []).forEach((r: any) => {
@@ -254,7 +298,9 @@ export const listUsers = createServerFn({ method: "GET" })
 
 export const setUserRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { userId: string; role: "admin" | "moderator" | "user"; grant: boolean }) => input)
+  .inputValidator(
+    (input: { userId: string; role: "admin" | "moderator" | "user"; grant: boolean }) => input,
+  )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -282,7 +328,9 @@ export const listRecentEvents = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     let q = supabaseAdmin
       .from("page_events")
-      .select("id, created_at, event_name, path, visitor_id, user_id, referrer, utm_source, properties")
+      .select(
+        "id, created_at, event_name, path, visitor_id, user_id, referrer, utm_source, properties",
+      )
       .order("created_at", { ascending: false })
       .limit(Math.min(data.limit ?? 200, 1000));
     if (data.event) q = q.eq("event_name", data.event);
@@ -309,7 +357,9 @@ export const getOpsHealth = createServerFn({ method: "GET" })
         .gte("created_at", since)
         .order("created_at", { ascending: false })
         .limit(50),
-      supabaseAdmin.from("connections").select("id, provider, status, google_email, last_synced_at"),
+      supabaseAdmin
+        .from("connections")
+        .select("id, provider, status, google_email, last_synced_at"),
       supabaseAdmin
         .from("device_link_codes")
         .select("code, device_label, status, created_at, approved_at, consumed_at")
