@@ -84,24 +84,24 @@ function AuthPage() {
         </Link>
         <div className="max-w-md space-y-6">
           <h2 className="text-3xl font-semibold tracking-tight">
-            The AI that catches what you forgot.
+            The AI notepad for meetings.
           </h2>
           <p className="text-sm text-muted-foreground">
-            Connect your calendar and inbox. Nyvlo silently surfaces the promises, follow-ups,
-            and loose ends slipping through your week — before they become problems.
+            Capture conversations without inviting a bot, jot what matters, and leave with
+            enhanced notes, actions, and searchable memory.
           </p>
           <ul className="space-y-3 text-sm">
             <li className="flex items-start gap-2">
               <span className="mt-1.5 h-1 w-1 rounded-full bg-foreground" />
-              <span>Reads your Calendar & sent Gmail (read-only).</span>
+              <span>Connects Calendar for read-only meeting briefs.</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="mt-1.5 h-1 w-1 rounded-full bg-foreground" />
-              <span>Drafts the follow-up so you only press send.</span>
+              <span>Enhances your rough notes with transcript context.</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="mt-1.5 h-1 w-1 rounded-full bg-foreground" />
-              <span>Tracks your reliability score over time.</span>
+              <span>Extracts decisions, next steps, and follow-ups.</span>
             </li>
           </ul>
         </div>

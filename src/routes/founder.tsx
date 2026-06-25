@@ -16,10 +16,10 @@ const SURFACES: { title: string; items: LinkRow[] }[] = [
   {
     title: "Live app (signed-in surfaces)",
     items: [
-      { to: "/app", label: "Today", desc: "Dashboard with attention + coming up", auth: true },
-      { to: "/app/promises", label: "Promises", desc: "Full inbox of captured commitments", auth: true },
-      { to: "/app/memory", label: "Memory", desc: "Long-term context Nyvlo remembers", auth: true },
-      { to: "/app/command", label: "Command Center", desc: "Power tools + chat", auth: true },
+      { to: "/app", label: "Meetings", desc: "Notes-first dashboard and recent captures", auth: true },
+      { to: "/app/promises", label: "Actions", desc: "Follow-ups extracted from meetings", auth: true },
+      { to: "/app/memory", label: "Library", desc: "Long-term context Nyvlo remembers", auth: true },
+      { to: "/app/command", label: "Ask", desc: "Chat across meeting notes and memory", auth: true },
       { to: "/app/settings", label: "Settings", desc: "Google connection, profile, mutes", auth: true },
     ],
   },

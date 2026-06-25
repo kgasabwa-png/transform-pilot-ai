@@ -103,7 +103,7 @@ function Pricing() {
               <span className="text-[13px] text-muted-foreground">forever</span>
             </div>
             <ul className="mt-6 space-y-2.5">
-              {["10 captures / month, 30 min each", "Browser recorder (mic)", "Up to 25 promises tracked", "7-day memory history", "Daily digest email"].map(f => (
+              {["10 meetings / month, 30 min each", "Browser recorder (mic)", "Enhanced notes and action items", "7-day notes history", "Ask across recent meetings"].map(f => (
                 <li key={f} className="flex items-start gap-2.5 text-[14px]">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{f}
                 </li>
@@ -126,10 +126,10 @@ function Pricing() {
             </div>
             <ul className="mt-6 space-y-2.5">
               {[
-                "Unlimited capture (mic + system audio)",
+                "Unlimited meeting capture (mic + system audio)",
                 "Desktop app with ScreenCaptureKit",
-                "Unlimited promises + memory",
-                "Auto-drafts and Friday recap",
+                "Unlimited notes history and memory",
+                "Templates, follow-up drafts, and meeting chat",
                 "Priority support",
               ].map(f => (
                 <li key={f} className="flex items-start gap-2.5 text-[14px]">

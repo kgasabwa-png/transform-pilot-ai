@@ -28,9 +28,8 @@ const WaitlistInvite = ({
       <Container style={container}>
         <Heading style={h1}>You're in.</Heading>
         <Text style={text}>
-          Thanks for waiting. Nyvlo is now open — it listens to your meetings,
-          remembers what you promised, and drafts the follow-ups so nothing falls
-          through.
+          Thanks for waiting. Nyvlo is now open — it captures meetings without a bot,
+          enhances your rough notes, and turns conversations into follow-ups and memory.
         </Text>
         <Text style={text}>
           As an early supporter, here's <strong>50% off your first 3 months</strong> of

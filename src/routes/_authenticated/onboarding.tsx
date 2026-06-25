@@ -24,21 +24,21 @@ function Onboarding() {
     },
     {
       title: "Connect Google",
-      body: "Read-only access to your calendar and sent email. We use it to ground every promise in real context.",
+      body: "Read-only access to your calendar. We use it to prep meeting briefs and name notes automatically.",
       done: connected,
       cta: connected ? null : { label: "Connect Google", to: "/app/settings" },
     },
     {
-      title: "Install the Chrome extension",
-      body: "Capture promises and follow-ups straight from Gmail, Slack, Linear, and Notion.",
+      title: "Start your first meeting note",
+      body: "Use browser mic capture for a quick test, or install the desktop app when you need system audio.",
       done: false,
-      cta: { label: "Get the extension", to: "/app/settings" },
+      cta: { label: "Open notebook", to: "/app/capture" },
     },
     {
-      title: "Try a Live Capture",
-      body: "Start a quick browser recording, or install the desktop app for full system-audio capture.",
+      title: "Add your rough notes",
+      body: "Jot a few bullets during the call. Nyvlo uses them to enhance the transcript into notes that reflect your priorities.",
       done: false,
-      cta: { label: "Open Live Capture", to: "/app/capture" },
+      cta: { label: "Open meetings", to: "/app" },
     },
   ] as const;
 
@@ -51,9 +51,9 @@ function Onboarding() {
         </Link>
       </header>
       <main className="mx-auto max-w-2xl px-6 py-10">
-        <h1 className="text-[34px] font-semibold tracking-tight">Get set up in 60 seconds.</h1>
+        <h1 className="text-[34px] font-semibold tracking-tight">Set up your meeting notebook.</h1>
         <p className="mt-2 text-[14.5px] text-muted-foreground">
-          Four quick steps. You can come back any time.
+          Capture, jot, enhance. You can come back any time.
         </p>
 
         <ol className="mt-10 space-y-4">
@@ -93,7 +93,7 @@ function Onboarding() {
 
         <div className="mt-10 rounded-xl border border-border bg-secondary/40 p-5 text-center">
           <p className="text-[13.5px] text-muted-foreground">
-            Done? <Link to="/app" className="font-medium text-foreground underline underline-offset-2">Go to your dashboard →</Link>
+            Done? <Link to="/app" className="font-medium text-foreground underline underline-offset-2">Go to meetings →</Link>
           </p>
         </div>
       </main>

@@ -54,7 +54,7 @@ export function ExtensionSection() {
     <div className="overflow-hidden rounded-lg border border-border bg-card">
       <div className="flex items-center justify-between border-b border-border bg-secondary/30 px-4 py-2.5">
         <span className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-          Browser extension
+          Capture tools
         </span>
         <button
           onClick={() => handleDownload("/nyvlo-extension.zip", "nyvlo-extension.zip")}
@@ -66,9 +66,9 @@ export function ExtensionSection() {
       </div>
 
       <div className="border-b border-border px-4 py-3 text-[12px] text-muted-foreground">
-        Auto-captures promises from Gmail, Slack, Notion, and Linear. Install
-        once, and it signs in automatically using your Nyvlo session — no
-        tokens, no copy-paste. To install: download the zip, unzip it, open{" "}
+        Optional browser context capture for Gmail, Slack, Notion, and Linear.
+        Use it when you want meeting notes and action items grounded in the tools
+        you were discussing. To install: download the zip, unzip it, open{" "}
         <code className="rounded bg-muted px-1 py-0.5 text-[11px]">chrome://extensions</code>{" "}
         → Developer mode → Load unpacked.
       </div>
@@ -77,8 +77,8 @@ export function ExtensionSection() {
         <div className="text-[12px]">
           <div className="font-medium">Desktop app (meetings)</div>
           <div className="text-[11px] text-muted-foreground">
-            Record a call → transcript → promises in your inbox. Click "Sign in
-            with Nyvlo" on first launch — that's the only setup.
+            Capture system audio, transcript, screen context, enhanced notes, and action items.
+            Click "Sign in with Nyvlo" on first launch — that's the only setup.
           </div>
         </div>
         <button
@@ -160,7 +160,7 @@ export function ExtensionSection() {
       </div>
       {mutes.length === 0 ? (
         <div className="px-4 py-3 text-[11.5px] text-muted-foreground">
-          Nothing muted. Hit "Mute source" on any promise to stop capturing from that thread or page.
+          Nothing muted. Mute any source when you do not want it used as meeting context.
         </div>
       ) : (
         <div className="flex flex-col">

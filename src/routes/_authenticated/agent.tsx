@@ -36,7 +36,7 @@ export const Route = createFileRoute("/_authenticated/agent")({
       {
         name: "description",
         content:
-          "Your AI chief of staff. Drafts follow-ups, preps briefs, and runs research using your promise and memory context.",
+          "Your AI meeting assistant. Drafts follow-ups, preps briefs, and answers questions using your notes and memory context.",
       },
       { property: "og:title", content: "Chief of Staff · Nyvlo" },
       {
@@ -55,7 +55,7 @@ const STARTERS = [
   { icon: PenLine, label: "Draft a reply to Priya about the Q3 forecast" },
   { icon: ClipboardList, label: "Prep me for my next conversation with Marcus" },
   { icon: Search, label: "What do we know about Sara Chen?" },
-  { icon: BookMarked, label: "What's most overdue?" },
+  { icon: BookMarked, label: "What action items are still open?" },
 ];
 
 function loadInitial(): UIMessage[] {
@@ -203,7 +203,7 @@ function AgentChat({
             <ConversationEmptyState
               icon={<NyvloMark size="lg" />}
               title="What can I take off your plate?"
-              description="I see your open promises and memory. Ask me to draft, prep, or research."
+              description="I see your meeting notes, action items, and memory. Ask me to draft, prep, or research."
             >
               <div className="mt-6 grid w-full max-w-md gap-2">
                 {STARTERS.map((s) => (

@@ -89,7 +89,7 @@ function SettingsPage() {
     setBusy("sync");
     try {
       const res = await syncNow();
-      toast.success(`Synced ${res.synced} new items · extracted ${res.promises} promises`);
+      toast.success(`Synced ${res.synced} new items · extracted ${res.promises} action items`);
       queryClient.invalidateQueries();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Sync failed");
@@ -128,7 +128,7 @@ function SettingsPage() {
 
 
   return (
-    <Shell title="Settings" subtitle="You control what Nyvlo connects to and remembers.">
+    <Shell title="Settings" subtitle="You control meeting context, capture, and memory.">
       <div className="grid gap-6 md:grid-cols-2">
         <Section title="Account">
           <Row label="Name" value={profile?.full_name ?? "—"} />
@@ -153,7 +153,7 @@ function SettingsPage() {
                 <div className="mt-0.5 truncate text-[11.5px] text-muted-foreground">
                   {connection
                     ? `${connection.google_email ?? "Connected"}${connection.last_synced_at ? ` · synced ${formatDistanceToNow(new Date(connection.last_synced_at), { addSuffix: true })}` : " · never synced"}`
-                    : "Read-only access to find your promises"}
+                    : "Read-only access for meeting briefs and note titles"}
                 </div>
               </div>
             </div>
@@ -231,7 +231,7 @@ function SettingsPage() {
           <Info
             Icon={ShieldCheck}
             label="Read-only access"
-            hint="Nyvlo only reads — never sends, deletes, or modifies anything in your Google account."
+            hint="Nyvlo only reads calendar context for meeting briefs — never sends, deletes, or modifies anything in your Google account."
           />
           <Info
             Icon={Globe}

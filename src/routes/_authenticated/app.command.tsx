@@ -7,16 +7,16 @@ import { Sparkles, ArrowUp, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/app/command")({
-  head: () => ({ meta: [{ title: "Command Center · Nyvlo" }] }),
+  head: () => ({ meta: [{ title: "Ask · Nyvlo" }] }),
   validateSearch: (s: Record<string, unknown>) => ({ q: typeof s.q === "string" ? s.q : undefined }),
   component: CommandPage,
 });
 
 const prompts = [
-  "What am I forgetting?",
-  "Who am I behind on?",
-  "Prepare me for tomorrow",
-  "Summarize my week",
+  "Summarize my last customer call",
+  "What action items came out of meetings?",
+  "Prepare me for tomorrow's meetings",
+  "What themes came up this week?",
 ];
 
 function CommandPage() {
@@ -42,14 +42,14 @@ function CommandPage() {
   };
 
   return (
-    <Shell title="Command Center" subtitle="Ask Nyvlo anything about your work memory.">
+    <Shell title="Ask" subtitle="Search and reason across your meeting notes.">
       <div className="mx-auto max-w-3xl">
         <div className="flex flex-col gap-7 pb-32">
           {messages.length === 0 && (
             <div className="rounded-xl border border-dashed border-border p-8 text-center">
               <Sparkles className="mx-auto h-5 w-5 text-primary" />
-              <p className="mt-3 text-[14px] text-foreground">Ask me about your promises, meetings, or what you might be forgetting.</p>
-              <p className="mt-1 text-[12.5px] text-muted-foreground">I only know what you've connected.</p>
+              <p className="mt-3 text-[14px] text-foreground">Ask about meetings, decisions, customer themes, and follow-ups.</p>
+              <p className="mt-1 text-[12.5px] text-muted-foreground">I only know the notes and context you've captured or connected.</p>
             </div>
           )}
 

@@ -10,11 +10,11 @@ import { getMyAdminStatus } from "@/lib/admin/admin.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 const nav = [
-  { to: "/app", label: "Today", icon: Sparkles, exact: true },
-  { to: "/app/promises", label: "Promises", icon: Inbox },
-  { to: "/app/capture", label: "Live Capture", icon: Radio },
-  { to: "/app/memory", label: "Memory", icon: Clock },
-  { to: "/app/command", label: "Command Center", icon: BookMarked },
+  { to: "/app", label: "Meetings", icon: Sparkles, exact: true },
+  { to: "/app/capture", label: "New note", icon: Radio },
+  { to: "/app/memory", label: "Library", icon: Clock },
+  { to: "/app/promises", label: "Actions", icon: Inbox },
+  { to: "/app/command", label: "Ask", icon: BookMarked },
   { to: "/app/settings", label: "Settings", icon: Settings },
 ];
 

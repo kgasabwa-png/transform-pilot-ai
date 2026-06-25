@@ -47,9 +47,9 @@ function Privacy() {
           <p className="mt-3">
             Audio is sent over HTTPS to our backend, transcribed by a language model, and then the
             short-lived audio chunk is retained only as long as needed to produce the transcript
-            and extract promises. Screen frames are processed for OCR + a vision summary, then the
+            and create enhanced notes and action items. Screen frames are processed for OCR + a vision summary, then the
             raw image is similarly short-lived. The structured outputs (transcript, summary,
-            extracted promises) are stored in your account and visible only to you.
+            enhanced notes, and action items) are stored in your account and visible only to you.
           </p>
 
           <h2 className="mt-10 text-xl font-semibold">Subprocessors</h2>
@@ -62,8 +62,8 @@ function Privacy() {
 
           <h2 className="mt-10 text-xl font-semibold">Your controls</h2>
           <ul className="mt-3 space-y-1.5">
-            <li>Pause or stop any capture session from the Live Capture screen.</li>
-            <li>Delete any session, promise, or memory item from inside the app.</li>
+            <li>Pause or stop any capture session from the meeting notes screen.</li>
+            <li>Delete any session, action item, or memory item from inside the app.</li>
             <li>Disconnect Google or revoke the desktop / extension at any time in Settings.</li>
             <li>Email <a href="mailto:keila@nyvloai.com" className="underline">keila@nyvloai.com</a> to request a full data export or account deletion.</li>
           </ul>

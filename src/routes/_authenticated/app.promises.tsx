@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { listPromises } from "@/lib/nyvlo/data.functions";
 
 export const Route = createFileRoute("/_authenticated/app/promises")({
-  head: () => ({ meta: [{ title: "Promises · Nyvlo" }] }),
+  head: () => ({ meta: [{ title: "Actions · Nyvlo" }] }),
   component: PromisesPage,
 });
 
@@ -44,7 +44,7 @@ function PromisesPage() {
   ];
 
   return (
-    <Shell title="Promises" subtitle="Every commitment Nyvlo has detected.">
+    <Shell title="Actions" subtitle="Follow-ups and commitments extracted from your meetings.">
       <div className="mb-5 flex flex-wrap gap-1.5">
         {filters.map((f) => {
           const active = f.id === filter;
@@ -80,7 +80,7 @@ function PromisesPage() {
           ))
         ) : list.length === 0 ? (
           <div className="rounded-lg border border-dashed border-border p-10 text-center text-[13px] text-muted-foreground">
-            Nothing here. Connect Google in Settings to start.
+            Nothing here yet. Capture a meeting and Nyvlo will pull out follow-ups automatically.
           </div>
         ) : (
           list.map((p) => <PromiseRow key={p.id} item={p} />)

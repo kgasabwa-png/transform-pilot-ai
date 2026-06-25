@@ -152,7 +152,7 @@ export function PromiseRow({ item }: { item: PromiseRowData }) {
                 disabled={notAPromise.isPending}
                 className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-[11.5px] text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40"
               >
-                <Flag className="h-3 w-3" /> Not a promise
+                <Flag className="h-3 w-3" /> Not an action
               </button>
               {sourceQ.data?.url && (
                 <button

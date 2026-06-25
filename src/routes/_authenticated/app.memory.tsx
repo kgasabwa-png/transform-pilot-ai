@@ -7,7 +7,7 @@ import { listMemory } from "@/lib/nyvlo/data.functions";
 import { CalendarDays, Mail, StickyNote } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/app/memory")({
-  head: () => ({ meta: [{ title: "Memory · Nyvlo" }] }),
+  head: () => ({ meta: [{ title: "Library · Nyvlo" }] }),
   component: MemoryPage,
 });
 
@@ -22,7 +22,7 @@ function MemoryPage() {
   }, {});
 
   return (
-    <Shell title="Memory" subtitle="Everything Nyvlo has noticed across your sources.">
+    <Shell title="Library" subtitle="A timeline of notes and context Nyvlo can use when you ask questions.">
       {isLoading ? (
         <div className="flex flex-col gap-3">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -38,7 +38,7 @@ function MemoryPage() {
         </div>
       ) : items.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border p-10 text-center text-[13px] text-muted-foreground">
-          Memory is empty. Connect Google in Settings — Nyvlo will start saving meetings and emails it learns from.
+          Library is empty. Capture a meeting or connect Google Calendar to start building context.
         </div>
       ) : (
         <div className="relative">

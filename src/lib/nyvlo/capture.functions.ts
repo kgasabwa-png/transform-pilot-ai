@@ -24,7 +24,7 @@ export const listCaptureSessions = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data } = await context.supabase
       .from("capture_sessions")
-      .select("id, label, source, status, started_at, ended_at, duration_seconds, summary")
+      .select("id, label, source, status, started_at, ended_at, duration_seconds, summary, notes_md, metadata")
       .order("started_at", { ascending: false })
       .limit(50);
     return data ?? [];
@@ -38,7 +38,7 @@ export const getCaptureSession = createServerFn({ method: "GET" })
       await Promise.all([
         context.supabase
           .from("capture_sessions")
-          .select("id, label, source, status, started_at, ended_at, duration_seconds, summary, notes_md")
+          .select("id, label, source, status, started_at, ended_at, duration_seconds, summary, notes_md, metadata")
           .eq("id", data.sessionId)
           .maybeSingle(),
 
@@ -54,11 +54,50 @@ export const getCaptureSession = createServerFn({ method: "GET" })
           .order("sequence", { ascending: true }),
         context.supabase
           .from("promises")
-          .select("id, summary, status, due_at, owed_to, confidence, created_at")
+          .select("id, summary, status, due_at, owed_to, confidence, draft_reply, evidence_snippet, created_at")
           .eq("capture_session_id", data.sessionId)
           .order("created_at", { ascending: true }),
       ]);
     return { session, chunks: chunks ?? [], frames: frames ?? [], promises: promises ?? [] };
+  });
+
+export const updateCaptureSessionNotes = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (input: {
+      sessionId: string;
+      manualNotes?: string;
+      template?: string;
+      label?: string;
+    }) => input,
+  )
+  .handler(async ({ data, context }) => {
+    const { data: existing, error: loadError } = await context.supabase
+      .from("capture_sessions")
+      .select("metadata")
+      .eq("id", data.sessionId)
+      .maybeSingle();
+    if (loadError) throw loadError;
+    if (!existing) throw new Error("Session not found");
+
+    const metadata =
+      existing.metadata && typeof existing.metadata === "object" && !Array.isArray(existing.metadata)
+        ? { ...(existing.metadata as Record<string, unknown>) }
+        : {};
+
+    if (typeof data.manualNotes === "string") metadata.manual_notes = data.manualNotes.slice(0, 20_000);
+    if (typeof data.template === "string") metadata.meeting_template = data.template.slice(0, 80);
+
+    const update: Record<string, unknown> = { metadata };
+    if (typeof data.label === "string") update.label = data.label.slice(0, 160);
+
+    const { error } = await context.supabase
+      .from("capture_sessions")
+      .update(update as any)
+      .eq("id", data.sessionId);
+    if (error) throw error;
+
+    return { ok: true };
   });
 
 export const extractSessionPromises = createServerFn({ method: "POST" })
