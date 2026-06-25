@@ -13,17 +13,15 @@ type ExtractedPromise = {
   evidence_snippet?: string | null;
 };
 
-
 export async function extractPromisesFromSession(
   sessionId: string,
   userId: string,
 ): Promise<{ inserted: number; summary: string | null; notes_md: string | null }> {
-
   const supabase = adminClient();
   const key = process.env.LOVABLE_API_KEY;
   if (!key) throw new Error("LOVABLE_API_KEY missing");
 
-  const [{ data: session }, { data: chunks }, { data: frames }] = await Promise.all([
+  const [sessionRes, chunksRes, framesRes] = await Promise.all([
     supabase
       .from("capture_sessions")
       .select("id, label, started_at, summary")
@@ -42,6 +40,14 @@ export async function extractPromisesFromSession(
       .order("sequence", { ascending: true })
       .limit(40),
   ]);
+  if (sessionRes.error) throw new Error(`Failed to load session: ${sessionRes.error.message}`);
+  if (chunksRes.error)
+    console.warn("[extract] failed to load audio chunks", chunksRes.error.message);
+  if (framesRes.error)
+    console.warn("[extract] failed to load screen frames", framesRes.error.message);
+  const session = sessionRes.data;
+  const chunks = chunksRes.data;
+  const frames = framesRes.data;
   if (!session) throw new Error("Session not found");
 
   const transcript = (chunks ?? [])
@@ -91,8 +97,6 @@ notes_md formatting rules (mirror Granola):
 
 Promise rules: only EXPLICIT commitments. Skip chit-chat. Use speaker labels to set owner ("me"/"user" → self). Always include draft_reply when owner is "self".`;
 
-
-
   const userMsg = `Session label: ${session.label ?? "(untitled)"}
 Started: ${session.started_at}
 
@@ -127,17 +131,21 @@ ${screenContext || "(no screen activity)"}`;
   let parsed: { summary?: string; notes_md?: string; promises?: ExtractedPromise[] } = {};
   try {
     parsed = JSON.parse(raw);
-  } catch {
+  } catch (parseErr) {
+    console.warn("[extract] failed to parse Gemini JSON response", parseErr);
     parsed = {};
   }
 
   // Replace prior auto-extracted promises for this session so re-extraction
   // doesn't pile up duplicates.
-  await supabase
+  const { error: deleteErr } = await supabase
     .from("promises")
     .delete()
     .eq("capture_session_id", sessionId)
     .eq("user_id", userId);
+  if (deleteErr) {
+    console.error("[extract] failed to delete old promises", deleteErr.message);
+  }
 
   const rows = (parsed.promises ?? [])
     .filter((p) => p.text && p.text.length > 4)
@@ -156,18 +164,28 @@ ${screenContext || "(no screen activity)"}`;
     }));
 
   if (rows.length) {
-    await supabase.from("promises").insert(rows as any);
+    const { error: insertErr } = await supabase.from("promises").insert(rows as any);
+    if (insertErr) {
+      console.error("[extract] failed to insert promises", insertErr.message);
+    }
   }
 
   const sessionUpdate: Record<string, unknown> = {};
   if (parsed.summary) sessionUpdate.summary = parsed.summary;
   if (typeof parsed.notes_md === "string") sessionUpdate.notes_md = parsed.notes_md;
   if (Object.keys(sessionUpdate).length) {
-    await supabase
+    const { error: updateErr } = await supabase
       .from("capture_sessions")
       .update(sessionUpdate as any)
       .eq("id", sessionId);
+    if (updateErr) {
+      console.error("[extract] failed to update session", updateErr.message);
+    }
   }
 
-  return { inserted: rows.length, summary: parsed.summary ?? null, notes_md: parsed.notes_md ?? null };
+  return {
+    inserted: rows.length,
+    summary: parsed.summary ?? null,
+    notes_md: parsed.notes_md ?? null,
+  };
 }

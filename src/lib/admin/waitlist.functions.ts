@@ -14,7 +14,10 @@ export const getWaitlistStats = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const [{ count: total }, { count: invited }, { data: pending }] = await Promise.all([
       supabaseAdmin.from("waitlist_signups").select("*", { count: "exact", head: true }),
-      supabaseAdmin.from("waitlist_signups").select("*", { count: "exact", head: true }).not("invited_at", "is", null),
+      supabaseAdmin
+        .from("waitlist_signups")
+        .select("*", { count: "exact", head: true })
+        .not("invited_at", "is", null),
       supabaseAdmin
         .from("waitlist_signups")
         .select("id, email, created_at")
@@ -54,11 +57,19 @@ export const inviteWaitlistBatch = createServerFn({ method: "POST" })
     if (error) throw error;
     const targets = (rows as Array<{ id: string; email: string }> | null) ?? [];
     if (data.dryRun) {
-      return { sent: 0, failed: 0, total: targets.length, dryRun: true, emails: targets.map((r) => r.email) };
+      return {
+        sent: 0,
+        failed: 0,
+        total: targets.length,
+        dryRun: true,
+        emails: targets.map((r) => r.email),
+      };
     }
 
     const req = getRequest();
-    const origin = req ? new URL(req.url).origin : (process.env.PUBLIC_SITE_URL ?? "https://nyvloai.com");
+    const origin = req
+      ? new URL(req.url).origin
+      : (process.env.PUBLIC_SITE_URL ?? "https://nyvloai.com");
     const bearer = req?.headers.get("authorization") ?? "";
     const signupUrl = `${origin}/auth?next=${encodeURIComponent("/pricing")}`;
 
@@ -99,9 +110,9 @@ export const inviteWaitlistBatch = createServerFn({ method: "POST" })
           .update({ invited_at: new Date().toISOString() })
           .eq("id", row.id);
         sent++;
-      } catch (e: any) {
+      } catch (e) {
         failed++;
-        errors.push({ email: row.email, error: e?.message ?? "send failed" });
+        errors.push({ email: row.email, error: e instanceof Error ? e.message : "send failed" });
       }
     }
 

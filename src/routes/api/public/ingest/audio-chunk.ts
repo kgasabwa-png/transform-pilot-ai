@@ -24,7 +24,10 @@ export const Route = createFileRoute("/api/public/ingest/audio-chunk")({
 
         const ctype = request.headers.get("content-type") || "";
         if (!ctype.startsWith("multipart/form-data")) {
-          return Response.json({ error: "multipart/form-data required" }, { status: 400, headers: cors });
+          return Response.json(
+            { error: "multipart/form-data required" },
+            { status: 400, headers: cors },
+          );
         }
 
         let form: FormData;
@@ -43,7 +46,10 @@ export const Route = createFileRoute("/api/public/ingest/audio-chunk")({
         const durationMs = Number(form.get("durationMs") ?? 0) || null;
 
         if (!(file instanceof File) || !sessionId) {
-          return Response.json({ error: "file and sessionId required" }, { status: 400, headers: cors });
+          return Response.json(
+            { error: "file and sessionId required" },
+            { status: 400, headers: cors },
+          );
         }
         if (file.size === 0 || file.size > 25 * 1024 * 1024) {
           return Response.json({ error: "audio 1B–25MiB" }, { status: 400, headers: cors });
@@ -53,12 +59,16 @@ export const Route = createFileRoute("/api/public/ingest/audio-chunk")({
         const supabase = adminClient();
 
         // Verify session belongs to user
-        const { data: session } = await supabase
+        const { data: session, error: sessionErr } = await supabase
           .from("capture_sessions")
           .select("id")
           .eq("id", sessionId)
           .eq("user_id", auth.userId)
           .maybeSingle();
+        if (sessionErr) {
+          console.error("[audio-chunk] session lookup failed", sessionErr.message);
+          return Response.json({ error: "Session lookup failed" }, { status: 500, headers: cors });
+        }
         if (!session) {
           return Response.json({ error: "Session not found" }, { status: 404, headers: cors });
         }
@@ -78,7 +88,10 @@ export const Route = createFileRoute("/api/public/ingest/audio-chunk")({
           .select("id")
           .single();
         if (insErr || !chunk) {
-          return Response.json({ error: insErr?.message ?? "insert failed" }, { status: 500, headers: cors });
+          return Response.json(
+            { error: insErr?.message ?? "insert failed" },
+            { status: 500, headers: cors },
+          );
         }
 
         const key = process.env.LOVABLE_API_KEY;
@@ -98,10 +111,12 @@ export const Route = createFileRoute("/api/public/ingest/audio-chunk")({
           if (!res.ok) {
             const t = await res.text().catch(() => "");
             const msg = `STT ${res.status}: ${t.slice(0, 200)}`;
-            await supabase
+            const { error: updErr } = await supabase
               .from("audio_chunks")
               .update({ status: "failed", error: msg })
               .eq("id", chunk.id);
+            if (updErr)
+              console.error("[audio-chunk] failed to mark chunk as failed", updErr.message);
             const { logIngestionError } = await import("@/lib/nyvlo/ingestion-log.server");
             await logIngestionError({
               endpoint: "audio-chunk",
@@ -110,23 +125,29 @@ export const Route = createFileRoute("/api/public/ingest/audio-chunk")({
               error: msg,
               context: { sessionId, sequence },
             });
-            return Response.json({ error: `STT failed ${res.status}` }, { status: 502, headers: cors });
+            return Response.json(
+              { error: `STT failed ${res.status}` },
+              { status: 502, headers: cors },
+            );
           }
           const j = (await res.json().catch(() => ({}))) as { text?: string };
           const text = j.text ?? "";
 
-          await supabase
+          const { error: updErr2 } = await supabase
             .from("audio_chunks")
             .update({ status: "done", transcript: text })
             .eq("id", chunk.id);
+          if (updErr2) console.error("[audio-chunk] failed to update transcript", updErr2.message);
 
           return Response.json({ chunkId: chunk.id, transcript: text }, { headers: cors });
-        } catch (e: any) {
-          const msg = String(e.message ?? e).slice(0, 200);
-          await supabase
+        } catch (e) {
+          const msg = (e instanceof Error ? e.message : String(e)).slice(0, 200);
+          const { error: updErr3 } = await supabase
             .from("audio_chunks")
             .update({ status: "failed", error: msg })
             .eq("id", chunk.id);
+          if (updErr3)
+            console.error("[audio-chunk] failed to mark chunk as failed", updErr3.message);
           const { logIngestionError } = await import("@/lib/nyvlo/ingestion-log.server");
           await logIngestionError({
             endpoint: "audio-chunk",

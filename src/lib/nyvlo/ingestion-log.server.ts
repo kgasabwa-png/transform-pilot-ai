@@ -17,7 +17,7 @@ export async function logIngestionError(args: {
         error_message: args.error.slice(0, 1000),
         context: (args.context ?? {}) as any,
       });
-  } catch {
-    // never throw from a logger
+  } catch (logErr) {
+    console.warn("[ingestion-log] failed to persist error log", logErr);
   }
 }
