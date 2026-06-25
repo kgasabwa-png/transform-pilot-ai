@@ -6,8 +6,12 @@ export const Route = createFileRoute("/api/public/hooks/generate-reminders")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apikey = request.headers.get("apikey");
-        if (!apikey || apikey !== process.env.SUPABASE_PUBLISHABLE_KEY) {
+        const secret = process.env.WEBHOOK_SECRET;
+        if (!secret) {
+          return new Response("Server misconfiguration", { status: 500 });
+        }
+        const apikey = request.headers.get("x-webhook-secret");
+        if (!apikey || apikey !== secret) {
           return new Response("Unauthorized", { status: 401 });
         }
 
@@ -39,23 +43,19 @@ export const Route = createFileRoute("/api/public/hooks/generate-reminders")({
           const kind = overdue ? "overdue" : "due_soon";
           const dedup_key = `${kind}:${p.id}:${today}`;
 
-          const title = overdue
-            ? `Overdue: ${p.summary}`
-            : `Due soon: ${p.summary}`;
+          const title = overdue ? `Overdue: ${p.summary}` : `Due soon: ${p.summary}`;
           const body = overdue
             ? `This was due ${formatRelative(dueMs, now)}.`
             : `Due ${formatRelative(dueMs, now)}.`;
 
-          const { error: insErr } = await supabase
-            .from("notifications")
-            .insert({
-              user_id: p.user_id,
-              promise_id: p.id,
-              kind,
-              title,
-              body,
-              dedup_key,
-            });
+          const { error: insErr } = await supabase.from("notifications").insert({
+            user_id: p.user_id,
+            promise_id: p.id,
+            kind,
+            title,
+            body,
+            dedup_key,
+          });
 
           // Unique-violation = already nudged today; ignore.
           if (!insErr) created++;
