@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { requireCronAuth } from "@/lib/api/cron-auth";
 
 // Called by pg_cron once per day. Inserts one "daily digest" notification per
 // user with at least one open promise due in the next 24h. Idempotent via the
@@ -7,10 +8,8 @@ export const Route = createFileRoute("/api/public/hooks/daily-digest")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apiKey = request.headers.get("apikey");
-        if (!apiKey || apiKey !== process.env.SUPABASE_PUBLISHABLE_KEY) {
-          return new Response("Unauthorized", { status: 401 });
-        }
+        const denied = requireCronAuth(request);
+        if (denied) return denied;
 
         const { adminClient } = await import("@/lib/nyvlo/google.server");
         const supabase = adminClient();

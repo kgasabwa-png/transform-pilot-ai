@@ -1,10 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { corsHeaders, optionsHandler } from "@/lib/api/cors";
 
-const cors = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+const cors = corsHeaders("POST", "OPTIONS");
 
 // Multipart fields:
 //   file         — JPEG or PNG screenshot (<= 4 MiB)
@@ -15,7 +12,7 @@ const cors = {
 export const Route = createFileRoute("/api/public/ingest/screen-frame")({
   server: {
     handlers: {
-      OPTIONS: async () => new Response(null, { status: 204, headers: cors }),
+      OPTIONS: optionsHandler(cors),
       POST: async ({ request }) => {
         const { resolveExtensionAuth } = await import("@/lib/nyvlo/extension-auth.server");
         const auth = await resolveExtensionAuth(request.headers.get("authorization"));

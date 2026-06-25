@@ -2,17 +2,14 @@
 // approves in the web app, this returns a fresh access + refresh token pair
 // minted via Supabase Admin API (a one-time magic-link exchange).
 import { createFileRoute } from "@tanstack/react-router";
+import { corsHeaders, optionsHandler } from "@/lib/api/cors";
 
-const cors = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "content-type",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
-};
+const cors = corsHeaders("GET", "OPTIONS");
 
 export const Route = createFileRoute("/api/public/auth/device-poll")({
   server: {
     handlers: {
-      OPTIONS: async () => new Response(null, { status: 204, headers: cors }),
+      OPTIONS: optionsHandler(cors),
       GET: async ({ request }) => {
         const url = new URL(request.url);
         const code = url.searchParams.get("code");

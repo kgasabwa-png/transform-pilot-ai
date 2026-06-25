@@ -1,14 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { requireCronAuth } from "@/lib/api/cron-auth";
 
 export const Route = createFileRoute("/api/public/hooks/sync-all")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // Basic gate: require the publishable apikey (pg_cron sends it).
-        const apikey = request.headers.get("apikey");
-        if (!apikey || apikey !== process.env.SUPABASE_PUBLISHABLE_KEY) {
-          return new Response("Unauthorized", { status: 401 });
-        }
+        const denied = requireCronAuth(request);
+        if (denied) return denied;
 
         const { adminClient, syncAndExtractForUser } = await import(
           "@/lib/nyvlo/google.server"

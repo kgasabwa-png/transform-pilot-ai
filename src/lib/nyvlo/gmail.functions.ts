@@ -1,20 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { getRequestHost, getRequestHeader } from "@tanstack/react-start/server";
-
-// Falls back to the published origin when the request is from a transient
-// preview iframe — Google only accepts pre-registered redirect URIs.
-const DEFAULT_REDIRECT_ORIGIN = "https://transform-pilot-ai.lovable.app";
-
-function siteOrigin() {
-  const host = getRequestHost();
-  if (!host || host.includes("lovableproject.com") || host.includes("id-preview--")) {
-    return DEFAULT_REDIRECT_ORIGIN;
-  }
-  const fwdProto = getRequestHeader("x-forwarded-proto");
-  const proto = fwdProto ?? (host.includes("localhost") ? "http" : "https");
-  return `${proto}://${host}`;
-}
+import { siteOrigin } from "@/lib/api/site-origin";
 
 export const getGmailConnection = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
