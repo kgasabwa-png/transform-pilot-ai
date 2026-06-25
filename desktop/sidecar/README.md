@@ -1,9 +1,21 @@
-# NyvloCapture — Swift sidecar for system audio + screen
+# NyvloCapture — Swift sidecar for system audio + mic
 
 This binary captures **system audio** (the other person's voice in Zoom / Meet /
-Teams) plus periodic **screen frames** using Apple's ScreenCaptureKit (macOS
-13+) and POSTs them to the Nyvlo ingestion API. The Electron app launches it
-as a child process; it stops when stdin receives `{"action":"stop"}`.
+Teams) plus the local **microphone** and POSTs mixed audio chunks to the Nyvlo
+ingestion API. The Electron app launches it as a child process; it stops when
+stdin receives `{"action":"stop"}`.
+
+### Capture backends
+
+| macOS version | Backend | Permissions required |
+|---|---|---|
+| **14.4+** | Core Audio process-tap (`CATapDescription` + aggregate device) | Microphone only (`NSMicrophoneUsageDescription`) |
+| **13.0 – 14.3** | ScreenCaptureKit (fallback) | Microphone + Screen Recording |
+
+On macOS 14.4+, the process-tap API captures all system audio output without
+ScreenCaptureKit, so the **Screen Recording permission prompt is never shown**
+for audio-only capture. The sidecar picks the best available backend
+automatically at runtime via `if #available(macOS 14.4, *)`.
 
 ## Build (one command on any Mac with Xcode CLT)
 
@@ -51,12 +63,14 @@ bundle as one unit. The same Developer ID Application cert covers both.
 The parent `.app`'s `Info.plist` needs:
 
 - `NSMicrophoneUsageDescription` — "Nyvlo records meeting audio to extract action items."
-- `NSScreenCaptureUsageDescription` — "Nyvlo captures your screen so it remembers what you were working on."
 
-ScreenCaptureKit triggers macOS's screen-recording permission prompt on first
-launch; users grant it in System Settings → Privacy & Security → Screen
-Recording. Use `SCShareableContent` only after the user clicks "Start capture"
-so the prompt happens at the right moment.
+On macOS 14.4+, **`NSScreenCaptureUsageDescription` is not required** for
+audio-only capture because the Core Audio process-tap path does not use
+ScreenCaptureKit. If you also want to capture screen frames (omit
+`--audio-only`), the ScreenCaptureKit fallback path is used and then you also
+need:
+
+- `NSScreenCaptureUsageDescription` — "Nyvlo captures your screen so it remembers what you were working on."
 
 ## Stdout protocol (Electron parses these)
 
@@ -75,4 +89,4 @@ so the prompt happens at the right moment.
 | `--token` | yes | Supabase access token (Bearer) |
 | `--api` | yes | Nyvlo base URL, e.g. `https://transform-pilot-ai.lovable.app` |
 | `--label` | no | Session label shown in the app |
-| `--audio-only` | no | Disable screen capture, audio only |
+| `--audio-only` | no | Disable screen capture, audio only (default on macOS 14.4+ Core Audio path) |

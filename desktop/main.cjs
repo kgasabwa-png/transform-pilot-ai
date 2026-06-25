@@ -1,9 +1,23 @@
 // Nyvlo desktop main process.
-// - Creates a small always-on-top recording window.
+// - Runs as a menu-bar (Tray) app with a small recording indicator.
 // - Manages sign-in via the device-link flow against the Nyvlo web app
 //   (no manual tokens, no copy-paste). Opens default browser, user approves
 //   once, tokens are stored locally and auto-refreshed.
-const { app, BrowserWindow, ipcMain, desktopCapturer, session, dialog, shell } = require("electron");
+// - Launches the Swift sidecar (NyvloCapture) as a child process for
+//   mic + system audio capture via Core Audio process-tap (macOS 14.4+)
+//   or ScreenCaptureKit fallback.
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+  Tray,
+  Menu,
+  nativeImage,
+  session,
+  dialog,
+  shell,
+} = require("electron");
+const { spawn } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
@@ -34,7 +48,9 @@ function writeSession(sess) {
   }
 }
 function clearSession() {
-  try { fs.unlinkSync(sessionPath); } catch {}
+  try {
+    fs.unlinkSync(sessionPath);
+  } catch {}
 }
 
 // --- Device link flow -----------------------------------------------------
@@ -71,15 +87,15 @@ async function signIn() {
   await shell.openExternal(start.verification_url);
   notifyRenderer("auth:waiting", { url: start.verification_url });
   const result = await pollDeviceLink(start.code);
-  const session = {
+  const sess = {
     access_token: result.access_token,
     refresh_token: result.refresh_token,
     expires_at: result.expires_at, // seconds
     user: result.user,
   };
-  writeSession(session);
-  notifyRenderer("auth:signed-in", { user: session.user });
-  return session;
+  writeSession(sess);
+  notifyRenderer("auth:signed-in", { user: sess.user });
+  return sess;
 }
 
 async function refreshIfNeeded() {
@@ -119,8 +135,165 @@ async function refreshIfNeeded() {
 
 // --- Window ---------------------------------------------------------------
 let win;
+let tray;
+
 function notifyRenderer(channel, payload) {
   if (win && !win.isDestroyed()) win.webContents.send(channel, payload);
+}
+
+// --- Sidecar binary path --------------------------------------------------
+function sidecarBinaryPath() {
+  // When packaged, the sidecar binary lives in Contents/Resources/bin/
+  const resourcesBin = path.join(process.resourcesPath || "", "bin", "NyvloCapture");
+  if (fs.existsSync(resourcesBin)) return resourcesBin;
+  // During development, look for the swift build output
+  const devBin = path.join(__dirname, "sidecar", ".build", "release", "NyvloCapture");
+  if (fs.existsSync(devBin)) return devBin;
+  return null;
+}
+
+// --- Sidecar child process ------------------------------------------------
+let sidecarProcess = null;
+
+function startSidecar(token, label) {
+  const binPath = sidecarBinaryPath();
+  if (!binPath) {
+    notifyRenderer("sidecar:error", {
+      message:
+        "NyvloCapture binary not found. Build it with: cd desktop/sidecar && swift build -c release",
+    });
+    return false;
+  }
+
+  const args = [
+    "--token",
+    token,
+    "--api",
+    API_BASE,
+    "--label",
+    label || "Capture session",
+    "--audio-only",
+  ];
+
+  sidecarProcess = spawn(binPath, args, { stdio: ["pipe", "pipe", "pipe"] });
+
+  let lineBuf = "";
+  sidecarProcess.stdout.on("data", (data) => {
+    lineBuf += data.toString();
+    const lines = lineBuf.split("\n");
+    lineBuf = lines.pop(); // keep incomplete last line
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      try {
+        const msg = JSON.parse(line);
+        notifyRenderer(`sidecar:${msg.type}`, msg);
+        if (msg.type === "started") {
+          updateTrayRecording(true);
+        } else if (msg.type === "ended") {
+          updateTrayRecording(false);
+        }
+      } catch {
+        console.warn("[nyvlo] sidecar unparseable:", line);
+      }
+    }
+  });
+
+  sidecarProcess.stderr.on("data", (data) => {
+    console.warn("[nyvlo] sidecar stderr:", data.toString());
+  });
+
+  sidecarProcess.on("close", (code) => {
+    console.log("[nyvlo] sidecar exited:", code);
+    sidecarProcess = null;
+    updateTrayRecording(false);
+    notifyRenderer("sidecar:exited", { type: "exited", code });
+  });
+
+  sidecarProcess.on("error", (err) => {
+    console.error("[nyvlo] sidecar spawn error:", err);
+    sidecarProcess = null;
+    notifyRenderer("sidecar:error", { type: "error", message: err.message });
+  });
+
+  return true;
+}
+
+function stopSidecar() {
+  if (!sidecarProcess) return;
+  try {
+    sidecarProcess.stdin.write('{"action":"stop"}\n');
+  } catch {
+    // If stdin is already closed, just kill the process
+    sidecarProcess.kill("SIGTERM");
+  }
+}
+
+// --- Tray (menu-bar app) --------------------------------------------------
+
+function createTrayIcon(recording) {
+  if (recording) {
+    // Red recording dot
+    return nativeImage.createFromDataURL(
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAARklEQVQ4T2P8z8Dwn4EIwEg0AwYYwH8GBgZGYjTDNDMSYwDIGUQZMOpcQJTrGUddMOoCMjwxalcPfBDhyY8oP6JHI1FhAACz1RoRhoyHhgAAAABJRU5ErkJggg==",
+    );
+  }
+  // Idle/normal icon — dark circle outline
+  return nativeImage.createFromDataURL(
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPUlEQVQ4T2P8z8Dwn4EIwEg0A+gfBIxEG0C0BqLCgGjXD3wQjbqAKBeMusDIyYIRkxlH0wOiXE9UGAAA9LkKER3JsaMAAAAASUVORK5CYII=",
+  );
+}
+
+function updateTrayRecording(recording) {
+  if (!tray) return;
+  tray.setImage(createTrayIcon(recording));
+  tray.setToolTip(recording ? "Nyvlo — Recording…" : "Nyvlo");
+  rebuildTrayMenu(recording);
+}
+
+function rebuildTrayMenu(recording) {
+  const template = [];
+
+  if (recording) {
+    template.push({ label: "● Recording…", enabled: false });
+    template.push({
+      label: "Stop Recording",
+      click: () => {
+        stopSidecar();
+        notifyRenderer("sidecar:stopping", { type: "stopping" });
+      },
+    });
+  } else {
+    template.push({
+      label: "Start Recording",
+      click: () => {
+        if (win && !win.isDestroyed()) {
+          win.show();
+          win.focus();
+        }
+      },
+    });
+  }
+
+  template.push({ type: "separator" });
+  template.push({
+    label: "Show Window",
+    click: () => {
+      if (win && !win.isDestroyed()) {
+        win.show();
+        win.focus();
+      }
+    },
+  });
+  template.push({ type: "separator" });
+  template.push({
+    label: "Quit Nyvlo",
+    click: () => {
+      stopSidecar();
+      app.quit();
+    },
+  });
+
+  tray.setContextMenu(Menu.buildFromTemplate(template));
 }
 
 function createWindow() {
@@ -129,8 +302,10 @@ function createWindow() {
     height: 540,
     title: "Nyvlo",
     resizable: true,
-    alwaysOnTop: true,
+    alwaysOnTop: false,
     backgroundColor: "#0b0b0b",
+    skipTaskbar: true,
+    show: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.cjs"),
       contextIsolation: true,
@@ -138,6 +313,7 @@ function createWindow() {
     },
   });
 
+  // Keep the display-media handler for the in-window fallback path
   session.defaultSession.setDisplayMediaRequestHandler(async (_request, callback) => {
     const choice = await dialog.showMessageBox(win, {
       type: "question",
@@ -149,25 +325,71 @@ function createWindow() {
       detail: "Audio is transcribed locally. Nothing is sent until you save the result.",
     });
     if (choice.response !== 0) return callback({});
+    const { desktopCapturer } = require("electron");
     const sources = await desktopCapturer.getSources({ types: ["screen"] });
     callback({ video: sources[0], audio: "loopback" });
+  });
+
+  // Hide to tray on close instead of quitting (macOS convention)
+  win.on("close", (e) => {
+    if (!app.isQuitting) {
+      e.preventDefault();
+      win.hide();
+    }
   });
 
   win.loadFile(path.join(__dirname, "renderer", "index.html"));
 }
 
-app.whenReady().then(createWindow);
+app.on("before-quit", () => {
+  app.isQuitting = true;
+  stopSidecar();
+});
+
+app.whenReady().then(() => {
+  // Set up tray
+  tray = new Tray(createTrayIcon(false));
+  tray.setToolTip("Nyvlo");
+  rebuildTrayMenu(false);
+
+  tray.on("click", () => {
+    if (win && !win.isDestroyed()) {
+      if (win.isVisible()) {
+        win.hide();
+      } else {
+        win.show();
+        win.focus();
+      }
+    }
+  });
+
+  createWindow();
+
+  // macOS: hide dock icon for true menu-bar app experience
+  if (process.platform === "darwin") {
+    app.dock.hide();
+  }
+});
 
 app.on("window-all-closed", () => {
+  // On macOS, keep running in menu bar even when window is closed
   if (process.platform !== "darwin") app.quit();
 });
 
 app.on("activate", () => {
-  if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  if (win && !win.isDestroyed()) {
+    win.show();
+    win.focus();
+  } else if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
 });
 
 // --- IPC ------------------------------------------------------------------
-ipcMain.handle("nyvlo:quit", () => app.quit());
+ipcMain.handle("nyvlo:quit", () => {
+  stopSidecar();
+  app.quit();
+});
 
 ipcMain.handle("nyvlo:getSession", async () => {
   return readSession();
@@ -193,3 +415,25 @@ ipcMain.handle("nyvlo:signOut", async () => {
 });
 
 ipcMain.handle("nyvlo:apiBase", async () => API_BASE);
+
+// --- Sidecar IPC ----------------------------------------------------------
+ipcMain.handle("nyvlo:sidecarAvailable", async () => {
+  return sidecarBinaryPath() !== null;
+});
+
+ipcMain.handle("nyvlo:startSidecar", async (_event, { label }) => {
+  if (sidecarProcess) return { ok: false, error: "Already recording" };
+  const sess = await refreshIfNeeded();
+  if (!sess) return { ok: false, error: "Not signed in" };
+  const ok = startSidecar(sess.access_token, label);
+  return { ok };
+});
+
+ipcMain.handle("nyvlo:stopSidecar", async () => {
+  stopSidecar();
+  return { ok: true };
+});
+
+ipcMain.handle("nyvlo:sidecarStatus", async () => {
+  return { running: sidecarProcess !== null };
+});

@@ -1,5 +1,6 @@
 // Nyvlo desktop renderer: capture mic + system audio, send to backend.
-// All auth is handled by the main process (device-link flow). No tokens here.
+// Prefers the Swift sidecar (NyvloCapture) for native Core Audio capture;
+// falls back to in-browser getDisplayMedia if the sidecar binary is not built.
 
 const $ = (id) => document.getElementById(id);
 const authContent = $("auth-content");
@@ -13,8 +14,10 @@ const transcriptEl = $("transcript");
 const promiseCountEl = $("promise-count");
 const meetingTitleEl = $("meeting-title");
 const resetBtn = $("reset");
+const captureMethodEl = $("capture-method");
 
 let apiBase = "https://transform-pilot-ai.lovable.app";
+let useSidecar = false;
 
 function setStatus(msg, tone) {
   statusEl.textContent = msg || "";
@@ -78,17 +81,50 @@ function renderSignedIn(user) {
 
 async function init() {
   apiBase = await window.nyvlo.apiBase();
+  // Check if sidecar binary is available
+  useSidecar = await window.nyvlo.sidecarAvailable();
+  if (captureMethodEl) {
+    captureMethodEl.textContent = useSidecar
+      ? "Native audio capture (mic + system)"
+      : "Browser capture (mic + screen audio)";
+  }
   const sess = await window.nyvlo.getSession();
   if (sess && sess.user) renderSignedIn(sess.user);
   else renderSignedOut();
+
+  // Listen for sidecar events
+  window.nyvlo.onSidecarEvent((msg) => {
+    if (msg.type === "started") {
+      setStatus("Recording mic + system audio…", "ok");
+    } else if (msg.type === "chunk") {
+      // Update chunk count indicator
+    } else if (msg.type === "ended") {
+      onSidecarEnded();
+    } else if (msg.type === "error") {
+      setStatus(`Capture error: ${msg.message}`, "err");
+      onSidecarEnded();
+    } else if (msg.type === "exited") {
+      onSidecarEnded();
+    } else if (msg.type === "stopping") {
+      setStatus("Stopping…");
+    }
+  });
+
+  // Check if already recording (e.g. window was hidden then re-shown)
+  const status = await window.nyvlo.sidecarStatus();
+  if (status.running) {
+    showRecordingState(true);
+  }
 }
 init();
 
+// --- Recording state (shared between sidecar and browser paths) -----------
 let recorder = null;
 let chunks = [];
 let stream = null;
 let startTime = 0;
 let timerHandle = null;
+let recordingViaSidecar = false;
 
 function fmtTime(ms) {
   const s = Math.floor(ms / 1000);
@@ -96,7 +132,54 @@ function fmtTime(ms) {
   return `${String(m).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
 
-async function startRecording() {
+function showRecordingState(recording) {
+  if (recording) {
+    recBtn.classList.add("recording");
+    recRow.classList.add("recording");
+    recBtn.innerHTML = '<span class="pulse"></span> Stop recording';
+    if (!timerHandle) {
+      startTime = Date.now();
+      timerHandle = setInterval(() => (timerEl.textContent = fmtTime(Date.now() - startTime)), 500);
+    }
+  } else {
+    clearInterval(timerHandle);
+    timerHandle = null;
+    recBtn.classList.remove("recording");
+    recRow.classList.remove("recording");
+    recBtn.innerHTML = '<span class="pulse"></span> Start recording';
+  }
+}
+
+// --- Sidecar recording path -----------------------------------------------
+
+async function startSidecarRecording() {
+  const label = meetingTitleEl.value.trim() || `Meeting · ${new Date().toLocaleString()}`;
+  setStatus("Starting native capture…");
+  const r = await window.nyvlo.startSidecar({ label });
+  if (!r.ok) {
+    setStatus(r.error || "Failed to start sidecar", "err");
+    return;
+  }
+  recordingViaSidecar = true;
+  showRecordingState(true);
+  setStatus("Recording mic + system audio…");
+}
+
+async function stopSidecarRecording() {
+  setStatus("Stopping…");
+  await window.nyvlo.stopSidecar();
+  // The sidecar:ended event will call onSidecarEnded()
+}
+
+function onSidecarEnded() {
+  recordingViaSidecar = false;
+  showRecordingState(false);
+  setStatus("Recording saved. Chunks uploaded during capture.", "ok");
+}
+
+// --- In-browser recording path (fallback) ---------------------------------
+
+async function startBrowserRecording() {
   const token = await window.nyvlo.getAccessToken();
   if (!token) {
     setStatus("Sign in first.", "err");
@@ -136,12 +219,10 @@ async function startRecording() {
     recorder.onstop = () => finalize(mimeType);
     recorder.start(1000);
 
-    startTime = Date.now();
-    timerHandle = setInterval(() => (timerEl.textContent = fmtTime(Date.now() - startTime)), 500);
-    recBtn.classList.add("recording");
-    recRow.classList.add("recording");
-    recBtn.innerHTML = '<span class="pulse"></span> Stop recording';
-    setStatus(systemStream ? "Recording mic + system audio." : "Recording mic only (system audio denied).");
+    showRecordingState(true);
+    setStatus(
+      systemStream ? "Recording mic + system audio." : "Recording mic only (system audio denied).",
+    );
   } catch (err) {
     console.error(err);
     setStatus(`Couldn't start: ${err.message}`, "err");
@@ -156,11 +237,7 @@ function stopTracks() {
 }
 
 async function finalize(mimeType) {
-  clearInterval(timerHandle);
-  timerHandle = null;
-  recBtn.classList.remove("recording");
-  recRow.classList.remove("recording");
-  recBtn.innerHTML = '<span class="pulse"></span> Start recording';
+  showRecordingState(false);
   stopTracks();
 
   const blob = new Blob(chunks, { type: mimeType });
@@ -230,11 +307,22 @@ async function finalize(mimeType) {
   }
 }
 
+// --- Button handler -------------------------------------------------------
+
 recBtn.addEventListener("click", () => {
+  if (recordingViaSidecar) {
+    stopSidecarRecording();
+    return;
+  }
   if (recorder && recorder.state === "recording") {
     recorder.stop();
+    return;
+  }
+  // Prefer sidecar path
+  if (useSidecar) {
+    startSidecarRecording();
   } else {
-    startRecording();
+    startBrowserRecording();
   }
 });
 
