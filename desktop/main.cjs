@@ -1,9 +1,19 @@
 // Nyvlo desktop main process.
-// - Creates a small always-on-top recording window.
-// - Manages sign-in via the device-link flow against the Nyvlo web app
-//   (no manual tokens, no copy-paste). Opens default browser, user approves
-//   once, tokens are stored locally and auto-refreshed.
-const { app, BrowserWindow, ipcMain, desktopCapturer, session, dialog, shell } = require("electron");
+// - Menu-bar (Tray) app with a small recording popover window.
+// - Spawns the NyvloCapture Swift sidecar for low-permission audio capture.
+// - Manages sign-in via the device-link flow against the Nyvlo web app.
+const {
+  app,
+  BrowserWindow,
+  Tray,
+  Menu,
+  ipcMain,
+  nativeImage,
+  session,
+  dialog,
+  shell,
+} = require("electron");
+const { spawn } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
@@ -34,7 +44,9 @@ function writeSession(sess) {
   }
 }
 function clearSession() {
-  try { fs.unlinkSync(sessionPath); } catch {}
+  try {
+    fs.unlinkSync(sessionPath);
+  } catch {}
 }
 
 // --- Device link flow -----------------------------------------------------
@@ -71,15 +83,15 @@ async function signIn() {
   await shell.openExternal(start.verification_url);
   notifyRenderer("auth:waiting", { url: start.verification_url });
   const result = await pollDeviceLink(start.code);
-  const session = {
+  const sess = {
     access_token: result.access_token,
     refresh_token: result.refresh_token,
-    expires_at: result.expires_at, // seconds
+    expires_at: result.expires_at,
     user: result.user,
   };
-  writeSession(session);
-  notifyRenderer("auth:signed-in", { user: session.user });
-  return session;
+  writeSession(sess);
+  notifyRenderer("auth:signed-in", { user: sess.user });
+  return sess;
 }
 
 async function refreshIfNeeded() {
@@ -87,7 +99,6 @@ async function refreshIfNeeded() {
   if (!sess) return null;
   const now = Math.floor(Date.now() / 1000);
   if (sess.expires_at && sess.expires_at - now > 60) return sess;
-  // Refresh via Supabase token endpoint
   try {
     const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
       method: "POST",
@@ -117,20 +128,179 @@ async function refreshIfNeeded() {
   }
 }
 
-// --- Window ---------------------------------------------------------------
-let win;
+// --- Sidecar management ---------------------------------------------------
+let sidecarProcess = null;
+let sidecarSessionId = null;
+
+function getSidecarBinaryPath() {
+  // In packaged app: Contents/Resources/bin/NyvloCapture
+  // In development: look for compiled binary in sidecar/.build/release/
+  if (app.isPackaged) {
+    return path.join(process.resourcesPath, "bin", "NyvloCapture");
+  }
+  // Dev: try local build
+  const devPath = path.join(__dirname, "sidecar", ".build", "release", "NyvloCapture");
+  if (fs.existsSync(devPath)) return devPath;
+  // Fallback: try PATH
+  return "NyvloCapture";
+}
+
+function spawnSidecar(token, label) {
+  const binPath = getSidecarBinaryPath();
+  const args = ["--token", token, "--api", API_BASE, "--label", label, "--audio-only"];
+
+  sidecarProcess = spawn(binPath, args, {
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+
+  sidecarProcess.stdout.on("data", (data) => {
+    const lines = data.toString().split("\n").filter(Boolean);
+    for (const line of lines) {
+      try {
+        const msg = JSON.parse(line);
+        handleSidecarMessage(msg);
+      } catch {
+        console.warn("[nyvlo:sidecar] non-JSON stdout:", line);
+      }
+    }
+  });
+
+  sidecarProcess.stderr.on("data", (data) => {
+    console.error("[nyvlo:sidecar] stderr:", data.toString());
+  });
+
+  sidecarProcess.on("exit", (code) => {
+    console.log(`[nyvlo:sidecar] exited with code ${code}`);
+    sidecarProcess = null;
+    sidecarSessionId = null;
+    notifyRenderer("capture:stopped", { code });
+    updateTrayMenu(false);
+  });
+
+  sidecarProcess.on("error", (err) => {
+    console.error("[nyvlo:sidecar] spawn error:", err.message);
+    notifyRenderer("capture:error", { message: err.message });
+    sidecarProcess = null;
+    updateTrayMenu(false);
+  });
+}
+
+function handleSidecarMessage(msg) {
+  switch (msg.type) {
+    case "started":
+      sidecarSessionId = msg.sessionId;
+      notifyRenderer("capture:started", { sessionId: msg.sessionId });
+      updateTrayMenu(true);
+      break;
+    case "chunk":
+      notifyRenderer("capture:chunk", msg);
+      break;
+    case "ended":
+      notifyRenderer("capture:ended", {});
+      sidecarProcess = null;
+      sidecarSessionId = null;
+      updateTrayMenu(false);
+      break;
+    case "error":
+      notifyRenderer("capture:error", { message: msg.message });
+      break;
+    default:
+      notifyRenderer("capture:event", msg);
+  }
+}
+
+function stopSidecar() {
+  if (sidecarProcess && !sidecarProcess.killed) {
+    try {
+      sidecarProcess.stdin.write(JSON.stringify({ action: "stop" }) + "\n");
+    } catch (e) {
+      console.warn("[nyvlo] failed to write stop to sidecar stdin", e);
+      sidecarProcess.kill("SIGTERM");
+    }
+  }
+}
+
+// --- Window & Tray --------------------------------------------------------
+let win = null;
+let tray = null;
+let isRecording = false;
+
 function notifyRenderer(channel, payload) {
   if (win && !win.isDestroyed()) win.webContents.send(channel, payload);
+}
+
+function createTrayIcon(recording) {
+  // Create a simple 16x16 tray icon — circle indicator
+  const size = 16;
+  const canvas = nativeImage.createEmpty();
+  // Use a template image for macOS menu bar
+  if (recording) {
+    // Red dot when recording (visible indicator)
+    return nativeImage.createFromDataURL(
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAiklEQVQ4T2P8z8Dwn4EIwEg0AwYMsOH/GRj+MxABGIk2YOAMAGGA4T8DEYCRGBcMeAAM/xmIAIzEuGDAA4DhPwMRgJEYFwx4ADDAMOD/fwYiACMxLhjwAGD4z0AEYCSGC0Y8ABj+MxABGIlxwYAHAMN/BiIAIzEuGPAAYPjPQARgJMYFAx4AAGzCMBHK6bkAAAAASUVORK5CYII=",
+    );
+  }
+  // Normal state — monochrome microphone-like icon
+  return nativeImage.createFromDataURL(
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAhElEQVQ4T2NkoBAwUqifgWoGMP5nYPjPQARgJNoFxBswYAb8Z2AgAjAS7QKSDWA4DMPEuGDEG/CfgYEIwEiMC0a8Af8ZGIgAjMS4YMQb8J+BgQjASIwLRrwB/xkYiACMxLhgxBvwn4GBCMBIjAtGvAH/GRiIAIzEuGDEGwAAe9owEQ/VVCEAAAAASUVORK5CYII=",
+  );
+}
+
+function updateTrayMenu(recording) {
+  isRecording = recording;
+  if (!tray) return;
+  tray.setImage(createTrayIcon(recording));
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: recording ? "⏺ Recording…" : "Nyvlo",
+      enabled: false,
+    },
+    { type: "separator" },
+    {
+      label: recording ? "Stop Recording" : "Start Recording",
+      click: () => {
+        if (recording) {
+          stopSidecar();
+        } else {
+          showWindow();
+        }
+      },
+    },
+    { type: "separator" },
+    {
+      label: "Show Window",
+      click: showWindow,
+    },
+    {
+      label: "Quit",
+      click: () => app.quit(),
+    },
+  ]);
+  tray.setContextMenu(contextMenu);
+  tray.setToolTip(recording ? "Nyvlo — Recording" : "Nyvlo");
+}
+
+function showWindow() {
+  if (win && !win.isDestroyed()) {
+    win.show();
+    win.focus();
+    return;
+  }
+  createWindow();
 }
 
 function createWindow() {
   win = new BrowserWindow({
     width: 380,
-    height: 540,
+    height: 480,
     title: "Nyvlo",
     resizable: true,
     alwaysOnTop: true,
+    skipTaskbar: true,
     backgroundColor: "#0b0b0b",
+    titleBarStyle: "hiddenInset",
+    show: false,
     webPreferences: {
       preload: path.join(__dirname, "preload.cjs"),
       contextIsolation: true,
@@ -138,32 +308,49 @@ function createWindow() {
     },
   });
 
-  session.defaultSession.setDisplayMediaRequestHandler(async (_request, callback) => {
-    const choice = await dialog.showMessageBox(win, {
-      type: "question",
-      buttons: ["Allow recording", "Cancel"],
-      defaultId: 0,
-      cancelId: 1,
-      title: "Start recording?",
-      message: "Nyvlo wants to capture your screen and system audio for this meeting.",
-      detail: "Audio is transcribed locally. Nothing is sent until you save the result.",
-    });
-    if (choice.response !== 0) return callback({});
-    const sources = await desktopCapturer.getSources({ types: ["screen"] });
-    callback({ video: sources[0], audio: "loopback" });
+  win.once("ready-to-show", () => win.show());
+
+  win.on("close", (e) => {
+    // On macOS, hide window instead of quitting (menu-bar app behavior)
+    if (process.platform === "darwin") {
+      e.preventDefault();
+      win.hide();
+    }
   });
 
   win.loadFile(path.join(__dirname, "renderer", "index.html"));
 }
 
-app.whenReady().then(createWindow);
+// --- App lifecycle --------------------------------------------------------
+
+// Hide dock icon on macOS (menu-bar only)
+if (process.platform === "darwin") {
+  app.dock.hide();
+}
+
+app.whenReady().then(() => {
+  // Create tray
+  tray = new Tray(createTrayIcon(false));
+  updateTrayMenu(false);
+
+  // Left-click on tray shows the window
+  tray.on("click", showWindow);
+
+  createWindow();
+});
 
 app.on("window-all-closed", () => {
+  // Don't quit on window close — we're a menu-bar app
   if (process.platform !== "darwin") app.quit();
 });
 
 app.on("activate", () => {
-  if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  showWindow();
+});
+
+app.on("before-quit", () => {
+  // Ensure sidecar is stopped on quit
+  stopSidecar();
 });
 
 // --- IPC ------------------------------------------------------------------
@@ -193,3 +380,43 @@ ipcMain.handle("nyvlo:signOut", async () => {
 });
 
 ipcMain.handle("nyvlo:apiBase", async () => API_BASE);
+
+// --- Sidecar IPC ----------------------------------------------------------
+ipcMain.handle("nyvlo:startCapture", async (_event, { label }) => {
+  if (sidecarProcess) {
+    return { ok: false, error: "Already recording" };
+  }
+  const sess = await refreshIfNeeded();
+  if (!sess) {
+    return { ok: false, error: "Not signed in" };
+  }
+
+  // Consent: show confirmation dialog before starting
+  const choice = await dialog.showMessageBox(win, {
+    type: "question",
+    buttons: ["Start recording", "Cancel"],
+    defaultId: 0,
+    cancelId: 1,
+    title: "Start recording?",
+    message: "Nyvlo will record your microphone and system audio for this meeting.",
+    detail: "A recording indicator will be visible in your menu bar while recording is active.",
+  });
+  if (choice.response !== 0) {
+    return { ok: false, error: "Cancelled by user" };
+  }
+
+  spawnSidecar(sess.access_token, label || "Meeting");
+  return { ok: true };
+});
+
+ipcMain.handle("nyvlo:stopCapture", async () => {
+  if (!sidecarProcess) {
+    return { ok: false, error: "Not recording" };
+  }
+  stopSidecar();
+  return { ok: true };
+});
+
+ipcMain.handle("nyvlo:isRecording", async () => {
+  return { recording: !!sidecarProcess, sessionId: sidecarSessionId };
+});

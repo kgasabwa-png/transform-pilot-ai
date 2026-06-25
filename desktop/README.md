@@ -1,7 +1,23 @@
 # Nyvlo Desktop
 
-Tiny Electron app that records a meeting (mic + system audio), transcribes it
-through the Nyvlo backend, and pushes any extracted promises into your inbox.
+Menu-bar app that records meeting audio (mic + system audio) via a Swift sidecar,
+uploads 6-second chunks to the Nyvlo backend for transcription, and pushes
+extracted promises into your inbox.
+
+## Architecture
+
+```
+┌──────────────┐    stdout/stdin JSON     ┌─────────────────────┐
+│  Electron    │ ◄───────────────────────► │  NyvloCapture       │
+│  (main.cjs)  │                           │  (Swift sidecar)    │
+└──────┬───────┘                           └─────────────────────┘
+       │ IPC                                        │ HTTP POST
+       ▼                                            ▼
+┌──────────────┐                           ┌─────────────────────┐
+│  renderer    │                           │  Nyvlo API          │
+│  (app.js)    │                           │  /api/public/ingest │
+└──────────────┘                           └─────────────────────┘
+```
 
 ## Run locally
 
@@ -11,12 +27,33 @@ npm install            # ~150 MB; pulls Electron
 npm start
 ```
 
-1. Paste your Nyvlo token (Settings → Browser extension → New token).
-2. Give the meeting a title.
-3. **Start recording** — grant mic + screen access (screen pick is required
-   for system audio on macOS/Windows; only the audio is used).
-4. **Stop** — wait a few seconds; transcript appears and any promises land
-   in your Nyvlo inbox tagged as `meeting`.
+1. A menu-bar icon (tray) appears — click it or it auto-shows the window.
+2. Sign in via your browser (device-link flow — opens the Nyvlo web app).
+3. Give the meeting a title.
+4. **Start recording** — a consent dialog confirms before capture begins.
+5. **Stop** — transcript appears and any promises land in your inbox.
+
+## Permissions
+
+| macOS version | Microphone | Screen Recording |
+|---|---|---|
+| **14.4+** (Sonoma+) | Required | **Not required** — Core Audio process-tap captures system audio without it |
+| **13.0–14.3** | Required | Required (ScreenCaptureKit fallback needs it for system audio) |
+
+On macOS 14.4+, the app uses `CATapDescription` + `AudioHardwareCreateProcessTap`
+to capture system audio output without triggering the Screen Recording permission.
+This is combined with the default microphone input via an aggregate device.
+
+## Build the sidecar
+
+```bash
+cd desktop/sidecar
+swift build -c release
+# Output: .build/release/NyvloCapture
+```
+
+The Electron main process looks for the binary at `desktop/sidecar/.build/release/NyvloCapture`
+in development, or `Contents/Resources/bin/NyvloCapture` in a packaged app.
 
 ## Package a distributable
 
@@ -31,11 +68,13 @@ self-contained app folder you can zip and share.
 
 ## Privacy
 
-- Audio is held in memory while recording.
-- Only on stop is it uploaded to `transform-pilot-ai.lovable.app` for
-  transcription (Lovable AI / `openai/gpt-4o-mini-transcribe`).
+- Audio is streamed as 6-second WAV chunks while recording (not held until stop).
+- Chunks are uploaded to `transform-pilot-ai.lovable.app` for transcription
+  (OpenAI/gpt-4o-mini-transcribe).
 - Audio is not stored on the server; only the resulting transcript is saved
   as a `sources` row alongside any extracted promises.
+- A visible recording indicator shows in the menu bar while capture is active.
+- Recording always requires explicit user consent (dialog confirmation).
 
 ## Roadmap
 

@@ -8,7 +8,15 @@ let package = Package(
         .executableTarget(
             name: "NyvloCapture",
             path: ".",
-            sources: ["NyvloCapture.swift"]
+            sources: ["NyvloCapture.swift"],
+            linkerSettings: [
+                .linkedFramework("CoreAudio"),
+                .linkedFramework("AudioToolbox"),
+                .linkedFramework("AVFoundation"),
+                .linkedFramework("ScreenCaptureKit"),
+                .linkedFramework("AppKit"),
+                .linkedFramework("CoreImage"),
+            ]
         )
     ]
 )
