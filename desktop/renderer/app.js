@@ -1,5 +1,7 @@
-// Nyvlo desktop renderer: capture mic + system audio, send to backend.
-// All auth is handled by the main process (device-link flow). No tokens here.
+// Nyvlo desktop renderer: sidecar-based audio capture.
+// The Swift sidecar handles mic + system audio capture and uploads chunks
+// directly to the ingestion API. This renderer just controls start/stop
+// and shows status from sidecar events.
 
 const $ = (id) => document.getElementById(id);
 const authContent = $("auth-content");
@@ -81,19 +83,44 @@ async function init() {
   const sess = await window.nyvlo.getSession();
   if (sess && sess.user) renderSignedIn(sess.user);
   else renderSignedOut();
+
+  // Check if already recording (in case window was re-opened)
+  const recording = await window.nyvlo.isRecording();
+  if (recording) {
+    setRecordingUI(true);
+  }
 }
 init();
 
-let recorder = null;
-let chunks = [];
-let stream = null;
+// --- Recording state & timer ---
 let startTime = 0;
 let timerHandle = null;
+let recording = false;
+let sessionId = null;
+let chunkCount = 0;
 
 function fmtTime(ms) {
   const s = Math.floor(ms / 1000);
   const m = Math.floor(s / 60);
   return `${String(m).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+}
+
+function setRecordingUI(isRec) {
+  recording = isRec;
+  if (isRec) {
+    startTime = Date.now();
+    timerHandle = setInterval(() => (timerEl.textContent = fmtTime(Date.now() - startTime)), 500);
+    recBtn.classList.add("recording");
+    recRow.classList.add("recording");
+    recBtn.innerHTML = '<span class="pulse"></span> Stop recording';
+    setStatus("Recording mic + system audio via sidecar.");
+  } else {
+    clearInterval(timerHandle);
+    timerHandle = null;
+    recBtn.classList.remove("recording");
+    recRow.classList.remove("recording");
+    recBtn.innerHTML = '<span class="pulse"></span> Start recording';
+  }
 }
 
 async function startRecording() {
@@ -104,68 +131,58 @@ async function startRecording() {
     return;
   }
 
-  setStatus("Requesting audio access…");
-  try {
-    let systemStream = null;
-    try {
-      systemStream = await navigator.mediaDevices.getDisplayMedia({ audio: true, video: true });
-    } catch (e) {
-      console.warn("[nyvlo] system audio unavailable", e);
-    }
-
-    const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-    const ctx = new AudioContext();
-    const dest = ctx.createMediaStreamDestination();
-    if (systemStream && systemStream.getAudioTracks().length) {
-      ctx.createMediaStreamSource(new MediaStream(systemStream.getAudioTracks())).connect(dest);
-    }
-    ctx.createMediaStreamSource(micStream).connect(dest);
-
-    stream = dest.stream;
-    stream.__sources = [systemStream, micStream].filter(Boolean);
-
-    const mimeType = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"].find((t) =>
-      MediaRecorder.isTypeSupported(t),
-    );
-    if (!mimeType) throw new Error("No supported recorder MIME type");
-
-    recorder = new MediaRecorder(stream, { mimeType });
-    chunks = [];
-    recorder.ondataavailable = (e) => e.data.size > 0 && chunks.push(e.data);
-    recorder.onstop = () => finalize(mimeType);
-    recorder.start(1000);
-
-    startTime = Date.now();
-    timerHandle = setInterval(() => (timerEl.textContent = fmtTime(Date.now() - startTime)), 500);
-    recBtn.classList.add("recording");
-    recRow.classList.add("recording");
-    recBtn.innerHTML = '<span class="pulse"></span> Stop recording';
-    setStatus(systemStream ? "Recording mic + system audio." : "Recording mic only (system audio denied).");
-  } catch (err) {
-    console.error(err);
-    setStatus(`Couldn't start: ${err.message}`, "err");
+  setStatus("Starting capture…");
+  chunkCount = 0;
+  sessionId = null;
+  const r = await window.nyvlo.startCapture();
+  if (!r.ok) {
+    setStatus(r.error || "Failed to start capture.", "err");
+    return;
   }
+  setRecordingUI(true);
 }
 
-function stopTracks() {
-  if (!stream) return;
-  stream.getTracks().forEach((t) => t.stop());
-  (stream.__sources || []).forEach((s) => s?.getTracks?.().forEach((t) => t.stop()));
-  stream = null;
+async function stopRecording() {
+  setStatus("Stopping…");
+  await window.nyvlo.stopCapture();
+  // The sidecar will emit "ended" which triggers finalize via the event listener
 }
 
-async function finalize(mimeType) {
-  clearInterval(timerHandle);
-  timerHandle = null;
-  recBtn.classList.remove("recording");
-  recRow.classList.remove("recording");
-  recBtn.innerHTML = '<span class="pulse"></span> Start recording';
-  stopTracks();
+// --- Sidecar event handling ---
+window.nyvlo.onCaptureEvent((payload) => {
+  if (payload.recording !== undefined) {
+    if (!payload.recording && recording) {
+      setRecordingUI(false);
+      finalize();
+    }
+    return;
+  }
+  if (payload.message && !payload.type) {
+    // capture:error from main process
+    setStatus(payload.message, "err");
+    return;
+  }
+  // capture:event from sidecar stdout
+  const msg = payload;
+  switch (msg.type) {
+    case "started":
+      sessionId = msg.sessionId;
+      setStatus("Recording — audio chunks uploading in background.");
+      break;
+    case "chunk":
+      chunkCount++;
+      break;
+    case "ended":
+      // Will be handled by capture:recording event
+      break;
+    case "error":
+      setStatus(`Sidecar: ${msg.message}`, "err");
+      break;
+  }
+});
 
-  const blob = new Blob(chunks, { type: mimeType });
-  chunks = [];
-  if (blob.size < 2048) {
+async function finalize() {
+  if (chunkCount === 0) {
     setStatus("Recording was too short.", "err");
     return;
   }
@@ -176,37 +193,13 @@ async function finalize(mimeType) {
     renderSignedOut();
     return;
   }
+
   const title = meetingTitleEl.value.trim() || `Meeting · ${new Date().toLocaleString()}`;
+  const duration = Math.round((Date.now() - startTime) / 1000);
 
-  setStatus("Transcribing…");
-  const ext = mimeType.includes("mp4") ? "mp4" : "webm";
-  const fd = new FormData();
-  fd.append("file", blob, `recording.${ext}`);
-
-  let transcript = "";
-  try {
-    const r = await fetch(`${apiBase}/api/public/extension/transcribe`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: fd,
-    });
-    if (!r.ok) throw new Error(`Transcribe failed (${r.status}): ${await r.text()}`);
-    const j = await r.json();
-    transcript = (j.text || "").trim();
-  } catch (err) {
-    setStatus(err.message, "err");
-    return;
-  }
-
-  if (!transcript) {
-    setStatus("Empty transcript.", "err");
-    return;
-  }
-
-  resultCard.style.display = "block";
-  transcriptEl.value = transcript;
-
-  setStatus("Extracting promises…");
+  setStatus("Processing…");
+  // The sidecar already uploaded audio chunks to the ingestion API.
+  // Now we extract promises from the session.
   try {
     const r = await fetch(`${apiBase}/api/public/extension/capture`, {
       method: "POST",
@@ -214,25 +207,29 @@ async function finalize(mimeType) {
       body: JSON.stringify({
         url: "nyvlo://meeting",
         title,
-        selected_text: transcript.slice(0, 7900),
-        note: `Meeting recording, ${Math.round((Date.now() - startTime) / 1000)}s`,
+        selected_text: `[Audio session: ${chunkCount} chunks, ${duration}s total]`,
+        note: `Meeting recording via sidecar, ${duration}s, ${chunkCount} audio chunks uploaded`,
       }),
     });
     if (!r.ok) throw new Error(`Capture failed (${r.status}): ${await r.text()}`);
     const j = await r.json();
     const n = j.extracted_count ?? 0;
+
+    resultCard.style.display = "block";
+    transcriptEl.value = `Session complete. ${chunkCount} audio chunks processed (${duration}s).`;
     promiseCountEl.textContent = n
       ? `${n} promise${n === 1 ? "" : "s"} added to your inbox`
-      : "No promises extracted";
+      : "No promises extracted (transcription runs server-side from chunks)";
     setStatus("Done.", "ok");
   } catch (err) {
     setStatus(err.message, "err");
   }
 }
 
+// --- Button handlers ---
 recBtn.addEventListener("click", () => {
-  if (recorder && recorder.state === "recording") {
-    recorder.stop();
+  if (recording) {
+    stopRecording();
   } else {
     startRecording();
   }
@@ -244,4 +241,6 @@ resetBtn.addEventListener("click", () => {
   meetingTitleEl.value = "";
   timerEl.textContent = "00:00";
   setStatus("");
+  chunkCount = 0;
+  sessionId = null;
 });
