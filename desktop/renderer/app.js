@@ -102,8 +102,11 @@ async function init() {
       onSidecarEnded();
     } else if (msg.type === "error") {
       setStatus(`Capture error: ${msg.message}`, "err");
-    } else if (msg.type === "exited" || msg.type === "stopping") {
-      // sidecar process finished
+      onSidecarEnded();
+    } else if (msg.type === "exited") {
+      onSidecarEnded();
+    } else if (msg.type === "stopping") {
+      setStatus("Stopping…");
     }
   });
 

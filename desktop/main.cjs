@@ -206,13 +206,13 @@ function startSidecar(token, label) {
     console.log("[nyvlo] sidecar exited:", code);
     sidecarProcess = null;
     updateTrayRecording(false);
-    notifyRenderer("sidecar:exited", { code });
+    notifyRenderer("sidecar:exited", { type: "exited", code });
   });
 
   sidecarProcess.on("error", (err) => {
     console.error("[nyvlo] sidecar spawn error:", err);
     sidecarProcess = null;
-    notifyRenderer("sidecar:error", { message: err.message });
+    notifyRenderer("sidecar:error", { type: "error", message: err.message });
   });
 
   return true;
@@ -259,7 +259,7 @@ function rebuildTrayMenu(recording) {
       label: "Stop Recording",
       click: () => {
         stopSidecar();
-        notifyRenderer("sidecar:stopping", {});
+        notifyRenderer("sidecar:stopping", { type: "stopping" });
       },
     });
   } else {

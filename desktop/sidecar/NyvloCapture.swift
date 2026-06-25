@@ -270,6 +270,11 @@ actor Recorder {
 
         try checkOSStatus(AudioUnitInitialize(au), "AudioUnitInitialize")
         try checkOSStatus(AudioOutputUnitStart(au), "AudioOutputUnitStart")
+
+        // Reset chunk timer so the first chunk measures from capture start,
+        // not from actor creation (which may be seconds earlier due to the
+        // session-start API call).
+        tapAudioBufferStart = Date()
     }
 
     nonisolated func handleTapBuffer(_ pcmData: Data) {
