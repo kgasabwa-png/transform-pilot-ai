@@ -1,24 +1,35 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
 import {
   ArrowRight,
   Calendar,
   Clock,
+  ExternalLink,
   FileText,
   ListChecks,
+  Loader2,
+  MapPin,
   MessageSquareText,
   NotebookPen,
   PlugZap,
+  RefreshCw,
   ShieldCheck,
   Sparkles,
+  Users,
+  Video,
 } from "lucide-react";
 import { Shell } from "@/components/nyvlo/Shell";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { listPromises } from "@/lib/nyvlo/data.functions";
 import { listCaptureSessions, getCaptureQuota } from "@/lib/nyvlo/capture.functions";
+import { listMeetingBriefs } from "@/lib/nyvlo/briefs.functions";
 import { getProfile } from "@/lib/nyvlo/profile.functions";
+import { runSyncNow } from "@/lib/nyvlo/google.functions";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/app/")({
   head: () => ({ meta: [{ title: "Meetings · Nyvlo" }] }),
@@ -43,11 +54,39 @@ type ActionItem = {
   due_at: string | null;
 };
 
+type MeetingBrief = {
+  id: string;
+  title: string;
+  starts_at: string | null;
+  ends_at: string | null;
+  location: string | null;
+  join_url: string | null;
+  event_url: string | null;
+  description: string | null;
+  participants: string[];
+  related_notes: Array<{
+    id: string;
+    title: string;
+    summary: string | null;
+    started_at: string;
+  }>;
+  related_actions: Array<{
+    id: string;
+    summary: string;
+    due_at: string | null;
+    owed_to: string | null;
+  }>;
+};
+
 function MeetingsHome() {
+  const queryClient = useQueryClient();
   const fetchSessions = useServerFn(listCaptureSessions);
   const fetchPromises = useServerFn(listPromises);
   const fetchProfile = useServerFn(getProfile);
   const fetchQuota = useServerFn(getCaptureQuota);
+  const fetchBriefs = useServerFn(listMeetingBriefs);
+  const syncNow = useServerFn(runSyncNow);
+  const [syncing, setSyncing] = useState(false);
 
   const sessionsQuery = useQuery({
     queryKey: ["capture-sessions"],
@@ -66,6 +105,10 @@ function MeetingsHome() {
     queryKey: ["capture-quota"],
     queryFn: () => fetchQuota(),
   });
+  const briefsQuery = useQuery({
+    queryKey: ["meeting-briefs"],
+    queryFn: () => fetchBriefs(),
+  });
 
   const sessions = (sessionsQuery.data ?? []) as MeetingSession[];
   const actions = ((promisesQuery.data ?? []) as ActionItem[])
@@ -80,6 +123,22 @@ function MeetingsHome() {
   const name = profileQuery.data?.profile?.full_name?.split(" ")[0] ?? "there";
   const isConnected = Boolean(profileQuery.data?.connection);
   const quota = quotaQuery.data;
+  const briefs = (briefsQuery.data ?? []) as MeetingBrief[];
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      const result = await syncNow();
+      toast.success(`Calendar synced: ${result.synced} events`);
+      queryClient.invalidateQueries({ queryKey: ["meeting-briefs"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["promises"] });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Calendar sync failed");
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   return (
     <Shell title={`Hi ${name}.`} subtitle="Your private AI meeting notebook.">
@@ -130,36 +189,14 @@ function MeetingsHome() {
           </div>
         </Card>
 
-        <Card className="p-5">
-          <div className="mb-3 flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-primary" />
-            <h3 className="text-sm font-semibold">Brief before you meet</h3>
-          </div>
-          {isConnected ? (
-            <p className="text-[13px] leading-relaxed text-muted-foreground">
-              Google Calendar is connected. Meeting briefs can use event titles, attendees, and
-              prior context so every note starts grounded.
-            </p>
-          ) : (
-            <>
-              <p className="text-[13px] leading-relaxed text-muted-foreground">
-                Connect Google Calendar to prep context before external meetings and name notes
-                automatically.
-              </p>
-              <Link
-                to="/app/settings"
-                className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12px] font-medium text-primary-foreground"
-              >
-                <PlugZap className="h-3.5 w-3.5" /> Connect calendar
-              </Link>
-            </>
-          )}
-          {quota && !quota.is_pro ? (
-            <div className="mt-5 rounded-lg border border-border bg-background p-3 text-[12px] text-muted-foreground">
-              {quota.used} / {quota.limit} free meetings used this month.
-            </div>
-          ) : null}
-        </Card>
+        <MeetingBriefsCard
+          connected={isConnected}
+          briefs={briefs}
+          loading={briefsQuery.isLoading}
+          syncing={syncing}
+          onSync={handleSync}
+          quota={quota}
+        />
       </section>
 
       <section className="mb-8 grid gap-4 md:grid-cols-3">
@@ -240,6 +277,229 @@ function MeetingsHome() {
         </aside>
       </section>
     </Shell>
+  );
+}
+
+function MeetingBriefsCard({
+  connected,
+  briefs,
+  loading,
+  syncing,
+  onSync,
+  quota,
+}: {
+  connected: boolean;
+  briefs: MeetingBrief[];
+  loading: boolean;
+  syncing: boolean;
+  onSync: () => void;
+  quota:
+    | {
+        is_pro: boolean;
+        used: number;
+        limit: number;
+      }
+    | undefined;
+}) {
+  const nextBrief = briefs[0];
+  return (
+    <Card className="p-5">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-primary" />
+          <h3 className="text-sm font-semibold">Brief before you meet</h3>
+        </div>
+        {connected ? (
+          <button
+            onClick={onSync}
+            disabled={syncing}
+            className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11.5px] text-muted-foreground hover:bg-muted disabled:opacity-50"
+          >
+            {syncing ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <RefreshCw className="h-3 w-3" />
+            )}
+            Sync
+          </button>
+        ) : null}
+      </div>
+
+      {!connected ? (
+        <>
+          <p className="text-[13px] leading-relaxed text-muted-foreground">
+            Connect Google Calendar to prep context before external meetings and name notes
+            automatically.
+          </p>
+          <Link
+            to="/app/settings"
+            className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12px] font-medium text-primary-foreground"
+          >
+            <PlugZap className="h-3.5 w-3.5" /> Connect calendar
+          </Link>
+        </>
+      ) : loading ? (
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="h-3 w-full" />
+          <Skeleton className="h-3 w-4/5" />
+        </div>
+      ) : nextBrief ? (
+        <div>
+          <div className="rounded-lg border border-border bg-background p-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="truncate text-[14px] font-semibold">{nextBrief.title}</div>
+                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-muted-foreground">
+                  {nextBrief.starts_at ? (
+                    <span className="inline-flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {new Date(nextBrief.starts_at).toLocaleString([], {
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  ) : null}
+                  {nextBrief.location ? (
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {nextBrief.location}
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+              <div className="flex shrink-0 gap-1">
+                {nextBrief.join_url ? (
+                  <a
+                    href={nextBrief.join_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] hover:bg-muted"
+                  >
+                    <Video className="h-3 w-3" /> Join
+                  </a>
+                ) : null}
+                {nextBrief.event_url ? (
+                  <a
+                    href={nextBrief.event_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center rounded-md border border-border p-1.5 hover:bg-muted"
+                    aria-label="Open calendar event"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                ) : null}
+              </div>
+            </div>
+
+            {nextBrief.participants.length > 0 ? (
+              <div className="mt-3 flex items-start gap-2 text-[12px] text-muted-foreground">
+                <Users className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                <span className="line-clamp-2">
+                  {nextBrief.participants.slice(0, 5).join(", ")}
+                </span>
+              </div>
+            ) : null}
+
+            {nextBrief.description ? (
+              <p className="mt-3 line-clamp-3 text-[12.5px] leading-relaxed text-muted-foreground">
+                {nextBrief.description}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="mt-4 space-y-3">
+            <BriefContextList
+              title="Previous context"
+              empty="No related notes found yet."
+              items={nextBrief.related_notes.map((note) => ({
+                key: note.id,
+                title: note.title,
+                body: note.summary || new Date(note.started_at).toLocaleDateString(),
+                to: { session: note.id },
+              }))}
+            />
+            <BriefContextList
+              title="Open follow-ups"
+              empty="No matching open actions."
+              items={nextBrief.related_actions.map((action) => ({
+                key: action.id,
+                title: action.summary,
+                body: action.due_at
+                  ? `Due ${new Date(action.due_at).toLocaleDateString()}`
+                  : "No due date",
+              }))}
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-lg border border-dashed border-border p-4 text-[13px] leading-relaxed text-muted-foreground">
+          No upcoming synced events yet. Run sync after connecting Google Calendar to pull in the
+          next two weeks.
+        </div>
+      )}
+
+      {quota && !quota.is_pro ? (
+        <div className="mt-5 rounded-lg border border-border bg-background p-3 text-[12px] text-muted-foreground">
+          {quota.used} / {quota.limit} free meetings used this month.
+        </div>
+      ) : null}
+    </Card>
+  );
+}
+
+function BriefContextList({
+  title,
+  empty,
+  items,
+}: {
+  title: string;
+  empty: string;
+  items: Array<{ key: string; title: string; body: string; to?: { session: string } }>;
+}) {
+  return (
+    <div>
+      <div className="mb-1.5 text-[10.5px] uppercase tracking-wider text-muted-foreground">
+        {title}
+      </div>
+      {items.length === 0 ? (
+        <div className="text-[12px] text-muted-foreground">{empty}</div>
+      ) : (
+        <div className="space-y-1.5">
+          {items.map((item) =>
+            item.to ? (
+              <Link
+                key={item.key}
+                to="/app/capture"
+                search={item.to}
+                className="block rounded-md border border-border bg-background px-2.5 py-2 hover:bg-muted"
+              >
+                <BriefContextText title={item.title} body={item.body} />
+              </Link>
+            ) : (
+              <div
+                key={item.key}
+                className="rounded-md border border-border bg-background px-2.5 py-2"
+              >
+                <BriefContextText title={item.title} body={item.body} />
+              </div>
+            ),
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BriefContextText({ title, body }: { title: string; body: string }) {
+  return (
+    <>
+      <div className="line-clamp-1 text-[12.5px] font-medium">{title}</div>
+      <div className="mt-0.5 line-clamp-2 text-[11.5px] text-muted-foreground">{body}</div>
+    </>
   );
 }
 
