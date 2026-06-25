@@ -1,6 +1,17 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
-import { Inbox, Clock, Sparkles, Settings, Command, Search, BookMarked, LogOut, ShieldCheck, Radio } from "lucide-react";
+import {
+  Inbox,
+  Clock,
+  Sparkles,
+  Settings,
+  Command,
+  Search,
+  BookMarked,
+  LogOut,
+  ShieldCheck,
+  Radio,
+} from "lucide-react";
 import { CommandPalette } from "./CommandPalette";
 import { NotificationBell } from "./NotificationBell";
 import { useQuery } from "@tanstack/react-query";
@@ -10,15 +21,23 @@ import { getMyAdminStatus } from "@/lib/admin/admin.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 const nav = [
-  { to: "/app", label: "Today", icon: Sparkles, exact: true },
-  { to: "/app/promises", label: "Promises", icon: Inbox },
-  { to: "/app/capture", label: "Live Capture", icon: Radio },
-  { to: "/app/memory", label: "Memory", icon: Clock },
-  { to: "/app/command", label: "Command Center", icon: BookMarked },
+  { to: "/app", label: "Meetings", icon: Sparkles, exact: true },
+  { to: "/app/capture", label: "New note", icon: Radio },
+  { to: "/app/memory", label: "Library", icon: Clock },
+  { to: "/app/promises", label: "Actions", icon: Inbox },
+  { to: "/app/command", label: "Ask", icon: BookMarked },
   { to: "/app/settings", label: "Settings", icon: Settings },
 ];
 
-export function Shell({ children, title, subtitle }: { children: ReactNode; title: string; subtitle?: string }) {
+export function Shell({
+  children,
+  title,
+  subtitle,
+}: {
+  children: ReactNode;
+  title: string;
+  subtitle?: string;
+}) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -72,7 +91,9 @@ export function Shell({ children, title, subtitle }: { children: ReactNode; titl
           >
             <Search className="h-3.5 w-3.5" />
             <span className="flex-1">Ask Nyvlo…</span>
-            <kbd className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">⌘J</kbd>
+            <kbd className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+              ⌘J
+            </kbd>
           </button>
 
           <nav className="flex flex-col gap-0.5">
@@ -130,7 +151,9 @@ export function Shell({ children, title, subtitle }: { children: ReactNode; titl
               ) : (
                 <>
                   <span className="h-1.5 w-1.5 rounded-full bg-warning" />
-                  <Link to="/app/settings" className="hover:underline">Not connected</Link>
+                  <Link to="/app/settings" className="hover:underline">
+                    Not connected
+                  </Link>
                 </>
               )}
             </div>
@@ -147,7 +170,9 @@ export function Shell({ children, title, subtitle }: { children: ReactNode; titl
           <header className="sticky top-0 z-10 border-b border-border/70 bg-background/80 px-6 py-5 backdrop-blur md:px-10 md:py-7">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h1 className="text-[22px] font-semibold tracking-tight text-foreground md:text-[26px]">{title}</h1>
+                <h1 className="text-[22px] font-semibold tracking-tight text-foreground md:text-[26px]">
+                  {title}
+                </h1>
                 {subtitle ? (
                   <p className="mt-0.5 text-[13.5px] text-muted-foreground">{subtitle}</p>
                 ) : null}
@@ -186,10 +211,13 @@ export function NyvloMark({
 }) {
   const px = size === "sm" ? 22 : size === "lg" ? 40 : size === "xl" ? 84 : 30;
   const wordSize =
-    size === "sm" ? "text-[15px]" :
-    size === "lg" ? "text-[22px]" :
-    size === "xl" ? "text-[44px]" :
-    "text-[18px]";
+    size === "sm"
+      ? "text-[15px]"
+      : size === "lg"
+        ? "text-[22px]"
+        : size === "xl"
+          ? "text-[44px]"
+          : "text-[18px]";
   return (
     <span className={["inline-flex items-center gap-2.5 shrink-0", className].join(" ")}>
       <svg
@@ -214,12 +242,8 @@ export function NyvloMark({
       </svg>
 
       {withWordmark && (
-        <span className={`font-display ${wordSize} text-foreground lowercase`}>
-          nyvlo
-        </span>
+        <span className={`font-display ${wordSize} text-foreground lowercase`}>nyvlo</span>
       )}
     </span>
   );
 }
-
-

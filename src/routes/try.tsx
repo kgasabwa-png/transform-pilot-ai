@@ -1,523 +1,540 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
-import { useMemo, useState } from "react";
-import {
-  ArrowRight,
-  Sparkles,
-  Inbox,
-  Clock,
-  BookMarked,
-  Check,
-  X,
-  ChevronDown,
-  Mail,
-  CalendarDays,
-  StickyNote,
-  PlayCircle,
-  PenLine,
-  Search,
-  ClipboardList,
-  Loader2,
-  Wand2,
-} from "lucide-react";
-import { NyvloMark } from "@/components/nyvlo/Shell";
-import { runPromiseAction } from "@/lib/agent/actions.functions";
-import { toast } from "sonner";
+import { ArrowRight, Bell, Calendar, Check, FileText, Inbox, Mail, Sparkles } from "lucide-react";
+import { seedMeetings } from "@/lib/nyvlo/companion-demo";
+import type { ActionType, CompanionMeeting } from "@/lib/nyvlo/companion.types";
+
+const FONT = "'Hanken Grotesk', sans-serif";
+const SERIF = "'Newsreader', serif";
+const GREEN = "#1c7a54";
+const CREAM = "#f1ede4";
+const SIDEBAR = "#efe9dd";
+const INK = "#23211c";
+const BORDER = "#e7e0d2";
 
 export const Route = createFileRoute("/try")({
   head: () => ({
     meta: [
-      { title: "Try Nyvlo · Live demo" },
-      { name: "description", content: "Explore a fully populated Nyvlo workspace — no signup required." },
-      { property: "og:title", content: "Try Nyvlo · Live demo" },
-      { property: "og:description", content: "Explore a fully populated Nyvlo workspace — no signup required." },
+      { title: "Try Nyvlo · Companion demo" },
+      {
+        name: "description",
+        content: "Preview Nyvlo, a post-meeting AI chief of staff for customer-success teams.",
+      },
     ],
   }),
   component: TryPage,
 });
 
-type DemoPromise = {
-  id: string;
-  summary: string;
-  owed_to: string | null;
-  channel: "email" | "meeting" | "note";
-  due_at: string; // ISO
-  confidence: number;
-  evidence_snippet: string;
-  draft_reply?: string;
-};
-
-// Use a STABLE epoch reference so SSR and client agree.
-// We compute relative bucket labels (Overdue / Today / Tomorrow / +Nd)
-// instead of locale weekdays — those caused hydration mismatch.
-const DEMO_EPOCH = Date.UTC(2026, 5, 20, 14, 0, 0); // June 20, 2026 14:00 UTC, fixed
-const inHours = (h: number) => new Date(DEMO_EPOCH + h * 3600_000).toISOString();
-
-const DEMO: DemoPromise[] = [
-  {
-    id: "1",
-    summary: "Send Q3 forecast to Priya",
-    owed_to: "Priya Shah",
-    channel: "email",
-    due_at: inHours(-3),
-    confidence: 0.94,
-    evidence_snippet: "I'll have the updated forecast over to you by Thursday EOD.",
-    draft_reply:
-      "Hi Priya — sending the Q3 forecast now. Two callouts: pipeline is up 14% QoQ, and the EU segment is the swing factor. Happy to walk through tomorrow.",
-  },
-  {
-    id: "2",
-    summary: "Reply to Marcus with revised SOW",
-    owed_to: "Marcus Lee",
-    channel: "email",
-    due_at: inHours(6),
-    confidence: 0.88,
-    evidence_snippet: "Let me revise the SOW and circle back later today.",
-    draft_reply:
-      "Hey Marcus — revised SOW attached. Tightened scope on Phase 2 and pulled in the milestone dates we discussed.",
-  },
-  {
-    id: "3",
-    summary: "Share Figma file with design team",
-    owed_to: "Design team",
-    channel: "meeting",
-    due_at: inHours(22),
-    confidence: 0.81,
-    evidence_snippet: "I'll drop the Figma link in the channel after this call.",
-  },
-  {
-    id: "4",
-    summary: "Intro Sara to the recruiter at Linear",
-    owed_to: "Sara Chen",
-    channel: "email",
-    due_at: inHours(48),
-    confidence: 0.76,
-    evidence_snippet: "Happy to make the intro — let me ping them this week.",
-  },
-  {
-    id: "5",
-    summary: "Send refund for order #4821",
-    owed_to: "support@acme.co",
-    channel: "email",
-    due_at: inHours(72),
-    confidence: 0.92,
-    evidence_snippet: "We'll process that refund within 3 business days.",
-  },
-];
-
-const MEMORY_ITEMS = [
-  { id: "m1", text: "Priya prefers Thursday updates by 4pm PT.", source: "Email · 12 days ago" },
-  { id: "m2", text: "Acme renewal lands in October — Marcus is lead.", source: "Meeting note · 1 mo ago" },
-  { id: "m3", text: "Sara is between roles, open to early-stage intros.", source: "Note · 2 weeks ago" },
-  { id: "m4", text: "Design team channel is #design-launches, not #design.", source: "Slack pin · 3 days ago" },
-  { id: "m5", text: "Internal SLA on refunds is 3 business days.", source: "Doc · 6 months ago" },
-];
-
-type ViewKey = "today" | "promises" | "memory" | "command";
-
 function TryPage() {
-  const [view, setView] = useState<ViewKey>("today");
-  const attention = useMemo(
-    () => DEMO.filter((p) => new Date(p.due_at).getTime() < DEMO_EPOCH + 86400_000),
-    [],
-  );
-  const stats = { open: DEMO.length, kept: 47, missed: 3, reliability: 0.94 };
-
+  const meetings = seedMeetings();
+  const selected = meetings[0];
+  const readyCount = meetings.filter((meeting) => meeting.status === "ready").length;
   return (
-    <div className="min-h-dvh bg-background">
-      {/* Demo banner */}
-      <div className="sticky top-0 z-30 border-b border-border bg-foreground text-background">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 py-2.5 text-[12.5px]">
-          <div className="flex items-center gap-2">
-            <PlayCircle className="h-4 w-4" />
-            <span className="font-medium">You're in the live demo.</span>
-            <span className="hidden text-background/70 sm:inline">Sample data — actions use real AI.</span>
+    <div style={styles.root}>
+      <style>{`
+        ::selection { background: #cfe6d8; }
+        @keyframes nyvloPulseDot { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(.82); } }
+      `}</style>
+      <aside style={styles.sidebar}>
+        <Logo />
+        <Link to="/auth" style={styles.newButton}>
+          Start with real meetings <ArrowRight size={15} />
+        </Link>
+        <nav style={styles.nav}>
+          <NavItem icon={<Inbox size={17} />} label="Today" active badge={readyCount} />
+          <NavItem icon={<Calendar size={17} />} label="Meetings" />
+          <NavItem icon={<Bell size={17} />} label="Reminders" />
+        </nav>
+        <div style={styles.sidebarFooter}>
+          <div style={styles.connectedPill}>
+            <span style={styles.greenDot} /> Demo workspace
           </div>
-          <Link
-            to="/auth"
-            className="inline-flex items-center gap-1 rounded-md bg-background px-2.5 py-1 text-[12px] font-medium text-foreground hover:opacity-90"
-          >
-            Get the real thing <ArrowRight className="h-3 w-3" />
-          </Link>
-        </div>
-      </div>
-
-      <div className="mx-auto flex max-w-[1400px]">
-        {/* Sidebar */}
-        <aside className="sticky top-[42px] hidden h-[calc(100dvh-42px)] w-[244px] shrink-0 flex-col border-r border-border/80 bg-secondary px-4 py-6 md:flex">
-          <Link to="/" className="mb-7 flex items-center gap-2 px-2">
-            <NyvloMark size="lg" />
-          </Link>
-          <nav className="flex flex-col gap-0.5">
-            <DemoNav icon={Sparkles} label="Today" active={view === "today"} onClick={() => setView("today")} />
-            <DemoNav icon={Inbox} label="Promises" active={view === "promises"} onClick={() => setView("promises")} />
-            <DemoNav icon={Clock} label="Memory" active={view === "memory"} onClick={() => setView("memory")} />
-            <DemoNav
-              icon={BookMarked}
-              label="Command Center"
-              active={view === "command"}
-              onClick={() => setView("command")}
-            />
-          </nav>
-          <div className="mt-auto rounded-lg border border-border bg-background/40 p-3 text-[12px] text-muted-foreground">
-            Try clicking <span className="font-medium text-foreground">Draft</span> on any promise — real AI runs.
-          </div>
-        </aside>
-
-        {/* Main */}
-        <main className="min-w-0 flex-1 px-5 py-8 md:px-10 md:py-12">
-          {view === "today" && <TodayView attention={attention} stats={stats} />}
-          {view === "promises" && <PromisesView />}
-          {view === "memory" && <MemoryView />}
-          {view === "command" && <CommandView />}
-
-          <div className="mt-12 rounded-xl border border-border bg-card p-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <div className="text-[15px] font-medium">Ready to try with your real inbox?</div>
-                <p className="mt-1 text-[13px] text-muted-foreground">
-                  Connect Google in 30 seconds. Read-only access. You can disconnect any time.
-                </p>
-              </div>
-              <Link
-                to="/auth"
-                className="inline-flex items-center gap-1 rounded-md bg-foreground px-3.5 py-2 text-[13px] font-medium text-background hover:opacity-90"
-              >
-                Get started <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-          </div>
-        </main>
-      </div>
-    </div>
-  );
-}
-
-function TodayView({ attention, stats }: { attention: DemoPromise[]; stats: { open: number; kept: number; missed: number; reliability: number } }) {
-  const upcoming = DEMO.slice(0, 5);
-  return (
-    <>
-      <header className="mb-8">
-        <h1 className="text-[28px] font-semibold tracking-tight">Hi Alex.</h1>
-        <p className="mt-1 text-[14px] text-muted-foreground">Here's what Nyvlo caught for you.</p>
-      </header>
-      <section className="mb-8 grid gap-4 md:grid-cols-3">
-        <StatTile label="Needs attention" value={String(attention.length)} hint="overdue + today" />
-        <StatTile label="Open promises" value={String(stats.open)} hint="across the inbox" />
-        <StatTile
-          label="Reliability"
-          value={`${Math.round(stats.reliability * 100)}%`}
-          hint={`${stats.kept} kept · ${stats.missed} missed`}
-        />
-      </section>
-      <section className="mb-10">
-        <SectionHeader title="Things needing attention" />
-        <div className="flex flex-col gap-2">
-          {attention.map((p) => <DemoRow key={p.id} item={p} />)}
-        </div>
-      </section>
-      <section className="mb-4">
-        <SectionHeader title="Coming up" />
-        <div className="flex flex-col gap-2">
-          {upcoming.map((p) => <DemoRow key={p.id} item={p} />)}
-        </div>
-      </section>
-    </>
-  );
-}
-
-function PromisesView() {
-  return (
-    <>
-      <header className="mb-8">
-        <h1 className="text-[28px] font-semibold tracking-tight">Promises</h1>
-        <p className="mt-1 text-[14px] text-muted-foreground">
-          Every commitment Nyvlo caught from your inbox, calls, and notes.
-        </p>
-      </header>
-      <SectionHeader title={`${DEMO.length} open`} />
-      <div className="flex flex-col gap-2">
-        {DEMO.map((p) => <DemoRow key={p.id} item={p} />)}
-      </div>
-    </>
-  );
-}
-
-function MemoryView() {
-  return (
-    <>
-      <header className="mb-8">
-        <h1 className="text-[28px] font-semibold tracking-tight">Memory</h1>
-        <p className="mt-1 text-[14px] text-muted-foreground">
-          Facts and preferences Nyvlo learned about your people and projects.
-        </p>
-      </header>
-      <SectionHeader title={`${MEMORY_ITEMS.length} items`} />
-      <div className="flex flex-col gap-2">
-        {MEMORY_ITEMS.map((m) => (
-          <div key={m.id} className="rounded-lg border border-border bg-card p-4">
-            <p className="text-[14px] leading-relaxed">{m.text}</p>
-            <p className="mt-2 text-[11.5px] uppercase tracking-wider text-muted-foreground">{m.source}</p>
-          </div>
-        ))}
-      </div>
-    </>
-  );
-}
-
-function CommandView() {
-  return (
-    <>
-      <header className="mb-8">
-        <h1 className="text-[28px] font-semibold tracking-tight">Command Center</h1>
-        <p className="mt-1 text-[14px] text-muted-foreground">
-          Your chief-of-staff surface. Ask Nyvlo to draft, research, or act.
-        </p>
-      </header>
-      <Link
-        to="/agent"
-        className="block rounded-xl border border-border bg-card p-8 text-center transition-colors hover:bg-muted/30"
-      >
-        <Wand2 className="mx-auto h-8 w-8 text-primary" />
-        <h3 className="mt-3 text-[16px] font-medium">Open Chief of Staff chat</h3>
-        <p className="mx-auto mt-2 max-w-md text-[13px] text-muted-foreground">
-          A persistent agent that sees your promises and memory — drafts replies, runs research,
-          preps meetings. Try: <span className="italic">"What's most overdue?"</span>
-        </p>
-        <span className="mt-4 inline-flex items-center gap-1 text-[12px] font-medium text-primary">
-          Launch chat <ArrowRight className="h-3 w-3" />
-        </span>
-      </Link>
-    </>
-  );
-}
-
-function DemoNav({
-  icon: Icon,
-  label,
-  active,
-  onClick,
-}: {
-  icon: any;
-  label: string;
-  active?: boolean;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[13.5px] transition-colors ${
-        active
-          ? "bg-background text-foreground"
-          : "text-muted-foreground hover:bg-background/50 hover:text-foreground"
-      }`}
-    >
-      <Icon className="h-4 w-4" />
-      {label}
-    </button>
-  );
-}
-
-function StatTile({ label, value, hint }: { label: string; value: string; hint: string }) {
-  return (
-    <div className="rounded-lg border border-border bg-card p-5">
-      <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className="mt-2 text-[36px] font-semibold leading-none tracking-tight">{value}</div>
-      <div className="mt-2 text-[12px] text-muted-foreground">{hint}</div>
-    </div>
-  );
-}
-
-function SectionHeader({ title }: { title: string }) {
-  return (
-    <div className="mb-3 flex items-baseline justify-between">
-      <h2 className="text-[13px] font-medium uppercase tracking-[0.14em] text-muted-foreground">{title}</h2>
-    </div>
-  );
-}
-
-// Deterministic relative label — no locale, no client-time drift.
-function relativeDueLabel(dueIso: string): string {
-  const diff = new Date(dueIso).getTime() - DEMO_EPOCH;
-  if (diff < -86400_000) return `Overdue · ${Math.floor(-diff / 86400_000)}d`;
-  if (diff < 0) return "Overdue";
-  if (diff < 86400_000) return "Today";
-  if (diff < 2 * 86400_000) return "Tomorrow";
-  return `In ${Math.floor(diff / 86400_000)}d`;
-}
-
-function DemoRow({ item }: { item: DemoPromise }) {
-  const [open, setOpen] = useState(false);
-  const [status, setStatus] = useState<"open" | "kept" | "dismissed">("open");
-  const [actionResult, setActionResult] = useState<{ action: string; text: string } | null>(null);
-  const [busy, setBusy] = useState<null | "draft_reply" | "prep_brief" | "research_person">(null);
-  const runAction = useServerFn(runPromiseAction);
-
-  const SrcIcon = item.channel === "email" ? Mail : item.channel === "meeting" ? CalendarDays : StickyNote;
-  const diff = new Date(item.due_at).getTime() - DEMO_EPOCH;
-  const tone =
-    diff < 0
-      ? { dot: "bg-rose-500", label: "text-rose-600" }
-      : diff < 86400_000
-      ? { dot: "bg-amber-500", label: "text-amber-600" }
-      : { dot: "bg-primary", label: "text-primary" };
-  const dueLabel = relativeDueLabel(item.due_at);
-
-  async function handleAction(action: "draft_reply" | "prep_brief" | "research_person") {
-    setBusy(action);
-    setOpen(true);
-    try {
-      const result = await runAction({
-        data: {
-          action,
-          promise: {
-            id: item.id,
-            summary: item.summary,
-            owed_to: item.owed_to,
-            channel: item.channel,
-            due_at: item.due_at,
-            evidence_snippet: item.evidence_snippet,
-          },
-        },
-      });
-      setActionResult(result);
-    } catch (err) {
-      console.error(err);
-      toast.error("Agent failed", { description: err instanceof Error ? err.message : "Please try again." });
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  if (status !== "open") {
-    return (
-      <div className="flex items-center justify-between rounded-lg border border-dashed border-border px-4 py-3 text-[12.5px] text-muted-foreground">
-        <span>{status === "kept" ? "Marked done" : "Dismissed"} — {item.summary}</span>
-        <button onClick={() => setStatus("open")} className="text-foreground/70 hover:text-foreground">
-          Undo
-        </button>
-      </div>
-    );
-  }
-
-  const actionLabels: Record<string, string> = {
-    draft_reply: "Draft reply",
-    prep_brief: "Prep brief",
-    research_person: "Research",
-  };
-
-  return (
-    <div className="rounded-lg border border-border bg-card p-4 transition-shadow hover:shadow-sm">
-      <div className="flex items-start gap-3">
-        <div className={`mt-1.5 h-2 w-2 rounded-full ${tone.dot}`} />
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-baseline gap-x-2">
-            <h3 className="text-[15px] font-medium tracking-tight">{item.summary}</h3>
-            {item.owed_to && <span className="text-[12.5px] text-muted-foreground">· {item.owed_to}</span>}
-          </div>
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px]">
-            <span className={`font-medium ${tone.label}`}>{dueLabel}</span>
-            <span className="text-muted-foreground/70">·</span>
-            <span className="inline-flex items-center gap-1 text-muted-foreground">
-              <SrcIcon className="h-3 w-3" /> {item.channel}
-            </span>
-            <span className="text-muted-foreground/70">·</span>
-            <span className="font-mono text-[10.5px] text-muted-foreground">
-              {Math.round(item.confidence * 100)}% confidence
-            </span>
-          </div>
-          <p className="mt-2 border-l-2 border-border pl-2 text-[12.5px] italic leading-snug text-muted-foreground line-clamp-2">
-            "{item.evidence_snippet}"
+          <p style={styles.sidebarNote}>
+            This is the companion product: calls become grounded actions you cosign.
           </p>
         </div>
-        <div className="flex items-center gap-1">
-          <button
-            title="Mark done"
-            onClick={() => setStatus("kept")}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-          >
-            <Check className="h-3.5 w-3.5" />
-          </button>
-          <button
-            title="Dismiss"
-            onClick={() => setStatus("dismissed")}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
-          <button
-            onClick={() => setOpen((v) => !v)}
-            className="ml-1 inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11.5px] hover:bg-muted"
-          >
-            Details <ChevronDown className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`} />
-          </button>
-        </div>
-      </div>
+      </aside>
 
-      {/* Agent action bar */}
-      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
-        <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground">Nyvlo can</span>
-        <ActionButton
-          icon={PenLine}
-          label="Draft reply"
-          loading={busy === "draft_reply"}
-          disabled={busy !== null}
-          onClick={() => handleAction("draft_reply")}
-        />
-        <ActionButton
-          icon={ClipboardList}
-          label="Prep brief"
-          loading={busy === "prep_brief"}
-          disabled={busy !== null}
-          onClick={() => handleAction("prep_brief")}
-        />
-        <ActionButton
-          icon={Search}
-          label="Research"
-          loading={busy === "research_person"}
-          disabled={busy !== null}
-          onClick={() => handleAction("research_person")}
-        />
-      </div>
+      <main style={styles.main}>
+        <div style={styles.wrap}>
+          <header style={styles.header}>
+            <div style={styles.eyebrow}>Thursday, June 25</div>
+            <h1 style={styles.h1}>Today</h1>
+            <p style={styles.subtitle}>
+              {meetings.length} meetings · {readyCount} ready to cosign
+            </p>
+          </header>
 
-      {open && (actionResult || item.draft_reply) && (
-        <div className="mt-4 border-t border-border pt-4">
-          <div className="mb-1.5 flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">
-            <Sparkles className="h-3 w-3 text-primary" />
-            {actionResult ? actionLabels[actionResult.action] ?? "Agent result" : "Draft reply"}
-          </div>
-          <div className="whitespace-pre-wrap rounded-md border border-border bg-secondary/40 p-3 text-[13px] leading-relaxed">
-            {actionResult?.text ?? item.draft_reply}
+          <section style={styles.filters}>
+            <span style={styles.filterActive}>
+              Ready to cosign <b>{readyCount}</b>
+            </span>
+            <span style={styles.filter}>
+              Snoozed <b>0</b>
+            </span>
+            <span style={styles.filter}>
+              Done <b>0</b>
+            </span>
+          </section>
+
+          <div style={styles.grid}>
+            <section style={styles.stack}>
+              {meetings.map((meeting) => (
+                <MeetingCard key={meeting.id} meeting={meeting} />
+              ))}
+              <ReviewPreview meeting={selected} />
+            </section>
+            <aside style={styles.rail}>
+              <section style={styles.darkRail}>
+                <div style={styles.darkLabel}>Up next</div>
+                <h3>Customer onboarding review</h3>
+                <p>Today · 2:30 PM · with Devon Lee</p>
+              </section>
+              <section style={styles.card}>
+                <div style={styles.cardTitle}>This morning</div>
+                <Meta label="Calls captured" value={String(meetings.length)} />
+                <Meta label="Actions ready" value="4" green />
+                <Meta label="Sent & saved" value="0" />
+              </section>
+              <section style={styles.card}>
+                <div style={styles.cardTitle}>Trust rules</div>
+                <TrustLine>Every action shows transcript evidence.</TrustLine>
+                <TrustLine>Emails send only after a cosign.</TrustLine>
+                <TrustLine>No fake sent states.</TrustLine>
+              </section>
+            </aside>
           </div>
         </div>
-      )}
+      </main>
     </div>
   );
 }
 
-function ActionButton({
-  icon: Icon,
-  label,
-  onClick,
-  loading,
-  disabled,
-}: {
-  icon: any;
-  label: string;
-  onClick: () => void;
-  loading?: boolean;
-  disabled?: boolean;
-}) {
+function MeetingCard({ meeting }: { meeting: CompanionMeeting }) {
+  const pending = meeting.actions.filter((action) =>
+    ["suggested", "edited"].includes(action.status),
+  ).length;
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 text-[11.5px] font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
-    >
-      {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Icon className="h-3 w-3" />}
-      {label}
-    </button>
+    <article style={styles.card}>
+      <div style={styles.meetingRow}>
+        <div style={{ flex: 1 }}>
+          <div style={styles.accountLine}>
+            {meeting.account}
+            {meeting.urgency === "high" ? (
+              <span style={styles.urgency}>{meeting.urgencyLabel}</span>
+            ) : null}
+          </div>
+          <div style={styles.meetingTitle}>{meeting.title}</div>
+          <div style={styles.meetingMeta}>
+            {meeting.ended} · {pending} actions ready
+          </div>
+        </div>
+        <button style={styles.primaryButton}>Review</button>
+      </div>
+    </article>
   );
 }
+
+function ReviewPreview({ meeting }: { meeting: CompanionMeeting }) {
+  return (
+    <section style={styles.review}>
+      <div style={styles.reviewTop}>
+        <div>
+          <div style={styles.eyebrow}>Review</div>
+          <h2 style={styles.h2}>{meeting.account}</h2>
+          <p style={styles.serifSub}>
+            {meeting.title} · {meeting.ended}
+          </p>
+        </div>
+        <button style={styles.primaryButton}>
+          <Check size={14} /> Cosign all · 3
+        </button>
+      </div>
+      <div style={styles.summary}>{meeting.summary}</div>
+      <div style={styles.actionStack}>
+        {meeting.actions.map((action) => (
+          <ActionPreview key={action.id} action={action} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ActionPreview({ action }: { action: CompanionMeeting["actions"][number] }) {
+  return (
+    <article style={styles.actionCard}>
+      <div style={styles.actionTop}>
+        <span style={styles.iconTile}>{actionIcon(action.type)}</span>
+        <div style={{ flex: 1 }}>
+          <div style={styles.actionLabel}>{typeLabel(action.type)}</div>
+          <div style={styles.actionSub}>
+            {action.type === "email" ? `To ${action.to}` : action.subLine}
+          </div>
+        </div>
+        <span style={styles.pill}>Suggested</span>
+      </div>
+      <div style={styles.bodyPanel}>{action.body}</div>
+      <blockquote style={styles.quote}>
+        <b>
+          {action.evidence[0]?.speaker} · {action.evidence[0]?.time}
+        </b>
+        <p>"{action.evidence[0]?.quote}"</p>
+      </blockquote>
+      <div style={styles.actionButtons}>
+        {action.type === "email" ? (
+          <button style={styles.primaryButton}>Cosign & send</button>
+        ) : action.type === "crm_note" ? (
+          <button style={styles.darkButton}>Copy note</button>
+        ) : (
+          <button style={styles.primaryButton}>Cosign</button>
+        )}
+        <button style={styles.secondaryButton}>Snooze</button>
+      </div>
+    </article>
+  );
+}
+
+function Logo() {
+  return (
+    <div style={styles.logoRow}>
+      <div style={styles.logoMark}>
+        <Sparkles size={17} />
+      </div>
+      <div style={styles.logoText}>
+        Nyvlo<span>ai</span>
+      </div>
+    </div>
+  );
+}
+
+function NavItem({
+  icon,
+  label,
+  active,
+  badge,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  active?: boolean;
+  badge?: number;
+}) {
+  return (
+    <div style={active ? styles.navActive : styles.navItem}>
+      {icon}
+      <span>{label}</span>
+      {badge ? <b style={styles.navBadge}>{badge}</b> : null}
+    </div>
+  );
+}
+
+function Meta({ label, value, green }: { label: string; value: string; green?: boolean }) {
+  return (
+    <div style={styles.metaRow}>
+      <span>{label}</span>
+      <b style={green ? { color: GREEN } : undefined}>{value}</b>
+    </div>
+  );
+}
+
+function TrustLine({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={styles.trustLine}>
+      <Check size={13} color={GREEN} /> {children}
+    </div>
+  );
+}
+
+function actionIcon(type: ActionType) {
+  if (type === "email") return <Mail size={16} />;
+  if (type === "reminder") return <Bell size={16} />;
+  return <FileText size={16} />;
+}
+
+function typeLabel(type: ActionType) {
+  if (type === "email") return "Follow-up email";
+  if (type === "reminder") return "Reminder";
+  return "CRM / account note";
+}
+
+const styles: Record<string, React.CSSProperties> = {
+  root: {
+    display: "flex",
+    minHeight: "100vh",
+    background: CREAM,
+    color: INK,
+    fontFamily: FONT,
+    WebkitFontSmoothing: "antialiased",
+  },
+  sidebar: {
+    width: 250,
+    minHeight: "100vh",
+    background: SIDEBAR,
+    borderRight: "1px solid #e4ddcf",
+    padding: "18px 14px 14px",
+    display: "flex",
+    flexDirection: "column",
+    boxSizing: "border-box",
+  },
+  main: { flex: 1, overflow: "auto" },
+  wrap: { maxWidth: 1080, margin: "0 auto", padding: "34px 40px 90px" },
+  logoRow: { display: "flex", alignItems: "center", gap: 10, margin: "2px 4px 22px" },
+  logoMark: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    background: GREEN,
+    color: "#fff",
+    display: "grid",
+    placeItems: "center",
+    boxShadow: "0 2px 8px rgba(28,122,84,.3)",
+  },
+  logoText: { fontSize: 18, fontWeight: 800, letterSpacing: "-.02em" },
+  newButton: {
+    border: "none",
+    background: GREEN,
+    color: "#fff",
+    borderRadius: 9,
+    padding: "10px 12px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    fontWeight: 800,
+    textDecoration: "none",
+    marginBottom: 14,
+  },
+  nav: { display: "grid", gap: 2 },
+  navItem: {
+    color: "#6b665b",
+    borderRadius: 9,
+    padding: "9px 10px",
+    display: "flex",
+    alignItems: "center",
+    gap: 9,
+    fontWeight: 700,
+  },
+  navActive: {
+    background: "#fff",
+    color: INK,
+    borderRadius: 9,
+    padding: "9px 10px",
+    display: "flex",
+    alignItems: "center",
+    gap: 9,
+    fontWeight: 800,
+    boxShadow: "0 1px 2px rgba(60,50,30,.06)",
+  },
+  navBadge: {
+    marginLeft: "auto",
+    background: "#e3efe8",
+    color: GREEN,
+    borderRadius: 20,
+    padding: "2px 7px",
+    fontSize: 11,
+  },
+  sidebarFooter: { marginTop: "auto", display: "grid", gap: 12 },
+  connectedPill: {
+    display: "flex",
+    alignItems: "center",
+    gap: 7,
+    background: "#fff",
+    border: "1px solid #e7e0d2",
+    borderRadius: 20,
+    padding: "7px 10px",
+    fontSize: 12,
+    color: "#6b665b",
+    fontWeight: 700,
+  },
+  greenDot: {
+    width: 7,
+    height: 7,
+    borderRadius: "50%",
+    background: GREEN,
+    animation: "nyvloPulseDot 1.8s infinite",
+  },
+  sidebarNote: { color: "#7a7567", fontSize: 12.5, lineHeight: 1.45, padding: 8 },
+  header: { marginBottom: 22 },
+  eyebrow: {
+    fontSize: 12,
+    fontWeight: 800,
+    color: "#a39c8b",
+    letterSpacing: ".08em",
+    textTransform: "uppercase",
+  },
+  h1: {
+    margin: "3px 0 0",
+    fontSize: 30,
+    lineHeight: 1.05,
+    fontWeight: 800,
+    letterSpacing: "-.025em",
+  },
+  h2: {
+    margin: "3px 0 0",
+    fontSize: 25,
+    lineHeight: 1.1,
+    fontWeight: 800,
+    letterSpacing: "-.025em",
+  },
+  subtitle: { margin: "6px 0 0", color: "#7a7567", fontSize: 14.5 },
+  filters: { display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 },
+  filter: {
+    border: "1px solid #e2dbcd",
+    background: "#fff",
+    color: "#5a5447",
+    borderRadius: 20,
+    padding: "8px 12px",
+    fontWeight: 800,
+  },
+  filterActive: {
+    border: "1px solid #23211c",
+    background: INK,
+    color: "#f7f3ea",
+    borderRadius: 20,
+    padding: "8px 12px",
+    fontWeight: 800,
+  },
+  grid: { display: "grid", gridTemplateColumns: "1fr 296px", gap: 28 },
+  stack: { display: "grid", gap: 12 },
+  rail: { display: "grid", gap: 14, alignContent: "start" },
+  card: {
+    background: "#fff",
+    border: `1px solid ${BORDER}`,
+    borderRadius: 14,
+    padding: "17px 18px",
+    boxShadow: "0 1px 2px rgba(60,50,30,.04)",
+  },
+  meetingRow: { display: "flex", alignItems: "center", gap: 14 },
+  accountLine: { fontWeight: 800, fontSize: 15.5 },
+  urgency: {
+    color: "#b0492f",
+    background: "#f6e6df",
+    borderRadius: 20,
+    padding: "2px 8px",
+    fontSize: 11.5,
+    marginLeft: 8,
+  },
+  meetingTitle: { marginTop: 3, fontFamily: SERIF, color: "#4a4539", fontSize: 16 },
+  meetingMeta: { marginTop: 5, color: "#8a8475", fontSize: 12.5 },
+  primaryButton: {
+    border: "none",
+    background: GREEN,
+    color: "#fff",
+    borderRadius: 9,
+    padding: "10px 14px",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 7,
+    fontWeight: 800,
+  },
+  secondaryButton: {
+    border: "1px solid #e2dbcd",
+    background: "#fff",
+    color: "#3a3833",
+    borderRadius: 9,
+    padding: "9px 13px",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 7,
+    fontWeight: 800,
+  },
+  darkButton: {
+    border: "none",
+    background: INK,
+    color: "#fff",
+    borderRadius: 9,
+    padding: "10px 14px",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 7,
+    fontWeight: 800,
+  },
+  darkRail: { background: INK, color: "#f1ede4", borderRadius: 14, padding: 18 },
+  darkLabel: {
+    color: "#b3ac9b",
+    fontSize: 12,
+    fontWeight: 800,
+    textTransform: "uppercase",
+    letterSpacing: ".08em",
+  },
+  cardTitle: {
+    fontSize: 12,
+    fontWeight: 800,
+    textTransform: "uppercase",
+    letterSpacing: ".12em",
+    color: "#a39c8b",
+    marginBottom: 12,
+  },
+  metaRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 12,
+    color: "#7a7567",
+    fontSize: 13,
+    marginTop: 10,
+  },
+  trustLine: {
+    display: "flex",
+    alignItems: "center",
+    gap: 7,
+    color: "#6b665b",
+    fontSize: 13,
+    marginTop: 9,
+  },
+  review: { marginTop: 18, display: "grid", gap: 14 },
+  reviewTop: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 },
+  serifSub: { color: "#7a7567", fontFamily: SERIF, fontSize: 16, margin: "5px 0 0" },
+  summary: {
+    background: "#faf6ed",
+    border: "1px solid #ece4d4",
+    borderRadius: 14,
+    padding: "18px 20px",
+    fontFamily: SERIF,
+    fontSize: 16.5,
+    lineHeight: 1.6,
+    color: "#4a4539",
+  },
+  actionStack: { display: "grid", gap: 12 },
+  actionCard: {
+    background: "#fff",
+    border: `1px solid ${BORDER}`,
+    borderRadius: 14,
+    padding: "17px 18px",
+    boxShadow: "0 1px 2px rgba(60,50,30,.04)",
+  },
+  actionTop: { display: "flex", gap: 12, alignItems: "center", marginBottom: 12 },
+  iconTile: {
+    width: 32,
+    height: 32,
+    borderRadius: 9,
+    background: "#f0ebe0",
+    color: "#6b665b",
+    display: "grid",
+    placeItems: "center",
+    flexShrink: 0,
+  },
+  actionLabel: { fontWeight: 800, fontSize: 14.5 },
+  actionSub: { color: "#8a8475", fontSize: 12.5 },
+  pill: {
+    fontSize: 12,
+    fontWeight: 800,
+    color: GREEN,
+    background: "#e3efe8",
+    padding: "3px 10px",
+    borderRadius: 20,
+    whiteSpace: "nowrap",
+  },
+  bodyPanel: {
+    background: "#faf7f0",
+    border: "1px solid #efe8da",
+    borderRadius: 12,
+    padding: 14,
+    fontFamily: SERIF,
+    whiteSpace: "pre-wrap",
+    color: "#3c382f",
+    lineHeight: 1.65,
+    maxHeight: 140,
+    overflow: "hidden",
+  },
+  quote: { borderLeft: "2px solid #d8cfbd", margin: "12px 0 0", paddingLeft: 10, color: "#6b665b" },
+  actionButtons: { display: "flex", gap: 8, alignItems: "center", marginTop: 14, flexWrap: "wrap" },
+};

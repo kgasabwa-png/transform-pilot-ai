@@ -1,18 +1,20 @@
 // NyvloCapture.swift — ScreenCaptureKit-based sidecar for the Nyvlo desktop app.
-// Captures system audio + screen and POSTs chunks to the Nyvlo ingestion API.
+// Captures system audio + mic + screen and POSTs chunks to the Nyvlo ingestion API.
 //
 // macOS 13+ (ScreenCaptureKit), Swift 5.9+.
 // Compile:  swift build -c release
-// Run:      ./NyvloCapture --token <SUPABASE_ACCESS_TOKEN> --api https://transform-pilot-ai.lovable.app --label "Standup"
+// Run:      ./NyvloCapture --token <SUPABASE_ACCESS_TOKEN> --api https://transform-pilot-ai.vercel.app --label "Standup"
 //
 // Communicates with the Electron parent via stdout (line-delimited JSON):
 //   {"type":"started","sessionId":"..."}
+//   {"type":"capturing","mic":true,"system":true}
+//   {"type":"transcript","sequence":N,"text":"..."}
 //   {"type":"chunk","kind":"audio"|"screen","sequence":N}
-//   {"type":"ended"}
+//   {"type":"ended","meeting_id":"...","action_count":N}
 //   {"type":"error","message":"..."}
 //
 // Listens on stdin for commands:
-//   {"action":"stop"}
+//   {"action":"stop","notes":"..."}
 
 import Foundation
 import ScreenCaptureKit
@@ -114,16 +116,23 @@ actor Recorder {
         config.height = 800
         config.minimumFrameInterval = CMTime(value: 1, timescale: 1) // 1 fps to server (we sub-sample frames)
         config.queueDepth = 6
+        if #available(macOS 15.0, *) {
+            config.captureMicrophone = true
+        }
 
         let stream = SCStream(filter: filter, configuration: config, delegate: nil)
         let output = StreamOutput(parent: self)
         try stream.addStreamOutput(output, type: .audio, sampleHandlerQueue: .global(qos: .userInitiated))
+        if #available(macOS 15.0, *) {
+            try stream.addStreamOutput(output, type: .microphone, sampleHandlerQueue: .global(qos: .userInitiated))
+        }
         if !audioOnly {
             try stream.addStreamOutput(output, type: .screen, sampleHandlerQueue: .global(qos: .userInitiated))
         }
         try await stream.startCapture()
         self.stream = stream
         self.output = output
+        log("capturing", ["mic": ProcessInfo.processInfo.isOperatingSystemAtLeast(OperatingSystemVersion(majorVersion: 15, minorVersion: 0, patchVersion: 0)), "system": true])
 
         // 3. Listen for stop from stdin
         Task.detached { await self.readStdin() }
@@ -132,17 +141,23 @@ actor Recorder {
     func readStdin() async {
         let h = FileHandle.standardInput
         while let line = try? h.readLine() {
-            if line.contains("\"stop\"") { await self.stop(); break }
+            if line.contains("\"stop\"") {
+                let notes = parseStopNotes(line)
+                await self.stop(notes: notes)
+                break
+            }
         }
     }
 
-    func stop() async {
+    func stop(notes: String) async {
         guard let stream = stream else { return }
         try? await stream.stopCapture()
         if let sid = sessionId {
-            _ = try? await postJSON(path: "/api/public/ingest/session-end", body: ["sessionId": sid])
+            let response = try? await postJSON(path: "/api/public/ingest/session-end", body: ["sessionId": sid, "notes": notes])
+            log("ended", response ?? [:])
+        } else {
+            log("ended", [:])
         }
-        log("ended", [:])
         stopSignal.continuation.finish()
     }
 
@@ -164,10 +179,13 @@ actor Recorder {
             "durationMs": "\(durationMs)",
         ]
         do {
-            _ = try await postMultipart(path: "/api/public/ingest/audio-chunk",
-                                        fields: fields,
-                                        fileField: "file", fileName: "chunk-\(seq).wav",
-                                        fileData: wavData, mime: "audio/wav")
+            let response = try await postMultipart(path: "/api/public/ingest/audio-chunk",
+                                                   fields: fields,
+                                                   fileField: "file", fileName: "chunk-\(seq).wav",
+                                                   fileData: wavData, mime: "audio/wav")
+            if let text = response["transcript"] as? String, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                log("transcript", ["sequence": seq, "text": text])
+            }
             log("chunk", ["kind": "audio", "sequence": seq])
         } catch {
             log("error", ["message": "audio upload failed: \(error)"])
@@ -245,8 +263,9 @@ actor Recorder {
 @available(macOS 13.0, *)
 class StreamOutput: NSObject, SCStreamOutput {
     weak var parent: Recorder?
-    var audioBuffer = Data()
-    var audioBufferStart = Date()
+    var systemBuffer = Data()
+    var micBuffer = Data()
+    var bufferStart = Date()
     var lastScreenAt = Date.distantPast
     let chunkSeconds: TimeInterval = 6.0
     let screenIntervalSeconds: TimeInterval = 10.0
@@ -254,32 +273,40 @@ class StreamOutput: NSObject, SCStreamOutput {
     init(parent: Recorder) { self.parent = parent }
 
     func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of type: SCStreamOutputType) {
+        if #available(macOS 15.0, *), type == .microphone {
+            handleAudio(sampleBuffer, channel: "mic")
+            return
+        }
         switch type {
         case .audio:
-            handleAudio(sampleBuffer)
+            handleAudio(sampleBuffer, channel: "system")
         case .screen:
             handleScreen(sampleBuffer)
         @unknown default: break
         }
     }
 
-    func handleAudio(_ buf: CMSampleBuffer) {
+    func handleAudio(_ buf: CMSampleBuffer, channel: String) {
         guard CMSampleBufferDataIsReady(buf) else { return }
-        // Pull PCM into Data
         guard let blockBuffer = CMSampleBufferGetDataBuffer(buf) else { return }
         var length = 0
         var dataPointer: UnsafeMutablePointer<Int8>?
         CMBlockBufferGetDataPointer(blockBuffer, atOffset: 0, lengthAtOffsetOut: nil,
                                     totalLengthOut: &length, dataPointerOut: &dataPointer)
         if let p = dataPointer, length > 0 {
-            audioBuffer.append(Data(bytes: p, count: length))
+            if channel == "mic" {
+                micBuffer.append(Data(bytes: p, count: length))
+            } else {
+                systemBuffer.append(Data(bytes: p, count: length))
+            }
         }
-        if Date().timeIntervalSince(audioBufferStart) >= chunkSeconds {
-            let pcm = audioBuffer
-            let started = audioBufferStart
-            audioBuffer.removeAll(keepingCapacity: true)
-            audioBufferStart = Date()
-            // wrap as WAV (16kHz mono 16-bit)
+        // System audio drives flush cadence because it is always present when capture succeeds.
+        if channel == "system" && Date().timeIntervalSince(bufferStart) >= chunkSeconds {
+            let pcm = mixedChunk(system: systemBuffer, mic: micBuffer)
+            let started = bufferStart
+            systemBuffer.removeAll(keepingCapacity: true)
+            micBuffer.removeAll(keepingCapacity: true)
+            bufferStart = Date()
             let wav = makeWavFromPcm16(pcm: pcm, sampleRate: 16_000, channels: 1)
             let durationMs = Int(Date().timeIntervalSince(started) * 1000)
             Task { [weak self] in await self?.parent?.uploadAudio(wavData: wav, durationMs: durationMs) }
@@ -299,6 +326,39 @@ class StreamOutput: NSObject, SCStreamOutput {
         let app = NSWorkspace.shared.frontmostApplication?.localizedName
         Task { [weak self] in await self?.parent?.uploadScreen(jpegData: jpeg, app: app, window: nil) }
     }
+}
+
+func mixedChunk(system: Data, mic: Data) -> Data {
+    if mic.isEmpty { return system }
+    if system.isEmpty { return mic }
+    let count = min(system.count, mic.count) / 2
+    var out = Data(capacity: max(system.count, mic.count))
+    system.withUnsafeBytes { sysRaw in
+        mic.withUnsafeBytes { micRaw in
+            let sys = sysRaw.bindMemory(to: Int16.self)
+            let micSamples = micRaw.bindMemory(to: Int16.self)
+            for idx in 0..<count {
+                let sum = Int(sys[idx]) + Int(micSamples[idx])
+                let clamped = Int16(max(Int(Int16.min), min(Int(Int16.max), sum)))
+                out.append(uint16LE(UInt16(bitPattern: clamped)))
+            }
+        }
+    }
+    if system.count > count * 2 {
+        out.append(system.subdata(in: (count * 2)..<system.count))
+    } else if mic.count > count * 2 {
+        out.append(mic.subdata(in: (count * 2)..<mic.count))
+    }
+    return out
+}
+
+func parseStopNotes(_ line: String) -> String {
+    guard let data = line.data(using: .utf8),
+          let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+          let notes = obj["notes"] as? String else {
+        return ""
+    }
+    return notes
 }
 
 // Minimal PCM16 → WAV encoder (mono, signed 16-bit little-endian)

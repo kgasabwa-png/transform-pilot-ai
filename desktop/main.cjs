@@ -3,12 +3,21 @@
 // - Manages sign-in via the device-link flow against the Nyvlo web app
 //   (no manual tokens, no copy-paste). Opens default browser, user approves
 //   once, tokens are stored locally and auto-refreshed.
-const { app, BrowserWindow, ipcMain, desktopCapturer, session, dialog, shell } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+  desktopCapturer,
+  session,
+  dialog,
+  shell,
+} = require("electron");
+const { spawn } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
 
-const API_BASE = "https://transform-pilot-ai.lovable.app";
+const API_BASE = process.env.NYVLO_API_BASE || "https://transform-pilot-ai.vercel.app";
 const SUPABASE_URL = "https://tunndealwgyinwmjjwrl.supabase.co";
 // Publishable (anon) key — safe in client.
 const SUPABASE_ANON =
@@ -34,7 +43,9 @@ function writeSession(sess) {
   }
 }
 function clearSession() {
-  try { fs.unlinkSync(sessionPath); } catch {}
+  try {
+    fs.unlinkSync(sessionPath);
+  } catch {}
 }
 
 // --- Device link flow -----------------------------------------------------
@@ -119,8 +130,69 @@ async function refreshIfNeeded() {
 
 // --- Window ---------------------------------------------------------------
 let win;
+let captureProc = null;
+let captureStdout = "";
 function notifyRenderer(channel, payload) {
   if (win && !win.isDestroyed()) win.webContents.send(channel, payload);
+}
+
+function sidecarPath() {
+  const packaged = path.join(process.resourcesPath || "", "NyvloCapture");
+  if (packaged && fs.existsSync(packaged)) return packaged;
+  return path.join(__dirname, "sidecar", ".build", "release", "NyvloCapture");
+}
+
+function parseCaptureStdout(chunk) {
+  captureStdout += chunk.toString("utf8");
+  let idx;
+  while ((idx = captureStdout.indexOf("\n")) >= 0) {
+    const line = captureStdout.slice(0, idx).trim();
+    captureStdout = captureStdout.slice(idx + 1);
+    if (!line) continue;
+    try {
+      notifyRenderer("capture:event", JSON.parse(line));
+    } catch {
+      // Ignore non-JSON logs from the sidecar.
+    }
+  }
+}
+
+async function startCapture(label) {
+  if (captureProc) throw new Error("Capture is already running.");
+  const sess = await refreshIfNeeded();
+  if (!sess?.access_token) throw new Error("Sign in first.");
+  const bin = sidecarPath();
+  if (!fs.existsSync(bin)) {
+    throw new Error(`Swift sidecar not built. Run: cd desktop/sidecar && swift build -c release`);
+  }
+  captureStdout = "";
+  captureProc = spawn(bin, [
+    "--token",
+    sess.access_token,
+    "--api",
+    API_BASE,
+    "--label",
+    label || `Meeting · ${new Date().toLocaleString()}`,
+  ]);
+  captureProc.stdout.on("data", parseCaptureStdout);
+  captureProc.stderr.on("data", (chunk) => {
+    console.warn("[NyvloCapture]", chunk.toString("utf8"));
+  });
+  captureProc.on("exit", (code) => {
+    notifyRenderer("capture:event", { type: "exited", code });
+    captureProc = null;
+  });
+  captureProc.on("error", (error) => {
+    notifyRenderer("capture:event", { type: "error", message: error.message });
+    captureProc = null;
+  });
+  return { ok: true };
+}
+
+function stopCapture(notes) {
+  if (!captureProc) return { ok: true };
+  captureProc.stdin.write(JSON.stringify({ action: "stop", notes: notes || "" }) + "\n");
+  return { ok: true };
 }
 
 function createWindow() {
@@ -193,3 +265,19 @@ ipcMain.handle("nyvlo:signOut", async () => {
 });
 
 ipcMain.handle("nyvlo:apiBase", async () => API_BASE);
+
+ipcMain.handle("nyvlo:startCapture", async (_event, label) => {
+  try {
+    return await startCapture(label);
+  } catch (e) {
+    return { ok: false, error: e && e.message ? e.message : "Could not start capture" };
+  }
+});
+
+ipcMain.handle("nyvlo:stopCapture", async (_event, notes) => {
+  try {
+    return stopCapture(notes);
+  } catch (e) {
+    return { ok: false, error: e && e.message ? e.message : "Could not stop capture" };
+  }
+});

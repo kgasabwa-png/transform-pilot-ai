@@ -7,13 +7,16 @@ import { listMemory } from "@/lib/nyvlo/data.functions";
 import { CalendarDays, Mail, StickyNote } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/app/memory")({
-  head: () => ({ meta: [{ title: "Memory · Nyvlo" }] }),
+  head: () => ({ meta: [{ title: "Library · Nyvlo" }] }),
   component: MemoryPage,
 });
 
 function MemoryPage() {
   const fetchMemory = useServerFn(listMemory);
-  const { data: items = [], isLoading } = useQuery({ queryKey: ["memory"], queryFn: () => fetchMemory() });
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ["memory"],
+    queryFn: () => fetchMemory(),
+  });
 
   const groups = items.reduce<Record<string, typeof items>>((acc, m) => {
     const k = new Date(m.occurred_at).toDateString();
@@ -22,7 +25,10 @@ function MemoryPage() {
   }, {});
 
   return (
-    <Shell title="Memory" subtitle="Everything Nyvlo has noticed across your sources.">
+    <Shell
+      title="Library"
+      subtitle="A timeline of notes and context Nyvlo can use when you ask questions."
+    >
       {isLoading ? (
         <div className="flex flex-col gap-3">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -38,7 +44,7 @@ function MemoryPage() {
         </div>
       ) : items.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border p-10 text-center text-[13px] text-muted-foreground">
-          Memory is empty. Connect Google in Settings — Nyvlo will start saving meetings and emails it learns from.
+          Library is empty. Capture a meeting or connect Google Calendar to start building context.
         </div>
       ) : (
         <div className="relative">
@@ -51,11 +57,15 @@ function MemoryPage() {
                 </div>
                 <div className="flex flex-col gap-2">
                   {list.map((m) => {
-                    const Icon = m.kind === "meeting" ? CalendarDays : m.kind === "email" ? Mail : StickyNote;
+                    const Icon =
+                      m.kind === "meeting" ? CalendarDays : m.kind === "email" ? Mail : StickyNote;
                     return (
                       <div key={m.id} className="flex items-start gap-3 md:gap-5">
                         <div className="hidden w-[90px] shrink-0 pt-2 text-right font-mono text-[11px] text-muted-foreground md:block">
-                          {new Date(m.occurred_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                          {new Date(m.occurred_at).toLocaleTimeString([], {
+                            hour: "numeric",
+                            minute: "2-digit",
+                          })}
                         </div>
                         <div className="relative z-10 mt-1.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-border bg-background">
                           <Icon className="h-2.5 w-2.5 text-muted-foreground" />
@@ -63,9 +73,13 @@ function MemoryPage() {
                         <div className="flex-1 rounded-lg border border-border bg-card p-3.5">
                           <div className="flex items-baseline justify-between gap-3">
                             <h3 className="text-[14px] font-medium tracking-tight">{m.title}</h3>
-                            <span className="font-mono text-[10.5px] uppercase tracking-wider text-muted-foreground">{m.kind}</span>
+                            <span className="font-mono text-[10.5px] uppercase tracking-wider text-muted-foreground">
+                              {m.kind}
+                            </span>
                           </div>
-                          {m.snippet ? <p className="mt-1 text-[12.5px] text-muted-foreground">{m.snippet}</p> : null}
+                          {m.snippet ? (
+                            <p className="mt-1 text-[12.5px] text-muted-foreground">{m.snippet}</p>
+                          ) : null}
                         </div>
                       </div>
                     );
@@ -82,9 +96,14 @@ function MemoryPage() {
 
 function formatDay(d: string) {
   const date = new Date(d);
-  const today = new Date(); today.setHours(0,0,0,0);
-  const diff = Math.round((today.getTime() - date.setHours(0,0,0,0)) / 86400000);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diff = Math.round((today.getTime() - date.setHours(0, 0, 0, 0)) / 86400000);
   if (diff === 0) return "Today";
   if (diff === 1) return "Yesterday";
-  return new Date(d).toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
+  return new Date(d).toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+  });
 }

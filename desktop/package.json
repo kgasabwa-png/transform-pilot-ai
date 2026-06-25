@@ -1,7 +1,7 @@
 {
   "name": "nyvlo-desktop",
   "version": "0.1.0",
-  "description": "Nyvlo desktop — records meeting audio, transcribes locally via Lovable AI, extracts promises.",
+  "description": "Nyvlo for Mac captures meeting audio without a bot and creates companion follow-ups.",
   "main": "main.cjs",
   "scripts": {
     "start": "electron .",

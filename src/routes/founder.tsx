@@ -6,7 +6,9 @@ import { ArrowUpRight, Loader2, LogOut } from "lucide-react";
 
 export const Route = createFileRoute("/founder")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Founder · Nyvlo" }, { name: "robots", content: "noindex,nofollow" }] }),
+  head: () => ({
+    meta: [{ title: "Founder · Nyvlo" }, { name: "robots", content: "noindex,nofollow" }],
+  }),
   component: FounderPage,
 });
 
@@ -16,11 +18,36 @@ const SURFACES: { title: string; items: LinkRow[] }[] = [
   {
     title: "Live app (signed-in surfaces)",
     items: [
-      { to: "/app", label: "Today", desc: "Dashboard with attention + coming up", auth: true },
-      { to: "/app/promises", label: "Promises", desc: "Full inbox of captured commitments", auth: true },
-      { to: "/app/memory", label: "Memory", desc: "Long-term context Nyvlo remembers", auth: true },
-      { to: "/app/command", label: "Command Center", desc: "Power tools + chat", auth: true },
-      { to: "/app/settings", label: "Settings", desc: "Google connection, profile, mutes", auth: true },
+      {
+        to: "/app",
+        label: "Meetings",
+        desc: "Notes-first dashboard and recent captures",
+        auth: true,
+      },
+      {
+        to: "/app/promises",
+        label: "Actions",
+        desc: "Follow-ups extracted from meetings",
+        auth: true,
+      },
+      {
+        to: "/app/memory",
+        label: "Library",
+        desc: "Long-term context Nyvlo remembers",
+        auth: true,
+      },
+      {
+        to: "/app/command",
+        label: "Ask",
+        desc: "Chat across meeting notes and memory",
+        auth: true,
+      },
+      {
+        to: "/app/settings",
+        label: "Settings",
+        desc: "Google connection, profile, mutes",
+        auth: true,
+      },
     ],
   },
   {
@@ -82,7 +109,9 @@ function FounderPage() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <div className="text-[13px] font-medium">Signed in as {session.email ?? "you"}</div>
-                <p className="mt-0.5 text-[12.5px] text-muted-foreground">All signed-in links below will work.</p>
+                <p className="mt-0.5 text-[12.5px] text-muted-foreground">
+                  All signed-in links below will work.
+                </p>
               </div>
               <button
                 onClick={signOut}
@@ -157,7 +186,9 @@ function FounderPage() {
             >
               <div>
                 <div className="text-[14px] font-medium">Chrome extension (.zip)</div>
-                <div className="mt-0.5 text-[12px] text-muted-foreground">Unpacked build, load in chrome://extensions</div>
+                <div className="mt-0.5 text-[12px] text-muted-foreground">
+                  Unpacked build, load in chrome://extensions
+                </div>
               </div>
               <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
             </a>
@@ -175,7 +206,8 @@ function FounderPage() {
         </section>
 
         <p className="mt-10 text-[11.5px] text-muted-foreground">
-          Bookmark this page. It's <code className="font-mono">/founder</code> — not linked from anywhere public.
+          Bookmark this page. It's <code className="font-mono">/founder</code> — not linked from
+          anywhere public.
         </p>
       </main>
     </div>

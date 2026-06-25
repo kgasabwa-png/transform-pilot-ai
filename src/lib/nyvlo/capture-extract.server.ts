@@ -13,12 +13,48 @@ type ExtractedPromise = {
   evidence_snippet?: string | null;
 };
 
+type ChatCompletionResponse = {
+  choices?: Array<{
+    message?: {
+      content?: string;
+    };
+  }>;
+};
+
+const templateGuidance: Record<string, string> = {
+  general:
+    "General meeting: prioritize decisions, discussion themes, open questions, and next steps.",
+  sales:
+    "Sales or customer call: prioritize customer goals, pain points, objections, buying process, stakeholders, risks, and follow-ups.",
+  discovery:
+    "Product discovery: prioritize user workflows, needs, pain points, quotes, feature requests, and evidence-backed insights.",
+  interview:
+    "Research interview: prioritize participant context, observations, direct quotes, behavioral patterns, and follow-up questions.",
+  one_on_one:
+    "1:1: prioritize goals, blockers, feedback, personal commitments, support needed, and manager/teammate follow-ups.",
+  planning:
+    "Planning meeting: prioritize scope, decisions, dependencies, owners, deadlines, risks, and unresolved trade-offs.",
+};
+
+function readSessionMetadata(metadata: unknown) {
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) {
+    return { manualNotes: "", template: "general" };
+  }
+  const record = metadata as Record<string, unknown>;
+  return {
+    manualNotes:
+      typeof record.manual_notes === "string" ? record.manual_notes.slice(0, 20_000) : "",
+    template:
+      typeof record.meeting_template === "string" && record.meeting_template in templateGuidance
+        ? record.meeting_template
+        : "general",
+  };
+}
 
 export async function extractPromisesFromSession(
   sessionId: string,
   userId: string,
 ): Promise<{ inserted: number; summary: string | null; notes_md: string | null }> {
-
   const supabase = adminClient();
   const key = process.env.LOVABLE_API_KEY;
   if (!key) throw new Error("LOVABLE_API_KEY missing");
@@ -26,7 +62,7 @@ export async function extractPromisesFromSession(
   const [{ data: session }, { data: chunks }, { data: frames }] = await Promise.all([
     supabase
       .from("capture_sessions")
-      .select("id, label, started_at, summary")
+      .select("id, label, started_at, summary, metadata")
       .eq("id", sessionId)
       .eq("user_id", userId)
       .maybeSingle(),
@@ -43,6 +79,7 @@ export async function extractPromisesFromSession(
       .limit(40),
   ]);
   if (!session) throw new Error("Session not found");
+  const { manualNotes, template } = readSessionMetadata(session.metadata);
 
   const transcript = (chunks ?? [])
     .filter((c) => c.transcript)
@@ -63,7 +100,7 @@ export async function extractPromisesFromSession(
     .join("\n")
     .slice(0, 6_000);
 
-  const system = `You are Nyvlo's meeting scribe. Given a transcript and optional screen context, produce structured notes in the same shape Granola uses, plus a clean list of commitments the user made.
+  const system = `You are Nyvlo's meeting scribe. Given a user's rough notes, transcript, and optional screen context, produce structured meeting notes in the same shape Granola uses, plus a clean list of commitments the user made.
 
 Return ONLY a JSON object with this exact shape:
 {
@@ -86,15 +123,19 @@ notes_md formatting rules (mirror Granola):
 - Start with a single H2 of the meeting topic (## Topic). No H1.
 - Use bold short-phrase headers ("**Key decisions**", "**Discussion**", "**Open questions**", "**Next steps**") followed by tight bullet lists.
 - Bullets are concise, fact-dense, no fluff. Never invent content unsupported by the transcript or screen context.
+- The user's rough notes are the priority signal. Preserve their emphasis, wording, and judgment when the transcript supports it.
 - Skip a section entirely if there is nothing real to put in it.
 - If the transcript is too thin to write notes, return an empty string for notes_md.
 
 Promise rules: only EXPLICIT commitments. Skip chit-chat. Use speaker labels to set owner ("me"/"user" → self). Always include draft_reply when owner is "self".`;
 
-
-
   const userMsg = `Session label: ${session.label ?? "(untitled)"}
 Started: ${session.started_at}
+Template: ${template}
+Template guidance: ${templateGuidance[template] ?? templateGuidance.general}
+
+— USER ROUGH NOTES —
+${manualNotes || "(none)"}
 
 — TRANSCRIPT —
 ${transcript || "(no transcript)"}
@@ -122,7 +163,7 @@ ${screenContext || "(no screen activity)"}`;
     const t = await res.text().catch(() => "");
     throw new Error(`Gemini extract failed: ${res.status} ${t}`);
   }
-  const json = (await res.json()) as any;
+  const json = (await res.json()) as ChatCompletionResponse;
   const raw = json.choices?.[0]?.message?.content ?? "{}";
   let parsed: { summary?: string; notes_md?: string; promises?: ExtractedPromise[] } = {};
   try {
@@ -156,18 +197,19 @@ ${screenContext || "(no screen activity)"}`;
     }));
 
   if (rows.length) {
-    await supabase.from("promises").insert(rows as any);
+    await supabase.from("promises").insert(rows);
   }
 
-  const sessionUpdate: Record<string, unknown> = {};
+  const sessionUpdate: { summary?: string; notes_md?: string } = {};
   if (parsed.summary) sessionUpdate.summary = parsed.summary;
   if (typeof parsed.notes_md === "string") sessionUpdate.notes_md = parsed.notes_md;
   if (Object.keys(sessionUpdate).length) {
-    await supabase
-      .from("capture_sessions")
-      .update(sessionUpdate as any)
-      .eq("id", sessionId);
+    await supabase.from("capture_sessions").update(sessionUpdate).eq("id", sessionId);
   }
 
-  return { inserted: rows.length, summary: parsed.summary ?? null, notes_md: parsed.notes_md ?? null };
+  return {
+    inserted: rows.length,
+    summary: parsed.summary ?? null,
+    notes_md: parsed.notes_md ?? null,
+  };
 }

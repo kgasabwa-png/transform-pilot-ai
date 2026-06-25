@@ -37,7 +37,10 @@ function SettingsPage() {
   const [busy, setBusy] = useState<string | null>(null);
 
   const { data } = useQuery({ queryKey: ["profile"], queryFn: () => fetchProfile() });
-  const { data: gmailData } = useQuery({ queryKey: ["gmail-connection"], queryFn: () => fetchGmail() });
+  const { data: gmailData } = useQuery({
+    queryKey: ["gmail-connection"],
+    queryFn: () => fetchGmail(),
+  });
   const profile = data?.profile;
   const connection = data?.connection;
   const gmail = gmailData?.connection;
@@ -56,11 +59,7 @@ function SettingsPage() {
     }
     params.delete("gmail");
     const next = params.toString();
-    window.history.replaceState(
-      {},
-      "",
-      window.location.pathname + (next ? `?${next}` : ""),
-    );
+    window.history.replaceState({}, "", window.location.pathname + (next ? `?${next}` : ""));
   }, [queryClient]);
 
   const handleConnect = async () => {
@@ -89,7 +88,7 @@ function SettingsPage() {
     setBusy("sync");
     try {
       const res = await syncNow();
-      toast.success(`Synced ${res.synced} new items · extracted ${res.promises} promises`);
+      toast.success(`Synced ${res.synced} new items · extracted ${res.promises} action items`);
       queryClient.invalidateQueries();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Sync failed");
@@ -126,9 +125,8 @@ function SettingsPage() {
     }
   };
 
-
   return (
-    <Shell title="Settings" subtitle="You control what Nyvlo connects to and remembers.">
+    <Shell title="Settings" subtitle="You control meeting context, capture, and memory.">
       <div className="grid gap-6 md:grid-cols-2">
         <Section title="Account">
           <Row label="Name" value={profile?.full_name ?? "—"} />
@@ -153,7 +151,7 @@ function SettingsPage() {
                 <div className="mt-0.5 truncate text-[11.5px] text-muted-foreground">
                   {connection
                     ? `${connection.google_email ?? "Connected"}${connection.last_synced_at ? ` · synced ${formatDistanceToNow(new Date(connection.last_synced_at), { addSuffix: true })}` : " · never synced"}`
-                    : "Read-only access to find your promises"}
+                    : "Read-only access for meeting briefs and note titles"}
                 </div>
               </div>
             </div>
@@ -231,7 +229,7 @@ function SettingsPage() {
           <Info
             Icon={ShieldCheck}
             label="Read-only access"
-            hint="Nyvlo only reads — never sends, deletes, or modifies anything in your Google account."
+            hint="Nyvlo only reads calendar context for meeting briefs — never sends, deletes, or modifies anything in your Google account."
           />
           <Info
             Icon={Globe}
@@ -247,7 +245,9 @@ function SettingsPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-card">
-      <div className="border-b border-border bg-secondary/30 px-4 py-2.5 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">{title}</div>
+      <div className="border-b border-border bg-secondary/30 px-4 py-2.5 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+        {title}
+      </div>
       <div className="flex flex-col">{children}</div>
     </div>
   );

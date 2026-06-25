@@ -1,9 +1,9 @@
-# NyvloCapture — Swift sidecar for system audio + screen
+# NyvloCapture — Swift sidecar for companion capture
 
 This binary captures **system audio** (the other person's voice in Zoom / Meet /
-Teams) plus periodic **screen frames** using Apple's ScreenCaptureKit (macOS
-13+) and POSTs them to the Nyvlo ingestion API. The Electron app launches it
-as a child process; it stops when stdin receives `{"action":"stop"}`.
+Teams), **microphone audio** on macOS 15+, and periodic **screen frames** using
+Apple's ScreenCaptureKit. The Electron app launches it as a child process; it
+stops when stdin receives `{"action":"stop","notes":"..."}`.
 
 ## Build (one command on any Mac with Xcode CLT)
 
@@ -18,11 +18,13 @@ swift build -c release
 ```bash
 ./.build/release/NyvloCapture \
   --token "<paste a Supabase access token from your browser console>" \
-  --api  "https://transform-pilot-ai.lovable.app" \
+  --api  "https://transform-pilot-ai.vercel.app" \
   --label "Test session"
 ```
 
-Send `{"action":"stop"}\n` on stdin to end.
+Send `{"action":"stop","notes":"Jotted notes"}\n` on stdin to end. Nyvlo blends
+those notes with the ordered transcript chunks before extracting companion
+actions.
 
 ## Sign + notarize (ship to users)
 
@@ -62,17 +64,19 @@ so the prompt happens at the right moment.
 
 ```
 {"type":"started","sessionId":"..."}
+{"type":"capturing","mic":true,"system":true}
+{"type":"transcript","sequence":3,"text":"..."}
 {"type":"chunk","kind":"audio","sequence":3}
 {"type":"chunk","kind":"screen","sequence":1}
-{"type":"ended"}
+{"type":"ended","ok":true,"meeting_id":"...","action_count":3}
 {"type":"error","message":"..."}
 ```
 
 ## Flags
 
-| Flag | Required | Description |
-|---|---|---|
-| `--token` | yes | Supabase access token (Bearer) |
-| `--api` | yes | Nyvlo base URL, e.g. `https://transform-pilot-ai.lovable.app` |
-| `--label` | no | Session label shown in the app |
-| `--audio-only` | no | Disable screen capture, audio only |
+| Flag           | Required | Description                                                  |
+| -------------- | -------- | ------------------------------------------------------------ |
+| `--token`      | yes      | Supabase access token (Bearer)                               |
+| `--api`        | yes      | Nyvlo base URL, e.g. `https://transform-pilot-ai.vercel.app` |
+| `--label`      | no       | Session label shown in the app                               |
+| `--audio-only` | no       | Disable screen capture, audio only                           |
