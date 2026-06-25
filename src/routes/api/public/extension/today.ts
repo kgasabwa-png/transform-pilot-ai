@@ -38,12 +38,18 @@ export const Route = createFileRoute("/api/public/extension/today")({
             .order("snapshot_date", { ascending: false })
             .limit(1)
             .maybeSingle(),
-          supabase
-            .from("profiles")
-            .select("full_name, email")
-            .eq("id", userId)
-            .maybeSingle(),
+          supabase.from("profiles").select("full_name, email").eq("id", userId).maybeSingle(),
         ]);
+
+        if (promisesRes.error) {
+          console.error("[today] promises query failed", promisesRes.error.message);
+        }
+        if (snapRes.error) {
+          console.error("[today] reliability query failed", snapRes.error.message);
+        }
+        if (profileRes.error) {
+          console.error("[today] profile query failed", profileRes.error.message);
+        }
 
         return Response.json(
           {

@@ -28,33 +28,37 @@ export const Route = createFileRoute("/api/oauth/google/callback")({
             if (ui.ok) {
               const data = (await ui.json()) as { email?: string };
               googleEmail = data.email ?? null;
+            } else {
+              console.warn("[oauth callback] userinfo fetch failed", ui.status);
             }
-          } catch { /* ignore */ }
+          } catch (uiErr) {
+            console.warn("[oauth callback] userinfo fetch error", uiErr);
+          }
 
           const admin = adminClient();
           const expiry = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
-          await admin
-            .from("connections")
-            .upsert(
-              {
-                user_id: state,
-                provider: "google",
-                google_email: googleEmail,
-                access_token: tokens.access_token,
-                refresh_token: tokens.refresh_token ?? null,
-                token_expires_at: expiry,
-                scopes: tokens.scope,
-                status: "connected",
-              },
-              { onConflict: "user_id,provider" },
-            );
+          const { error: upsertErr } = await admin.from("connections").upsert(
+            {
+              user_id: state,
+              provider: "google",
+              google_email: googleEmail,
+              access_token: tokens.access_token,
+              refresh_token: tokens.refresh_token ?? null,
+              token_expires_at: expiry,
+              scopes: tokens.scope,
+              status: "connected",
+            },
+            { onConflict: "user_id,provider" },
+          );
+          if (upsertErr) throw upsertErr;
 
           // Trigger first sync in background (best-effort)
           try {
             const { syncAndExtractForUser } = await import("@/lib/nyvlo/google.server");
-            // Fire and forget — don't make user wait for full extraction
             void syncAndExtractForUser(state).catch((e) => console.error("[initial sync]", e));
-          } catch { /* ignore */ }
+          } catch (syncImportErr) {
+            console.error("[oauth callback] failed to start initial sync", syncImportErr);
+          }
 
           return Response.redirect(`${origin}/app/settings?google=connected`, 302);
         } catch (e) {

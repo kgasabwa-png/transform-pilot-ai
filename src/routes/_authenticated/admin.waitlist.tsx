@@ -34,7 +34,7 @@ function WaitlistPage() {
         qc.invalidateQueries({ queryKey: ["waitlist-stats"] });
       }
     },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to invite"),
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Failed to invite"),
   });
 
   const s = stats.data;
@@ -50,7 +50,9 @@ function WaitlistPage() {
 
       <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Card className="p-4">
-          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Total signups</div>
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            Total signups
+          </div>
           <div className="mt-1 text-2xl font-semibold tabular-nums">{s?.total ?? "—"}</div>
         </Card>
         <Card className="p-4">
@@ -62,7 +64,9 @@ function WaitlistPage() {
           <div className="mt-1 text-2xl font-semibold tabular-nums">{s?.pending ?? "—"}</div>
         </Card>
         <Card className="p-4">
-          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Batch size</div>
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            Batch size
+          </div>
           <input
             type="number"
             min={1}
@@ -80,8 +84,9 @@ function WaitlistPage() {
           <div className="flex-1">
             <div className="font-medium">Send invite batch</div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Sends the <span className="font-mono">waitlist-invite</span> email to the next {batchSize} signups
-              who haven't been invited yet. Idempotent — re-running skips already-invited rows.
+              Sends the <span className="font-mono">waitlist-invite</span> email to the next{" "}
+              {batchSize} signups who haven't been invited yet. Idempotent — re-running skips
+              already-invited rows.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <Button
@@ -95,7 +100,9 @@ function WaitlistPage() {
               <Button
                 disabled={invite.isPending || (s?.pending ?? 0) === 0}
                 onClick={() => {
-                  if (confirm(`Send invite to next ${Math.min(batchSize, s?.pending ?? 0)} signups?`)) {
+                  if (
+                    confirm(`Send invite to next ${Math.min(batchSize, s?.pending ?? 0)} signups?`)
+                  ) {
                     invite.mutate(false);
                   }
                 }}
@@ -131,7 +138,9 @@ function WaitlistPage() {
             {s.pendingPreview.map((r) => (
               <div key={r.id} className="flex items-center justify-between text-[13px]">
                 <span className="font-mono text-muted-foreground">{r.email}</span>
-                <span className="text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</span>
+                <span className="text-muted-foreground">
+                  {new Date(r.created_at).toLocaleDateString()}
+                </span>
               </div>
             ))}
           </div>

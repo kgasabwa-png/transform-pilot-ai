@@ -28,8 +28,8 @@ function AdminUsers() {
       await updateRole({ data: { userId, role: "admin", grant: !isAdmin } });
       toast.success(isAdmin ? "Admin revoked" : "Admin granted");
       qc.invalidateQueries({ queryKey: ["admin-users"] });
-    } catch (e: any) {
-      toast.error(e.message ?? "Failed");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed");
     }
   };
 
@@ -62,9 +62,17 @@ function AdminUsers() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">Loading…</td></tr>
+                <tr>
+                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                    Loading…
+                  </td>
+                </tr>
               ) : (data ?? []).length === 0 ? (
-                <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">No users.</td></tr>
+                <tr>
+                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                    No users.
+                  </td>
+                </tr>
               ) : (
                 (data ?? []).map((u: any) => {
                   const isAdmin = u.roles.includes("admin");
@@ -85,7 +93,10 @@ function AdminUsers() {
                         {u.roles.length ? (
                           <div className="flex flex-wrap gap-1">
                             {u.roles.map((r: string) => (
-                              <span key={r} className="rounded bg-foreground/10 px-1.5 py-0.5 text-[11px]">
+                              <span
+                                key={r}
+                                className="rounded bg-foreground/10 px-1.5 py-0.5 text-[11px]"
+                              >
                                 {r}
                               </span>
                             ))}

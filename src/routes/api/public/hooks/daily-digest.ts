@@ -40,24 +40,29 @@ export const Route = createFileRoute("/api/public/hooks/daily-digest")({
 
         let inserted = 0;
         for (const [userId, list] of byUser) {
-          const top = list.slice(0, 3).map((p) => `• ${p.summary}`).join("\n");
-          const body =
-            list.length > 3
-              ? `${top}\n…and ${list.length - 3} more`
-              : top;
-          const { error: insErr } = await supabase
-            .from("notifications")
-            .upsert(
-              {
-                user_id: userId,
-                kind: "daily_digest",
-                title: `${list.length} promise${list.length === 1 ? "" : "s"} due in the next 24h`,
-                body,
-                dedup_key: `digest:${day}`,
-              },
-              { onConflict: "user_id,dedup_key", ignoreDuplicates: true },
+          const top = list
+            .slice(0, 3)
+            .map((p) => `• ${p.summary}`)
+            .join("\n");
+          const body = list.length > 3 ? `${top}\n…and ${list.length - 3} more` : top;
+          const { error: insErr } = await supabase.from("notifications").upsert(
+            {
+              user_id: userId,
+              kind: "daily_digest",
+              title: `${list.length} promise${list.length === 1 ? "" : "s"} due in the next 24h`,
+              body,
+              dedup_key: `digest:${day}`,
+            },
+            { onConflict: "user_id,dedup_key", ignoreDuplicates: true },
+          );
+          if (insErr) {
+            console.error(
+              `[daily-digest] failed to upsert notification for user ${userId}`,
+              insErr.message,
             );
-          if (!insErr) inserted++;
+          } else {
+            inserted++;
+          }
         }
 
         return Response.json({ ok: true, users: byUser.size, inserted, day });

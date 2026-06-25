@@ -39,25 +39,27 @@ export const Route = createFileRoute("/api/public/hooks/generate-reminders")({
           const kind = overdue ? "overdue" : "due_soon";
           const dedup_key = `${kind}:${p.id}:${today}`;
 
-          const title = overdue
-            ? `Overdue: ${p.summary}`
-            : `Due soon: ${p.summary}`;
+          const title = overdue ? `Overdue: ${p.summary}` : `Due soon: ${p.summary}`;
           const body = overdue
             ? `This was due ${formatRelative(dueMs, now)}.`
             : `Due ${formatRelative(dueMs, now)}.`;
 
-          const { error: insErr } = await supabase
-            .from("notifications")
-            .insert({
-              user_id: p.user_id,
-              promise_id: p.id,
-              kind,
-              title,
-              body,
-              dedup_key,
-            });
+          const { error: insErr } = await supabase.from("notifications").insert({
+            user_id: p.user_id,
+            promise_id: p.id,
+            kind,
+            title,
+            body,
+            dedup_key,
+          });
 
-          // Unique-violation = already nudged today; ignore.
+          // Unique-violation (code 23505) = already nudged today; skip.
+          if (insErr && insErr.code !== "23505") {
+            console.error(
+              `[generate-reminders] failed to insert notification for promise ${p.id}`,
+              insErr.message,
+            );
+          }
           if (!insErr) created++;
         }
 

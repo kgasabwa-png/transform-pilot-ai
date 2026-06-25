@@ -104,11 +104,14 @@ export async function getValidAccessToken(userId: string): Promise<string> {
 
   const refreshed = await refreshAccessToken(conn.refresh_token);
   const newExpiry = new Date(Date.now() + refreshed.expires_in * 1000).toISOString();
-  await admin
+  const { error: updateErr } = await admin
     .from("connections")
     .update({ access_token: refreshed.access_token, token_expires_at: newExpiry })
     .eq("user_id", userId)
     .eq("provider", "google");
+  if (updateErr) {
+    console.error("[getValidAccessToken] failed to persist refreshed token", updateErr.message);
+  }
   return refreshed.access_token;
 }
 
@@ -214,7 +217,7 @@ Also return a brief memory entry (title + 1-sentence snippet) summarizing what h
     return { promises: filtered, memory: experimental_output.memory };
   } catch (err) {
     console.error("[extractFromSource]", err);
-    return { promises: [], memory: null };
+    throw err;
   }
 }
 
@@ -239,7 +242,9 @@ export async function syncAndExtractForUser(userId: string) {
       };
       if (!e.id) continue;
       const occurred = e.start?.dateTime ?? e.start?.date ?? null;
-      const participants = (e.attendees ?? []).map((a) => a.displayName || a.email || "").filter(Boolean);
+      const participants = (e.attendees ?? [])
+        .map((a) => a.displayName || a.email || "")
+        .filter(Boolean);
       const { data: upserted } = await admin
         .from("sources")
         .upsert(
@@ -259,18 +264,25 @@ export async function syncAndExtractForUser(userId: string) {
         .maybeSingle();
       stats.calendar++;
       if (upserted && !upserted.processed_at) {
-        await runExtractAndPersist(admin, userId, upserted, stats);
+        try {
+          await runExtractAndPersist(admin, userId, upserted, stats);
+        } catch (extractErr) {
+          console.error("[sync] extraction failed for source", upserted.id, extractErr);
+          stats.errors++;
+        }
       }
     }
 
     // Gmail sync intentionally disabled for MVP (pending Google verification).
 
-
-    await admin
+    const { error: syncUpdateErr } = await admin
       .from("connections")
       .update({ last_synced_at: new Date().toISOString() })
       .eq("user_id", userId)
       .eq("provider", "google");
+    if (syncUpdateErr) {
+      console.error("[sync] failed to update last_synced_at", syncUpdateErr.message);
+    }
 
     await admin.from("agent_runs").insert({
       user_id: userId,
@@ -311,7 +323,7 @@ async function runExtractAndPersist(
 ) {
   try {
     const result = await extractFromSource({
-      kind: (src.kind === "web_capture" ? "web_capture" : "calendar_event"),
+      kind: src.kind === "web_capture" ? "web_capture" : "calendar_event",
       subject: src.subject,
       participants: src.participants,
       body: src.body,
@@ -324,7 +336,8 @@ async function runExtractAndPersist(
         source_id: src.id,
         summary: p.summary,
         owed_to: p.owed_to,
-        channel: src.kind === "calendar_event" ? "meeting" : src.kind === "web_capture" ? "web" : "email",
+        channel:
+          src.kind === "calendar_event" ? "meeting" : src.kind === "web_capture" ? "web" : "email",
         due_at: p.due_at,
         confidence: p.confidence,
         draft_reply: p.draft_reply,
@@ -332,22 +345,39 @@ async function runExtractAndPersist(
         status: "open" as const,
       }));
       const { error } = await admin.from("promises").insert(rows);
-      if (!error) stats.promises += rows.length;
+      if (error) {
+        console.error("[extract] failed to insert promises", error.message);
+        stats.errors++;
+      } else {
+        stats.promises += rows.length;
+      }
     }
 
     if (result.memory) {
       const { error } = await admin.from("memory_items").insert({
         user_id: userId,
         source_id: src.id,
-        kind: src.kind === "calendar_event" ? "meeting" : src.kind === "web_capture" ? "web" : "email",
+        kind:
+          src.kind === "calendar_event" ? "meeting" : src.kind === "web_capture" ? "web" : "email",
         title: result.memory.title,
         snippet: result.memory.snippet,
         occurred_at: src.occurred_at ?? new Date().toISOString(),
       });
-      if (!error) stats.memories++;
+      if (error) {
+        console.error("[extract] failed to insert memory item", error.message);
+        stats.errors++;
+      } else {
+        stats.memories++;
+      }
     }
 
-    await admin.from("sources").update({ processed_at: new Date().toISOString() }).eq("id", src.id);
+    const { error: markErr } = await admin
+      .from("sources")
+      .update({ processed_at: new Date().toISOString() })
+      .eq("id", src.id);
+    if (markErr) {
+      console.error("[extract] failed to mark source as processed", markErr.message);
+    }
   } catch (err) {
     console.error("[extract failed]", err);
     stats.errors++;
@@ -357,7 +387,7 @@ async function runExtractAndPersist(
 // --- Context retrieval for Command Center chat -------------------------------
 export async function getUserContext(userId: string) {
   const admin = adminClient();
-  const [{ data: promises }, { data: memory }] = await Promise.all([
+  const [promisesRes, memoryRes] = await Promise.all([
     admin
       .from("promises")
       .select("summary, owed_to, due_at, status, evidence_snippet, draft_reply")
@@ -373,9 +403,16 @@ export async function getUserContext(userId: string) {
       .limit(30),
   ]);
 
+  if (promisesRes.error) {
+    console.error("[getUserContext] promises query failed", promisesRes.error.message);
+  }
+  if (memoryRes.error) {
+    console.error("[getUserContext] memory query failed", memoryRes.error.message);
+  }
+
   return {
-    promises: promises ?? [],
-    memory: memory ?? [],
+    promises: promisesRes.data ?? [],
+    memory: memoryRes.data ?? [],
   };
 }
 

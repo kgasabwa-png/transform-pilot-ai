@@ -59,7 +59,9 @@ function CapturePage() {
       {q && !q.is_pro ? (
         <div
           className={`mb-4 flex items-center gap-4 rounded-lg border px-4 py-3 text-sm ${
-            q.allowed ? "border-border bg-card/60" : "border-amber-500/40 bg-amber-50/60 dark:bg-amber-950/20"
+            q.allowed
+              ? "border-border bg-card/60"
+              : "border-amber-500/40 bg-amber-50/60 dark:bg-amber-950/20"
           }`}
         >
           <div className="flex-1">
@@ -76,7 +78,8 @@ function CapturePage() {
             </div>
             {nearLimit ? (
               <p className="mt-2 text-[12px] text-muted-foreground">
-                Free meetings are capped at 30 minutes each. Upgrade for unlimited capture, system audio, and the desktop app.
+                Free meetings are capped at 30 minutes each. Upgrade for unlimited capture, system
+                audio, and the desktop app.
               </p>
             ) : null}
           </div>
@@ -110,8 +113,8 @@ function CapturePage() {
           )}
           {!list.isLoading && sessions.length === 0 && (
             <div className="px-2 py-4 text-[13px] leading-relaxed text-muted-foreground">
-              No meetings yet. Hit <strong>Start recording</strong> above when your next call begins —
-              Nyvlo writes the notes.
+              No meetings yet. Hit <strong>Start recording</strong> above when your next call begins
+              — Nyvlo writes the notes.
             </div>
           )}
           <div className="space-y-0.5">
@@ -144,8 +147,8 @@ function CapturePage() {
                     {s.duration_seconds
                       ? ` · ${Math.max(1, Math.round(s.duration_seconds / 60))}m`
                       : s.status === "active"
-                      ? " · live"
-                      : ""}
+                        ? " · live"
+                        : ""}
                   </div>
                 </button>
               );
@@ -210,8 +213,8 @@ function SessionDetail({ sessionId, onDelete }: { sessionId: string; onDelete: (
           : "Notes regenerated",
       );
       qc.invalidateQueries({ queryKey: ["capture-session", sessionId] });
-    } catch (e: any) {
-      toast.error(e.message ?? "Couldn't regenerate notes");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't regenerate notes");
     } finally {
       setExtracting(false);
     }
@@ -305,7 +308,6 @@ function SessionDetail({ sessionId, onDelete }: { sessionId: string; onDelete: (
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{session.notes_md}</ReactMarkdown>
           </article>
         </Card>
-
       ) : session.summary ? (
         <Card className="p-5">
           <p className="text-[15px] leading-relaxed">{session.summary}</p>

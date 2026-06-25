@@ -34,21 +34,32 @@ export const Route = createFileRoute("/api/public/ingest/session-end")({
         }
         const duration = Math.max(
           0,
-          Math.round((new Date(endedAt).getTime() - new Date(existing.started_at).getTime()) / 1000),
+          Math.round(
+            (new Date(endedAt).getTime() - new Date(existing.started_at).getTime()) / 1000,
+          ),
         );
-        await supabase
+        const { error: updateErr } = await supabase
           .from("capture_sessions")
           .update({ status: "ended", ended_at: endedAt, duration_seconds: duration })
           .eq("id", body.sessionId)
           .eq("user_id", auth.userId);
+        if (updateErr) {
+          console.error("[session-end] failed to update session", updateErr.message);
+          return Response.json(
+            { ok: false, error: updateErr.message },
+            { status: 500, headers: cors },
+          );
+        }
 
-        // Fire-and-forget extraction
+        // Extract promises from session
         try {
           const { extractPromisesFromSession } = await import("@/lib/nyvlo/capture-extract.server");
           const result = await extractPromisesFromSession(body.sessionId, auth.userId);
           return Response.json({ ok: true, ...result }, { headers: cors });
-        } catch (e: any) {
-          return Response.json({ ok: true, extractError: e.message }, { headers: cors });
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          console.error("[session-end] extraction failed", msg);
+          return Response.json({ ok: false, error: msg }, { status: 500, headers: cors });
         }
       },
     },
